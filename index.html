@@ -317,7 +317,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <button class="ai" id="ai-rev" hidden>AI 점검</button>
   <span id="ghs" class="ghs"></span>
   <button id="undo" title="Ctrl+Z">되돌리기</button>
-  <button id="askai" title="말로 일정을 고쳐 달라고 Claude에게 부탁합니다">Claude에게 부탁</button>
+  <button id="askai" title="이 제품의 프로젝트관리 대화(Claude)를 엽니다. 상황을 말하면 일정을 짜고 고칩니다">프로젝트관리 대화</button>
   <button id="finalbtn" title="이 제품에서 확정한 서류를 작업별로 모아 봅니다">최종 서류</button>
   <button id="set">설정</button>
 </header>
@@ -1699,6 +1699,7 @@ function renderPanel(){
 var CHAT_DIR='M:\\claude\\product-schedule';
 function chatHtml(n){
   if(n.chat&&n.chat.link)return `<a class="chat" href="${esc(n.chat.link)}" title="회사 PC의 Claude 앱에서 이 작업 대화가 열립니다">대화 열기</a>`;
+  return'';   // 2026-10-19: 작업마다 대화 대신 제품마다 "프로젝트관리 대화" 하나로 정했다
   const fw=flowOf(n);if(n.done||!(n.started||fw.k==='turn'||fw.k==='active'))return'';
   const P=pById(n.p),q=`[제품 일정 작업 대화] 제품: ${P.name.replace(/\s*\(.*$/,'')} / 작업: ${n.name} (작업 ${n.id}). product-schedule CLAUDE.md 의 "작업 대화 등록"대로 등록하고 이 작업 상황을 정리해 줘`.slice(0,200);
   return `<a class="chat" href="claude://code/new?q=${encodeURIComponent(q)}&folder=${encodeURIComponent(CHAT_DIR)}" title="회사 PC의 Claude 앱에 새 대화가 열립니다. 보내기를 누르면 시작되고, 그 뒤 여기에 '대화 열기'가 생깁니다">대화 만들기</a>`;
@@ -2128,7 +2129,8 @@ $('#finalbtn').onclick=openFinal;
 function askHref(){const P=curP(),t=$('#ask-t').value.trim().replace(/\s+/g,' ');
   const q=`[제품 일정 고치기] 제품: ${P.name.replace(/\s*\(.*$/,'')} / ${t} — product-schedule CLAUDE.md 의 "말로 일정 고치기"대로`.slice(0,200);
   return `claude://code/new?q=${encodeURIComponent(q)}&folder=${encodeURIComponent(CHAT_DIR)}`}
-$('#askai').onclick=()=>{$('#ask-t').value='';$('#ask-go').href=askHref();$('#dask').showModal();setTimeout(()=>$('#ask-t').focus(),50)};
+$('#askai').onclick=()=>{const c=curP().chat;if(c&&c.link){location.href=c.link;return}   // 이 제품의 프로젝트관리 대화가 있으면 그 대화로 간다
+  $('#ask-t').value='';$('#ask-go').href=askHref();$('#dask').showModal();setTimeout(()=>$('#ask-t').focus(),50)};
 $('#ask-t').oninput=()=>{$('#ask-go').href=askHref()};
 $('#ask-go').onclick=e=>{if(!$('#ask-t').value.trim()){e.preventDefault();toast('어떻게 바꿀지 먼저 적어 주세요.');return}setTimeout(()=>$('#dask').close(),300)};
 $('#dask-x').onclick=()=>$('#dask').close();
