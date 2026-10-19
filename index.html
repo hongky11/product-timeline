@@ -145,11 +145,12 @@ section{position:absolute;inset:0}
 .doff span{position:absolute;top:6px;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;font-size:11px;color:#b42318;font-weight:700;white-space:nowrap}
 .dtoday{position:absolute;background:rgba(37,99,235,.08);border-left:2px solid var(--blue);pointer-events:none}
 .ddl{position:absolute;width:0;border-left:2px dashed var(--red);pointer-events:none}
-#ruler{position:absolute;left:0;right:0;top:0;height:46px;background:#fff;border-bottom:1px solid var(--line);z-index:5;pointer-events:none;overflow:hidden;font-size:11px}
-#ruler .rmr,#ruler .rdr{position:absolute;left:0;right:0}#ruler .rmr{top:2px;height:16px}#ruler .rdr{top:18px;height:28px}
-#ruler .rm{position:absolute;font-weight:700;color:#334;padding-left:3px;border-left:1px solid #c5cedb}
-#ruler .rd{position:absolute;top:0;height:28px;text-align:center;color:#334;border-left:1px solid #eef1f5;line-height:13px;overflow:hidden}
-#ruler .rd i{display:block;font-style:normal;color:var(--mut);font-size:10px}#ruler .rd em{display:block;font-style:normal;font-size:9px;white-space:nowrap}
+#ruler{position:absolute;left:0;right:0;top:0;height:52px;background:#fff;border-bottom:1px solid var(--line);z-index:5;pointer-events:none;overflow:hidden;font-size:12px}
+#ruler .rmr,#ruler .rdr{position:absolute;left:0;right:0}#ruler .rmr{top:0;height:20px}#ruler .rdr{top:20px;height:32px}
+#ruler .rm{position:absolute;top:0;height:20px;line-height:20px;font-size:13px;font-weight:700;color:#1f2a3a;padding-left:6px;border-left:2px solid #8a97ab;background:#fff;white-space:nowrap}
+#ruler .rd{position:absolute;top:0;height:32px;text-align:center;color:#223;border-left:1px solid #e3e8ef;line-height:15px;overflow:hidden;white-space:nowrap;font-weight:600}
+#ruler .rd.m2{background:#f4f6fa}#ruler .rd.m1{border-left:2px solid #8a97ab}
+#ruler .rd i{display:block;font-style:normal;color:var(--mut);font-size:10px;font-weight:400}#ruler .rd em{display:block;font-style:normal;font-size:9px;white-space:nowrap}
 #ruler .rd.off{color:#c0392b;background:rgba(239,68,68,.07)}#ruler .rd.off i{color:#c0392b}
 #ruler .rd.td{background:rgba(37,99,235,.15);font-weight:700}
 .nd .dl{position:absolute;left:0;top:-17px;font-size:11px;color:#334;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff}
@@ -190,8 +191,6 @@ section{position:absolute;inset:0}
 .nd.ov{outline:3px dashed var(--red);outline-offset:2px}
 .nd .pt{position:absolute;right:-34px;top:50%;margin-top:-12px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;color:var(--blue);font-size:14px;z-index:2;cursor:crosshair;opacity:0;transition:opacity .1s}
 .nd .pt{opacity:.5!important}.nd:hover .pt,.nd.sel .pt{opacity:1!important}
-.nd.grp .rsb{pointer-events:auto;position:absolute;left:0;right:0;bottom:-5px;height:10px;cursor:ns-resize}
-.nd.grp .rsb:hover{background:color-mix(in srgb,var(--c) 40%,transparent);border-radius:5px}
 #pn .dur{display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap}#pn .dur input[type=date]{flex:1 1 100%;font-size:15px;font-weight:700;text-align:left;width:auto}#pn .dur input{width:64px;font-size:16px;font-weight:700;text-align:center}#pn .dur .dd{margin-left:auto;font-size:12px;color:var(--mut)}
 #pn .tds{flex:none;font-size:12px;padding:2px 8px;border-radius:8px;min-width:64px}#pn .tds.ok{background:#e3f4e8;color:var(--grn);border-color:#bfe3cb}#pn .tds.na{background:#eef0f4;color:var(--mut)}
 #pn .todo.na span{color:var(--mut);text-decoration:line-through}
@@ -199,10 +198,9 @@ section{position:absolute;inset:0}
 #shiftpop .lorow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:6px 8px}#shiftpop .lorow input{width:52px}
 .nd.grp{pointer-events:none;background:color-mix(in srgb,var(--c) 7%,transparent);border:2px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:16px;cursor:default}
 .nd.grp.sel{box-shadow:0 0 0 3px rgba(37,99,235,.5)}
-.nd.grp.hl{background:color-mix(in srgb,var(--c) 18%,transparent)}
-.nd.grp .gh{pointer-events:auto;cursor:move;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;border-radius:14px 14px 0 0;background:color-mix(in srgb,var(--c) 22%,#fff);color:#223;font-weight:700}
+.nd.grp.hl,.nd.grp.drop{background:color-mix(in srgb,var(--c) 18%,transparent)}.nd.grp.drop{border-color:var(--c)}
+.nd.grp .gh{pointer-events:auto;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;border-radius:14px 14px 0 0;background:color-mix(in srgb,var(--c) 22%,#fff);color:#223;font-weight:700}
 .nd.grp .gh span{font-weight:400;color:var(--mut);font-size:11px}
-.nd.grp .rs{pointer-events:auto;position:absolute;right:2px;bottom:2px;width:18px;height:18px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 55%,color-mix(in srgb,var(--c) 70%,#fff) 55%,color-mix(in srgb,var(--c) 70%,#fff) 65%,transparent 65%,transparent 78%,color-mix(in srgb,var(--c) 70%,#fff) 78%,color-mix(in srgb,var(--c) 70%,#fff) 88%,transparent 88%)}
 .mq{position:absolute;border:1px solid var(--blue);background:rgba(37,99,235,.1);pointer-events:none;z-index:6}
 #sl{position:absolute;inset:0;pointer-events:none;display:none}
 .pcard{position:absolute;pointer-events:auto;cursor:pointer;background:#fff;border:2px solid #c5d0e2;border-radius:16px;padding:12px 14px;overflow:hidden;box-shadow:0 4px 14px rgba(20,30,50,.1);display:flex;flex-direction:column;gap:7px}
@@ -539,7 +537,11 @@ function norm(o){
     n.w=n.w||(n.type==='group'?300:TW);n.h=n.h||(n.type==='group'?200:TH);n.done=n.done||'';n.memo=n.memo||'';n.who=n.who||'';
     if(n.type!=='group'){n.files=n.files||[];n.arch=n.arch||[];n.log=n.log||[];n.unit=n.unit==='c'?'c':'w'}
     if(n.type!=='group'){n.conf=n.conf||'g';n.d=Math.max(1,+n.d||1);n.dmin=n.dmin>0?+n.dmin:null;n.dmax=n.dmax>0?+n.dmax:null;
-      n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.todo.forEach(i=>{if(!i.id)i.id='i'+Math.random().toString(36).slice(2,8);i.memo=i.memo||''});n.notion=n.notion||''}});
+      n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.todo.forEach((i,k)=>{if(!i.id)i.id='i'+n.id.slice(-6)+'_'+k;i.memo=i.memo||''});n.notion=n.notion||''}});
+  o.products.forEach(P=>{const gs=o.nodes.filter(g=>g.type==='group'&&g.p===P.id);
+    if(gs.some(g=>!(g.ord>=0)))gs.sort((a,b)=>(a.ord>=0?a.ord:1e9)-(b.ord>=0?b.ord:1e9)||a.y-b.y).forEach((g,i)=>{g.ord=i});
+    o.nodes.forEach(n=>{if(n.p!==P.id||n.type==='group'||n.g!==undefined)return;const cx=n.x+n.w/2,cy=n.y+n.h/2;let best=null;
+      gs.forEach(g=>{if(cx>=g.x&&cx<=g.x+g.w&&cy>=g.y&&cy<=g.y+g.h&&(!best||g.w*g.h<best.w*best.h))best=g});n.g=best?best.id:''})});
   o.links.forEach(l=>{l.kind=l.kind==='ss'?'ss':'fs';l.lag=l.lag!=null&&!isNaN(+l.lag)?Math.round(+l.lag):(l.kind==='ss'?0:1)});
   if(!o.holidays)o.holidays=DEF_H.map(h=>({...h}));
   o.trash=o.trash||[];
@@ -583,6 +585,9 @@ function groupOf(n){
   S.nodes.forEach(g=>{if(g.type==='group'&&g!==n&&g.p===n.p&&cx>=g.x&&cx<=g.x+g.w&&cy>=g.y&&cy<=g.y+g.h&&(!best||g.w*g.h<best.w*best.h))best=g});
   return best;
 }
+const gOrd=(a,b)=>(a.ord>=0?a.ord:1e9)-(b.ord>=0?b.ord:1e9)||a.y-b.y;
+// 카드의 묶음: 기록(g)을 따른다. 기록이 없는 카드만 그려진 자리로 찾는다
+function grpOf(n){if(n.g===undefined)return groupOf(n);const g=n.g&&nodeById(n.g);return g&&g.type==='group'&&g.p===n.p?g:null}
 function membersOf(g){return S.nodes.filter(n=>n!==g&&n.p===g.p&&n.x+n.w/2>=g.x&&n.x+n.w/2<=g.x+g.w&&n.y+n.h/2>=g.y&&n.y+n.h/2<=g.y+g.h&&!(n.type==='group'&&n.w*n.h>=g.w*g.h))}
 // 제품 상자들이 서로 겹치지 않게 위에서 아래로 나란히 놓는다
 function stackProducts(){
@@ -732,7 +737,7 @@ function render(skipPanel){
   R=calc();
   if(view==='b')placeByDate(curP());
   $('#undo').disabled=!undoStack.length;
-  GM=new Map();S.nodes.forEach(n=>{if(n.type!=='group')GM.set(n.id,groupOf(n))});
+  GM=new Map();S.nodes.forEach(n=>{if(n.type!=='group')GM.set(n.id,grpOf(n))});
   renderSum();renderSide();renderTools();
   if(view==='b')renderBoard();else if(view==='t')renderTime();else renderCal();
   if(!skipPanel)renderPanel();
@@ -742,7 +747,7 @@ function render(skipPanel){
   $('#ai-plan').hidden=!AI_ON;$('#ai-rev').hidden=!AI_ON;$('#set-ai').hidden=!AI_ON;
   $('#tip').textContent=view==='c'?'날짜 칸을 누르면 그날 진행되는 작업이 오른쪽에 나옵니다. 막대를 누르면 그 작업을 고치고, 고른 작업은 파란 테두리로 보입니다.':view==='t'?'제품 줄의 ▾를 누르면 접히고 펴집니다. 막대나 이름을 누르면 오른쪽에서 고치고, 고른 작업의 날짜 구간이 파랗게 칠해집니다.':
     (cam.z<LOD?'지금은 요약 보기입니다. 제품 상자를 누르거나 휠로 확대하면 안쪽 카드가 보입니다.':
-    '빈 곳 더블클릭 = 그 날짜에 작업 · 카드를 끌면 날짜 이동 · 카드 양쪽 끝을 끌면 시작일·끝나는 날 · 카드 오른쪽 → 를 다음 카드에 놓으면 연결 · 휠 = 확대/축소');
+    '빈 곳 더블클릭 = 그 날짜에 작업 · 카드를 끌면 날짜 이동 · 카드 양쪽 끝을 끌면 시작일·끝나는 날 · 카드 오른쪽 → 를 다음 카드에 놓거나, Ctrl 누른 채 두 카드를 누르면 연결 · 휠 = 확대/축소');
 }
 function renderSum(){
   const alr=[],lnk=t=>`<a data-pick="${t.id}">${esc(t.name)}</a>`;
@@ -809,7 +814,7 @@ function renderTools(){
     $('#tools').innerHTML=
       `<div class="tg"><b>추가</b><button data-add="task" title="누르거나 끌어다 놓으면 작업 카드가 생깁니다">＋<span>작업</span></button><button data-add="group" title="카드를 묶는 줄 (예: 본체, 패키지)">▢<span>묶음</span></button></div>`+
       `<div class="tg"><b>자동 맞춤</b><button data-auto class="${curP().auto===false?'':'on'}" title="켜면 앞 일정이 늦어질 때 뒤 일정이 저절로 밀립니다. 끄면 그린 대로 둡니다">${curP().auto===false?'끔':'켬'}</button></div>`+
-      `<div class="tg"><b>보기</b><button data-z="today" title="오늘 날짜로 이동">●<span>오늘</span></button><button data-z="in">＋<span>확대</span></button><div class="z" id="zpct">${Math.round(cam.z*100)}%</div><button data-z="out">－<span>축소</span></button><button data-arr="one" title="겹치지 않게 묶음마다 줄을 다시 나눕니다 (날짜는 그대로)">⇶<span>줄 정리</span></button></div>`;
+      `<div class="tg"><b>보기</b><button data-z="today" title="오늘 날짜로 이동">●<span>오늘</span></button><button data-z="in">＋<span>확대</span></button><div class="z" id="zpct">${Math.round(cam.z*100)}%</div><button data-z="out">－<span>축소</span></button></div>`;
   }else if(view==='c'){
     $('#tools').innerHTML=`<div class="tg"><b>달력</b><button data-cal="prev">◀<span>이전 달</span></button><button data-cal="today">●<span>오늘</span></button><button data-cal="next">▶<span>다음 달</span></button></div>`;
   }else{
@@ -900,9 +905,8 @@ function nodeHtml(n){
   if(n.type==='group'){
     const mem=S.nodes.filter(m=>m.type!=='group'&&GM.get(m.id)===n&&C[m.id]);
     let sp='';if(mem.length)sp=`${md(Math.min(...mem.map(m=>C[m.id].es)))}–${md(Math.max(...mem.map(m=>C[m.id].ef)))}`;
-    // 날짜판에서는 묶음 상자가 가로로 길어서, 이름을 첫 작업이 시작하는 자리 위에 둔다
-    const pl=view==='b'&&mem.length?Math.max(12,Math.min(...mem.map(m=>m.x))-n.x):12;
-    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div><i class="rs"></i><i class="rsb" title="끌어서 묶음 높이 바꾸기"></i></div>`;
+    const pl=view==='b'?Math.max(12,-cam.x/cam.z-n.x+8):12;   // 날짜판: 묶음 이름을 화면 왼쪽 끝에 (renderRuler 가 옮길 때마다 맞춘다)
+    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div></div>`;
   }
   const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision';
   const live=(n.todo||[]).filter(i=>!i.na&&!i.later),tdn=live.length,tdk=live.filter(i=>i.ok).length;
@@ -950,12 +954,16 @@ function boardRange(P){
 }
 var NAR=null,TXC=null;   // NAR: 날짜판에서 이름이 안 들어가는 좁은 카드 → 오른쪽 글자 칸 너비
 function txtW(s,wt,px){if(!s)return 0;if(!TXC)TXC=document.createElement('canvas').getContext('2d');TXC.font=`${wt} ${px}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;return Math.ceil(TXC.measureText(s).width)}
+var LANES=[];   // 날짜판의 묶음 줄 {g,y0,y1}. g 가 null 이면 묶음 없는 카드 줄 (맨 아래)
+// 줄 배치는 늘 자동이다: 묶음은 순서(ord)대로 위에서 아래로 쌓고, 묶음 안에서는 시작이 빠른 카드부터 앞 카드와 겹치지 않는 가장 위 줄에 놓는다.
+// 사용자가 정하는 것은 카드가 어느 묶음에 있는지(g)와 묶음 순서뿐이다.
 function placeByDate(P){
   if(!P)return;BR=boardRange(P);
-  const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort((a,b)=>a.y-b.y);
+  const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort(gOrd);
+  ts.forEach(n=>{if(n.g===undefined){const g=groupOf(n);n.g=g?g.id:''}});
+  gs.forEach((g,i)=>{g.ord=i});
   ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+5;n.w=Math.max(DW*(x.ef-x.es+1)-10,DW-10)});   // 날짜가 이어진 카드끼리도 틈이 보이게 양옆 5px씩 비운다
   gs.forEach(g=>{g.x=X(BR.a)-12;g.w=X(BR.b+1)+24-g.x});
-  const gm=new Map(ts.map(n=>[n,groupOf(n)]));
   // 카드가 차지하는 실제 너비: 카드 + 오른쪽 연결 동그라미 + (좁은 카드면) 오른쪽에 쓴 글자, 위쪽 날짜 줄 중 넓은 쪽
   NAR=new Map();const VW=new Map(),VH=new Map();
   ts.forEach(n=>{const x=C[n.id];if(!x)return;
@@ -965,14 +973,20 @@ function placeByDate(P){
     if(tw+40>n.w){const cw=Math.max(tw,120);NAR.set(n.id,cw);VW.set(n.id,Math.max(n.w+42+cw+8,dlw));VH.set(n.id,TH+(lmt?16:0)+12)}
     else{VW.set(n.id,Math.max(n.w+36,dlw));VH.set(n.id,TH)}
   });
-  // 같은 날짜에 겹치는 카드는 아래 줄로 비킨다 (위에 있는 카드가 자리를 지킨다)
-  const vw=n=>VW.get(n.id)||n.w,vh=n=>VH.get(n.id)||n.h;
-  const placed=[],hitR=(n,o)=>n.x<o.x+vw(o)+2&&n.x+vw(n)+2>o.x&&n.y<o.y+vh(o)+24&&n.y+vh(n)+24>o.y;
-  [...ts].sort((a,b)=>a.y-b.y||a.x-b.x).forEach(n=>{let k=0,hs;while((hs=placed.filter(o=>hitR(n,o))).length&&k++<80)n.y=Math.max(...hs.map(o=>o.y+vh(o)+24));placed.push(n)});
-  // 묶음 상자는 안의 카드가 다 들어가게 늘리고, 아래 묶음과 겹치면 아래 묶음을 민다
-  gs.forEach(g=>{const ms=ts.filter(n=>gm.get(n)===g);if(ms.length)g.h=Math.max(g.h,Math.max(...ms.map(n=>n.y+vh(n)))-g.y+18)});
-  for(let i=1;i<gs.length;i++){const p=gs[i-1],g=gs[i],need=p.y+p.h+20-g.y;if(need>0){g.y+=need;ts.forEach(n=>{if(gm.get(n)===g)n.y+=need})}}
+  const vw=n=>VW.get(n.id)||n.w,vh=n=>VH.get(n.id)||n.h,GAP=26,HEAD=56;
+  const pack=(arr,y0)=>{const rows=[];
+    arr.sort((a,b)=>(C[a.id]?C[a.id].es:0)-(C[b.id]?C[b.id].es:0)||a.y-b.y||(a.id<b.id?-1:1)).forEach(n=>{
+      let r=rows.findIndex(o=>o.end+10<=n.x);if(r<0){r=rows.length;rows.push({end:-1e9,h:0,ns:[]})}
+      rows[r].end=n.x+vw(n);rows[r].h=Math.max(rows[r].h,vh(n));rows[r].ns.push(n)});
+    let y=y0;rows.forEach(o=>{o.ns.forEach(n=>{n.y=y});y+=o.h+GAP});
+    return rows.length?y-GAP-y0:TH};
+  let y=(P.y||40)+124;LANES=[];
+  gs.forEach(g=>{g.y=y;g.h=HEAD+pack(ts.filter(n=>n.g===g.id),y+HEAD)+16;LANES.push({g,y0:g.y,y1:g.y+g.h});y=g.y+g.h+20});
+  const loose=ts.filter(n=>!gs.some(g=>g.id===n.g));
+  if(loose.length){const h=pack(loose,y+24);LANES.push({g:null,y0:y,y1:y+24+h})}
 }
+// 카드 가운데 높이(cy)가 어느 묶음 줄인지. 줄 밖이면 가장 가까운 줄
+function laneAt(cy){let best=null,bd=1e9;LANES.forEach(L=>{const d=cy<L.y0?L.y0-cy:cy>L.y1?cy-L.y1:0;if(d<bd){bd=d;best=L}});return best}
 function boardFrame(P){const f=frameOf(P);return{x:X(BR.a),y:f.y,w:X(BR.b+1)-X(BR.a),h:f.h}}
 function daysHtml(P,f){
   const K=R.K;let o='';
@@ -993,12 +1007,17 @@ function renderRuler(){
   let m='',dd='';
   for(let d=d0;d<=d1;d++){
     const dt=new Date(d*864e5),day=dt.getUTCDate();
-    if(day===1||d===d0)m+=`<span class="rm" style="left:${Math.max(0,sx(d))}px">${dt.getUTCFullYear()}년 ${dt.getUTCMonth()+1}월</span>`;
+    const mo=dt.getUTCMonth()+1;
+    if(day===1||d===d0)m+=`<span class="rm" style="left:${Math.max(0,sx(d))}px">${dt.getUTCFullYear()}년 ${mo}월</span>`;
     const off=!K.isW(d),h=off&&S.holidays.find(x=>num(x.d)===d);
-    if(px>=15||dow(d)===1)dd+=`<span class="rd${off?' off':''}${d===TODAY?' td':''}" style="left:${sx(d)}px;width:${px>=15?px:px*7}px">${day}${px>=26?`<i>${WD[dow(d)]}</i>`:''}${h&&px>=40?`<em>${esc(h.n)}</em>`:''}</span>`;
+    // 칸이 좁으면 월요일마다 "10/20"처럼 월/일을 쓰고, 넓으면 날마다 쓴다. 1일은 늘 "11/1" 로 쓰고 굵은 선을 긋는다
+    const lab=px>=34||day===1||px<15?`${mo}/${day}`:`${day}`;
+    if(px>=15||dow(d)===1)dd+=`<span class="rd${off?' off':''}${d===TODAY?' td':''}${mo%2?'':' m2'}${day===1?' m1':''}" style="left:${sx(d)}px;width:${px>=15?px:px*7}px">${lab}${px>=26?`<i>${WD[dow(d)]}</i>`:''}${h&&px>=40?`<em>${esc(h.n)}</em>`:''}</span>`;
   }
   el.innerHTML=`<div class="rmr">${m}</div><div class="rdr">${dd}</div>`;
   const f=frameOf(curP());el.style.top=Math.max(0,cam.y+(f.y+58)*cam.z)+'px';   // 제품 이름 바로 아래, 카드들 위
+  // 묶음 이름은 화면 왼쪽 끝에 붙여 둔다 (옆으로 옮겨도 어느 묶음 줄인지 보이게)
+  const vx=-cam.x/cam.z;nodesEl.querySelectorAll('.nd.grp').forEach(ge=>{const g=nodeById(ge.dataset.id),h=ge.firstElementChild;if(g&&h)h.style.paddingLeft=Math.max(12,vx-g.x+8)+'px'});
 }
 function renderBoard(){
   const P=curP(),r=R.per[P.id],s=prodStatus(r),f=boardFrame(P);
@@ -1023,7 +1042,7 @@ function buildSumLayer(){
     let body='<div class="r">작업 없음</div>';
     if(r&&!r.empty&&!r.err){
       const span0=r.start,span1=Math.max(r.pHi,r.dl||0,r.pEnd),tot=Math.max(1,span1-span0+1),pc=Math.round(r.done/r.total*100);
-      const groups=S.nodes.filter(n=>n.type==='group'&&n.p===P.id).sort((a,b)=>a.y-b.y).slice(0,6);
+      const groups=S.nodes.filter(n=>n.type==='group'&&n.p===P.id).sort(gOrd).slice(0,6);
       const mg=groups.map(g=>{const ms=r.order.filter(t=>GM.get(t.id)===g);if(!ms.length)return'';const a=Math.min(...ms.map(t=>C[t.id].es)),b=Math.max(...ms.map(t=>C[t.id].ef));
         return `<div><span class="n">${esc(g.name.replace(/\s*\(.*$/,''))}</span><span class="tr"><i style="left:${(a-span0)/tot*100}%;width:${Math.max(2,(b-a+1)/tot*100)}%;background:${g.color}"></i>${r.dl!=null?`<em style="left:${(r.dl-span0)/tot*100}%"></em>`:''}</span></div>`}).join('');
       body=`<div class="r"><span>입고 예상 <b>${md(r.pEnd)}</b>${r.pLo!==r.pHi?` (${md(r.pLo)}~${md(r.pHi)})`:''}</span>${r.dl!=null?`<span>목표 <b>${md(r.dl)}</b></span>`:''}<span>소요 <b>영업일 ${r.workdays}</b></span></div>`+
@@ -1059,11 +1078,11 @@ board.addEventListener('pointerdown',e=>{
   if(t.closest('.hint,.ck,[data-snap]'))return;
   const pc=t.closest('.pcard');if(pc){startPan(e,()=>focusProduct(pc.dataset.pid));return}
   const pt=t.closest('.pt');if(pt){startLink(e,pt.closest('.nd').dataset.id);return}
-  const rs=t.closest('.rs,.rsb');if(rs){startResize(e,rs.closest('.nd').dataset.id);return}
   const pfh=t.closest('.pfh');if(pfh){selectProduct(pfh.closest('.pf').dataset.pid);e.preventDefault();return}
   const re=t.closest('.re');if(re){startResizeTask(e,re.closest('.nd').dataset.id);return}
   const rl=t.closest('.rl');if(rl){startResizeStart(e,rl.closest('.nd').dataset.id);return}
-  if(t.closest('.nd.task,.nd.dec,.gh')){startDrag(e,t.closest('.nd').dataset.id,e.shiftKey||e.ctrlKey||e.metaKey);return}
+  const gh=t.closest('.gh');if(gh){const gid=gh.closest('.nd').dataset.id;startPan(e,()=>selectNodes([gid]));return}
+  if(t.closest('.nd.task,.nd.dec')){startDrag(e,t.closest('.nd').dataset.id,e.shiftKey||e.ctrlKey||e.metaKey);return}
   const lh=t.closest('.lh');if(lh){selectLink(lh.dataset.id);e.preventDefault();return}
   if(tool==='select'||e.shiftKey){startMarquee(e);return}
   startPan(e);
@@ -1097,8 +1116,8 @@ function startDrag(e,id,toggle){
   closeShift();
   if(!isSel(id)){selN=[id];selL=null;selP=null;paintSel()}
   const moving=new Set();
-  selN.forEach(i=>{const m=nodeById(i);if(!m)return;moving.add(m);if(m.type==='group')membersOf(m).forEach(x=>moving.add(x))});
-  const st=new Map([...moving].map(m=>[m,{x:m.x,y:m.y}])),cards=[...moving].filter(m=>m.type!=='group');
+  selN.forEach(i=>{const m=nodeById(i);if(m&&m.type!=='group')moving.add(m)});
+  const st=new Map([...moving].map(m=>[m,{x:m.x,y:m.y}])),cards=[...moving],me=nodeById(id);let dropL=null;
   const one=cards.length===1&&moving.size===1?cards[0]:null;   // 날짜는 카드 하나를 끌 때만 바꾼다
   const single=one&&!S.links.some(l=>l.from===id||l.to===id),K=R.K;
   let dd=0,rawdd=0,hoverL=null;const tip=dtip();
@@ -1106,6 +1125,7 @@ function startDrag(e,id,toggle){
     const ddy=snap(dy/cam.z);rawdd=one?Math.round(dx/cam.z/DW):0;dd=one&&!one.done&&C[one.id]?rawdd:0;
     st.forEach((p,m)=>{m.y=p.y+ddy;if(m===one)m.x=p.x+dd*DW;const el=nodeEl(m.id);if(el){el.style.left=m.x+'px';el.style.top=m.y+'px'}});
     renderLinks();
+    const L=laneAt(me.y+me.h/2);if(L!==dropL){nodesEl.querySelectorAll('.grp.drop').forEach(el=>el.classList.remove('drop'));dropL=L;if(L&&L.g&&L.g.id!==me.g){const el=nodeEl(L.g.id);el&&el.classList.add('drop')}}
     if(one&&C[one.id]){
       const x=C[one.id],s2=K.nextW(x.es+dd),e2=one.unit==='c'?s2+x.d-1:K.addW(s2,x.d-1),f=boardFrame(curP());
       gd.innerHTML=`<rect x="${X(s2)}" y="${f.y}" width="${X(e2+1)-X(s2)}" height="${f.h}" fill="rgba(37,99,235,.08)"/><line x1="${X(s2)}" x2="${X(s2)}" y1="${f.y}" y2="${f.y+f.h}"/><line x1="${X(e2+1)}" x2="${X(e2+1)}" y1="${f.y}" y2="${f.y+f.h}"/>`;
@@ -1116,17 +1136,21 @@ function startDrag(e,id,toggle){
     lkg.querySelectorAll('.ins').forEach(p=>p.classList.remove('ins'));
     if(hoverL){const p=lkg.querySelector(`path.v[data-lid="${hoverL.id}"]`);p&&p.classList.add('ins')}
   },moved=>{
-    gd.innerHTML='';tip.style.display='none';
+    gd.innerHTML='';tip.style.display='none';nodesEl.querySelectorAll('.grp.drop').forEach(el=>el.classList.remove('drop'));
     if(moved&&hoverL){spliceOnLink(one,hoverL);return}
+    let gmsg='';
+    if(moved){const ch=[];cards.forEach(m=>{const L=laneAt(m.y+m.h/2);if(!L)return;const g=L.g?L.g.id:'',g0=grpOf(m);if(g!==(g0?g0.id:'')){m.g=g;ch.push(m)}});
+      if(ch.length){const L=laneAt(me.y+me.h/2),gn=L&&L.g?`"${L.g.name}" 묶음으로`:'묶음 없는 줄로';gmsg=(ch.length===1?`"${ch[0].name}"을(를) `:`카드 ${ch.length}개를 `)+gn+' 옮겼습니다. '}}
     if(moved)save();
     selectNodes(selN.length?selN:[id]);
+    if(gmsg&&!(one&&dd))toast(gmsg.trim());
     if(moved&&one&&one.done&&rawdd)toast('끝난 작업은 실제 끝난 날이 기록돼 있어 옆으로 옮기지 않았습니다. 날짜를 고치려면 작업 칸 "실제 날짜"에서 바꾸거나 "대기"로 돌리세요.');
     if(moved&&one&&dd){
       const P=pById(one.p);
       if(P.auto===false){   // 자유 그리기: 놓은 날짜로 바로 바꾼다
         const t=R.K.nextW(C[one.id].es+dd),end0=prodEnd(P);one.notBefore=str(t);if(one.started)one.started=str(t);
-        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);const mv=rippleFrom(one.id);save();R=calc();render();const note=impactNote(P,end0);if(note||mv.length)toast(`${md(C[one.id].es)}부터 시작합니다.${rippleMsg(mv)}${note?' '+note:''}`);
-      }else openShift(one,C[one.id].es+dd);
+        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);const mv=rippleFrom(one.id);save();R=calc();render();const note=impactNote(P,end0);toast(`${gmsg}${md(C[one.id].es)}부터 시작합니다.${rippleMsg(mv)}${note?' '+note:''}`);
+      }else{if(gmsg)toast(gmsg.trim());openShift(one,C[one.id].es+dd)}
     }
   });
 }
@@ -1222,11 +1246,6 @@ function startProductDrag(e,pid){
     selectProduct(pid);
   });
 }
-function startResize(e,id){
-  const g=nodeById(id),w0=g.w,h0=g.h;
-  // 날짜판에서는 묶음이 가로로 날짜 전체를 덮으므로 높이만 바꾼다. 안의 카드보다 낮게는 줄지 않는다
-  track(e,(dx,dy)=>{if(view!=='b')g.w=Math.max(220,snap(w0+dx/cam.z));g.h=Math.max(80,snap(h0+dy/cam.z));const el=nodeEl(id);el.style.width=g.w+'px';el.style.height=g.h+'px'},moved=>{if(moved){save();render()}});
-}
 function addLink(from,to){
   if(from===to)return false;const a=nodeById(from),b=nodeById(to);
   if(!a||!b||a.type==='group'||b.type==='group')return false;
@@ -1249,19 +1268,19 @@ function startLink(e,fromId){
     const el=document.elementFromPoint(ev.clientX,ev.clientY),nd=el&&el.closest('.nd.task,.nd.dec');
     if(nd){if(nd.dataset.id!==fromId){const b=nodeById(nd.dataset.id);if(addLink(fromId,b.id)){save();render();const x=C[b.id];toast(x&&x.clash?`이었습니다. "${b.name}"이(가) 앞 작업과 겹칩니다 — 카드의 "붙이기"를 누르면 바로 뒤로 붙습니다.`:'이었습니다. 선을 누르면 잇는 방식을 바꿀 수 있습니다.')}}}
     else if(el&&board.contains(el)&&!el.closest('.pcard')){
-      const p=toWorld(ev.clientX,ev.clientY),n=newNode('task',snap(p.x+20),snap(p.y-TH/2),a.p);
+      const p=toWorld(ev.clientX,ev.clientY),n=newNode('task',snap(p.x+20),snap(p.y-TH/2),a.p);if(view==='b'){const L=laneAt(p.y);n.g=L&&L.g?L.g.id:''}
       S.nodes.push(n);freeSpot(n);addLink(fromId,n.id);save();selectNodes([n.id]);
     }
   });
 }
 function newNode(type,x,y,p){
-  if(type==='group')return{id:uid(),p,type,name:'새 묶음',color:COLORS[S.nodes.filter(n=>n.type==='group'&&n.p===p).length%COLORS.length],x,y,w:360,h:220,memo:'',who:'',done:''};
+  if(type==='group'){const k=S.nodes.filter(n=>n.type==='group'&&n.p===p).length;return{id:uid(),p,type,name:'새 묶음',color:COLORS[k%COLORS.length],x,y,w:360,h:220,memo:'',who:'',done:'',ord:k}}
   return{id:uid(),p,type,name:type==='decision'?'정할 것':'새 작업',x,y,w:TW,h:TH,d:type==='decision'?1:5,dmin:null,dmax:null,conf:'g',done:'',memo:'',who:'',files:[],arch:[],log:[],unit:'w'};
 }
 function placeNew(type,wx,wy){
   const pr=view==='b'?curP():(productAt(wx,wy)||curP()),n=newNode(type,0,0,pr.id);
   n.x=snap(wx-n.w/2);n.y=snap(wy-(type==='group'?30:n.h/2));
-  if(view==='b'&&type!=='group'){const d=R.K.nextW(BR.a+Math.floor(wx/DW));if(d>num(pr.start))n.notBefore=str(d)}   // 날짜판: 누른 날짜 이후 시작
+  if(view==='b'&&type!=='group'){const d=R.K.nextW(BR.a+Math.floor(wx/DW));if(d>num(pr.start))n.notBefore=str(d);const L=laneAt(wy);n.g=L&&L.g?L.g.id:''}   // 날짜판: 누른 날짜 이후 시작, 누른 줄의 묶음
   S.nodes.push(n);if(type!=='group')freeSpot(n);save();selectNodes([n.id]);
   setTimeout(()=>{const i=$('#pnb [data-f=name]');if(i){i.focus();i.select()}},60);
 }
@@ -1486,7 +1505,7 @@ function renderTime(){
     const r=R.per[P.id];if(!r||r.empty||r.err)return;
     const y0=y;rows.push({k:'p',P,r,y});y+=RH;
     if(!P.col){
-      const groups=S.nodes.filter(n=>n.type==='group'&&n.p===P.id).sort((a,b)=>a.y-b.y||a.x-b.x);
+      const groups=S.nodes.filter(n=>n.type==='group'&&n.p===P.id).sort(gOrd);
       const bk=new Map(groups.map(g=>[g.id,[]])),loose=[];
       r.order.forEach(t=>{const g=GM.get(t.id);(g?bk.get(g.id):loose).push(t)});
       const lists=groups.map(g=>({g,ts:bk.get(g.id)})).filter(o=>o.ts.length);
@@ -1693,6 +1712,14 @@ document.addEventListener('click',e=>{
 // ---------- 편집창 ----------
 $('#pnx').onclick=()=>{if(pmode==='review'){pmode='edit';aiRes=null}clearSel()};
 function curTarget(){if(selP)return pById(selP);if(selN.length===1)return nodeById(selN[0]);return null}
+// 카드 두 개를 골랐을 때 앞·뒤: 시작이 빠른 쪽이 앞, "앞뒤 바꾸기"로 뒤집는다
+let pairRev=null;
+function pairOf(){
+  if(selN.length!==2)return null;const ts=selN.map(nodeById);if(ts.some(t=>!t||t.type==='group'))return null;
+  const k=[...selN].sort().join();if(!pairRev||pairRev.k!==k)pairRev={k,rev:false};
+  let [a,b]=ts;if(C[a.id]&&C[b.id]&&C[b.id].es<C[a.id].es)[a,b]=[b,a];
+  return pairRev.rev?[b,a]:[a,b];
+}
 function renderPanel(){
   const pn=$('#pn');
   if(pmode==='review'&&aiRes){pn.classList.add('on');$('#pnt').textContent='AI 점검 결과';$('#pnb').innerHTML=reviewHtml();return}
@@ -1718,14 +1745,21 @@ function renderPanel(){
       <div><button class="del" data-a="pdel">제품 지우기</button></div>`;
   }else if(selN.length>1){
     $('#pnt').textContent='카드 '+selN.length+'개 선택';
-    h=`<div class="info">왼쪽 도구 상자의 "정렬"으로 맞추거나 간격을 같게 할 수 있습니다. 하나를 끌면 선택한 카드가 함께 움직입니다.</div><div><button class="del" data-a="delsel">선택한 카드 모두 지우기</button></div>`;
+    const pr=pairOf();let ph='';
+    if(pr){const [a,b]=pr,ex=S.links.find(l=>(l.from===a.id&&l.to===b.id)||(l.from===b.id&&l.to===a.id)),dt=t=>C[t.id]?` <span class="mut">${md(C[t.id].es)}~${md(C[t.id].ef)}</span>`:'';
+      ph=ex?`<div class="box"><b>두 카드 연결</b><div class="info">이미 이어져 있습니다: <b>${esc(nodeById(ex.from).name)}</b> → <b>${esc(nodeById(ex.to).name)}</b> (${esc(linkLong(ex.kind,lagOf(ex)))})</div><div class="row2"><button data-a="pedit">연결 방식 바꾸기</button><button class="del" data-a="punlink">연결 끊기</button></div></div>`
+        :`<div class="box"><b>두 카드 잇기</b><div class="info">앞: <b>${esc(a.name)}</b>${dt(a)}<br>뒤: <b>${esc(b.name)}</b>${dt(b)}</div>
+        <label class="f"><span>뒤 작업은</span><select data-pk><option value="fs">앞 작업이 끝나면 시작</option><option value="ss">앞 작업과 같이 시작</option></select></label>
+        <div class="row2"><button data-a="pswap">앞뒤 바꾸기</button><button data-a="plink">잇기</button></div><div class="mut">며칠 뒤·며칠 전처럼 간격은 이은 뒤 선을 눌러 바꿉니다.</div></div>`}
+    h=ph+`<div class="info">${pr?'':'Ctrl 을 누른 채 카드 두 개만 고르면 여기서 바로 이을 수 있습니다. '}하나를 끌면 고른 카드가 함께 움직입니다.</div><div><button class="del" data-a="delsel">선택한 카드 모두 지우기</button></div>`;
   }else if(selN.length===1){
     const n=nodeById(selN[0]);if(!n){pn.classList.remove('on');return}
     if(n.type==='group'){
       $('#pnt').textContent='묶음';
       h=`<label class="f"><span>이름 (예: 본체, 패키지, 사은품)</span><input data-f="name" value="${esc(n.name)}"></label>
         <label class="f"><span>색</span><input type="color" data-f="color" value="${n.color}" style="height:36px;padding:2px"></label>
-        <div class="info">카드를 이 상자 안으로 끌어다 놓으면 이 묶음에 속합니다. 상자를 움직이면 안의 카드도 같이 움직입니다. 오른쪽 아래 모서리로 크기를 바꿉니다.</div>
+        <div class="info">카드를 위아래로 끌어 이 묶음 줄에 놓으면 이 묶음에 들어갑니다. 묶음 안의 줄은 날짜에 맞춰 저절로 나뉘고, 상자 크기도 저절로 맞춰집니다.</div>
+        <div class="row2"><button data-a="gup">묶음 위로</button><button data-a="gdown">묶음 아래로</button></div>
         <div><button class="del" data-a="del">묶음 지우기 (안의 카드는 남음)</button></div>`;
     }else{
       const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision',est=estRes[n.id];
@@ -1910,8 +1944,16 @@ $('#pnb').addEventListener('click',e=>{
   if(a==='incal'&&n){showInCal(n.id);return}
   if(a==='intime'&&n){showInTime(n.id);return}
   if(a==='dellink'){S.links=S.links.filter(l=>l.id!==selL);save();clearSel();return}
+  if((a==='gup'||a==='gdown')&&n&&n.type==='group'){const gs=S.nodes.filter(g=>g.type==='group'&&g.p===n.p).sort(gOrd),i=gs.indexOf(n),j=a==='gup'?i-1:i+1;if(j<0||j>=gs.length)return;
+    [gs[i],gs[j]]=[gs[j],gs[i]];gs.forEach((g,k)=>{g.ord=k});save();render();return}
   if(a==='del'&&n){deleteNodes([n]);return}
   if(a==='delsel'){deleteNodes(selN.map(nodeById).filter(Boolean));return}
+  if(a==='pswap'&&pairRev){pairRev.rev=!pairRev.rev;renderPanel();return}
+  if(a==='plink'){const pr=pairOf();if(!pr)return;const [x,y]=pr,k=$('#pnb [data-pk]').value,P=pById(x.p),end0=prodEnd(P);if(!addLink(x.id,y.id))return;
+    const l=S.links[S.links.length-1];if(k==='ss'){l.kind='ss';l.lag=0}save();R=calc();render();
+    const c=C[y.id],note=impactNote(P,end0);toast(c&&c.clash?`이었습니다. "${y.name}"이(가) 앞 작업과 겹칩니다 — 카드의 "붙이기"를 누르면 바로 뒤로 붙습니다.`:`이었습니다: ${linkLong(l.kind,lagOf(l))}.${note?' '+note:''}`);return}
+  if(a==='punlink'||a==='pedit'){const pr=pairOf();if(!pr)return;const ex=S.links.find(l=>(l.from===pr[0].id&&l.to===pr[1].id)||(l.from===pr[1].id&&l.to===pr[0].id));if(!ex)return;
+    if(a==='pedit'){selectLink(ex.id);return}S.links=S.links.filter(l=>l!==ex);save();render();toast('연결을 끊었습니다. 날짜는 그대로입니다.');return}
   if(a==='pfocus'){setView('b');focusProduct(selP);return}
   if(a==='pup'||a==='pdown'){const i=S.products.findIndex(p=>p.id===selP),j=a==='pup'?i-1:i+1;if(j<0||j>=S.products.length)return;[S.products[i],S.products[j]]=[S.products[j],S.products[i]];stackProducts();save();render();return}
   if(a==='pdel'){deleteProduct(selP);return}
@@ -1925,7 +1967,7 @@ function deleteNodes(ns){
   const nf=ns.reduce((m,n)=>m+(n.files||[]).length+(n.arch||[]).length,0);
   if(!confirm((ns.length===1?'"'+ns[0].name+'" 을(를) 지웁니다.':'선택한 카드 '+ns.length+'개를 지웁니다.')+(nf?`\n올려 둔 자료 ${nf}개는 설정의 "지운 카드 보관함"에 남습니다.`:'')+'\n(되돌리기로 복구할 수 있습니다)'))return;
   const ids=new Set(ns.map(n=>n.id));ns.forEach(toTrash);
-  S.nodes=S.nodes.filter(x=>!ids.has(x.id));S.links=S.links.filter(l=>!ids.has(l.from)&&!ids.has(l.to));save();clearSel();
+  S.nodes.forEach(x=>{if(x.g&&ids.has(x.g))x.g=''});S.nodes=S.nodes.filter(x=>!ids.has(x.id));S.links=S.links.filter(l=>!ids.has(l.from)&&!ids.has(l.to));save();clearSel();
 }
 function deleteProduct(pid){
   const P=pById(pid);if(!P||!confirm('"'+P.name+'" 제품과 안의 카드를 모두 지웁니다. 올려 둔 자료는 설정의 "지운 카드 보관함"에 남습니다. (되돌리기로 복구할 수 있습니다)'))return;
@@ -2364,17 +2406,58 @@ async function ghGet(c,path){
   return{sha:j.sha,data:JSON.parse(txt)};
 }
 async function ghPut(c){
-  const body={message:'타임라인 저장',content:b64e(JSON.stringify(S,null,1))};if(ghSha)body.sha=ghSha;
+  const sent=JSON.stringify(S),body={message:'타임라인 저장',content:b64e(JSON.stringify(S,null,1))};if(ghSha)body.sha=ghSha;
   let r;try{r=await fetch(`${GH_API}/repos/${c.repo}/contents/${GH_PATH}`,{method:'PUT',headers:{...ghHead(c),'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){const x=new Error('인터넷 연결을 확인하세요');x.st=0;throw x}
   if(!r.ok){const x=new Error(ghErr(r.status));x.st=r.status;throw x}
-  ghSha=(await r.json()).content.sha;
+  ghSha=(await r.json()).content.sha;ghSetBase(sent);
 }
 var ghLoaded=false;   // 처음 저장소를 읽기 전에는 올리지 않는다
-function ghQueue(){if(!ghCfg()||ghState==='conflict'||!ghLoaded)return;ghDirty=true;if(ghState!=='fail'){ghState='wait';ghPaint()}clearTimeout(ghTimer);ghTimer=setTimeout(ghFlush,3000)}
+// 합치기: 다른 기기나 Claude 대화가 그 사이에 저장했어도 양쪽에서 고친 것을 다 살린다.
+// ghBase = 마지막으로 저장소와 같았던 내용. 이것과 비교해 이 화면이 고친 칸과 저쪽이 고친 칸을 가려 합친다.
+// 같은 칸을 양쪽에서 다르게 고쳤으면 이 화면 것을 남긴다. 카드 위치(x,y,w,h)는 날짜판이 다시 정하므로 이 화면 것을 쓴다.
+var ghBase=(()=>{try{return localStorage.getItem('ptl-gh-base')}catch(e){return null}})();
+function ghSetBase(t){ghBase=t;try{localStorage.setItem('ptl-gh-base',t)}catch(e){}}
+function ghPend(v){try{if(v===undefined)return localStorage.getItem('ptl-gh-pend')==='1';if(v)localStorage.setItem('ptl-gh-pend','1');else localStorage.removeItem('ptl-gh-pend')}catch(e){return false}}   // 이 화면에서 고쳤는데 아직 저장소에 안 올라간 것이 있다
+function merge3(B,L,Rm){
+  let clash=0;const J=JSON.stringify,eq=(a,b)=>J(a)===J(b),LAY=new Set(['x','y','w','h','cur']);
+  const isO=v=>!!v&&typeof v==='object'&&!Array.isArray(v),idA=v=>Array.isArray(v)&&v.every(e=>isO(e)&&e.id!=null);
+  const mv=(b,l,r)=>{
+    if(eq(l,r))return l;if(eq(l,b))return r;if(eq(r,b))return l;
+    if(idA(l)&&idA(r))return ma(idA(b)?b:[],l,r);
+    if(isO(l)&&isO(r))return mo(isO(b)?b:{},l,r);
+    if(Array.isArray(l)&&Array.isArray(r)){const o=[...l];r.forEach(e=>{if(!o.some(x=>eq(x,e)))o.push(e)});return o}   // 기록처럼 번호 없는 목록은 양쪽 것을 다 둔다
+    clash++;return l;
+  };
+  const mo=(b,l,r)=>{const o={};new Set([...Object.keys(l),...Object.keys(r)]).forEach(k=>{
+    if(LAY.has(k)){o[k]=k in l?l[k]:r[k];return}
+    const v=mv(b[k],l[k],r[k]);if(v!==undefined)o[k]=v});return o};
+  const ma=(b,l,r)=>{const bm=new Map(b.map(e=>[e.id,e])),rm=new Map(r.map(e=>[e.id,e])),lm=new Map(l.map(e=>[e.id,e])),out=[];
+    l.forEach(e=>{const be=bm.get(e.id),re=rm.get(e.id);if(re)out.push(mv(be,e,re));else if(!be||!eq(e,be))out.push(e)});   // 저쪽이 지웠어도 이쪽이 고친 것은 남긴다
+    r.forEach(e=>{if(lm.has(e.id))return;const be=bm.get(e.id);if(!be||!eq(e,be))out.push(e)});
+    return out};
+  const o=mo(B,L,Rm),ids=new Set((o.nodes||[]).map(n=>n.id));o.links=(o.links||[]).filter(l=>ids.has(l.from)&&ids.has(l.to));
+  return{s:o,clash};
+}
+// 저장소 내용과 이 화면을 합친다. 합친 결과가 이 화면이 되고, 합치기 전 화면은 되돌리기로 돌아갈 수 있다
+function ghMergeIn(g){
+  const R0=norm(JSON.parse(JSON.stringify(g.data))),rs=JSON.stringify(R0),m=merge3(JSON.parse(ghBase),JSON.parse(JSON.stringify(S)),JSON.parse(rs));
+  undoStack.push(prevJson);S=norm(m.s);prevJson=JSON.stringify(S);try{localStorage.setItem('ptl-v3',prevJson)}catch(e){}
+  ghSha=g.sha;ghSetBase(rs);
+  selN=selN.filter(id=>nodeById(id));if(selL&&!S.links.some(l=>l.id===selL))selL=null;if(selP&&!pById(selP))selP=null;render();
+  return m.clash;
+}
+const mergeMsg=k=>`다른 곳에서 같은 때 고친 내용과 합쳐서 저장했습니다.${k?` 같은 칸을 양쪽에서 다르게 고친 ${k}곳은 이 화면 것을 남겼습니다.`:''}`;
+function ghQueue(){if(!ghCfg())return;ghPend(1);if(ghState==='conflict'||!ghLoaded)return;ghDirty=true;if(ghState!=='fail'){ghState='wait';ghPaint()}clearTimeout(ghTimer);ghTimer=setTimeout(ghFlush,3000)}
 async function ghFlush(){
   const c=ghCfg();if(!c||ghBusy||!ghDirty||ghState==='conflict')return;
-  ghBusy=true;ghDirty=false;ghState='saving';ghPaint();
-  try{await ghPut(c);ghState='ok';ghMsg='';ghAt=new Date().toTimeString().slice(0,5);clearInterval(ghRetry);ghRetry=null}
+  ghBusy=true;ghDirty=false;ghState='saving';ghPaint();let mg=null;
+  try{
+    for(let k=0;;k++){
+      try{await ghPut(c);break}
+      catch(e){if(!(e.st===409||e.st===422)||k>=3||!ghBase)throw e;   // 다른 곳이 먼저 저장했다 → 저장소 내용을 받아 합치고 다시 올린다
+        const g=await ghGet(c,GH_PATH);if(!g){ghSha=null;continue}mg=(mg||0)+ghMergeIn(g)}
+    }
+    ghState='ok';ghMsg='';ghAt=new Date().toTimeString().slice(0,5);clearInterval(ghRetry);ghRetry=null;if(!ghDirty)ghPend(0);if(mg!=null)toast(mergeMsg(mg))}
   catch(e){ghDirty=true;ghMsg=e.message;
     if(e.st===409||e.st===422)ghState='conflict';
     else{ghState='fail';if(!ghRetry)ghRetry=setInterval(ghFlush,60000)}}
@@ -2403,11 +2486,16 @@ async function ghLoad2(c,ask){
       // 처음 여는 기기(저장된 것 없음)는 예시 보드를 올리지 않는다. 지금까지 쓰던 PC에서 먼저 연결해야 그 내용이 올라간다
       if(!HAD_LOCAL){ghState='ok';ghPaint();if(ask)toast('저장소가 아직 비어 있습니다. 지금까지 타임라인을 쓰던 PC에서 먼저 연결하세요.');return}
       ghDirty=true;await ghFlush();toast('이 브라우저의 타임라인을 저장소에 처음 올렸습니다.');return}
-    const same=JSON.stringify(norm(JSON.parse(JSON.stringify(g.data))))===JSON.stringify(S);
+    const rs=JSON.stringify(norm(JSON.parse(JSON.stringify(g.data)))),same=rs===JSON.stringify(S);
+    // 이 화면에서 고친 것이 아직 안 올라갔다 (저장 전에 창을 닫았거나 인터넷이 끊겼던 때): 저장소 내용과 합쳐서 올린다
+    if(!ask&&ghPend()&&ghBase&&!same){
+      try{const n=await ghGet(c,'data/notion.json');if(n){NOTION=n.data.pages||{};NOTION_AT=n.data.checkedAt||''}}catch(e){}
+      ghSha=g.sha;ghState='ok';let k=0;if(rs!==ghBase)k=ghMergeIn(g);ghLoaded=true;ghDirty=true;await ghFlush();if(rs!==ghBase&&ghState==='ok')toast(mergeMsg(k));return}
     if(ask&&HAD_LOCAL&&!same&&S.nodes.length&&!confirm('저장소에 이미 타임라인이 있습니다.\n\n확인: 저장소 내용을 이 화면으로 불러옵니다.\n취소: 이 화면 내용을 저장소에 올립니다 (저장소 내용은 저장 기록에 남습니다).')){ghSha=g.sha;ghDirty=true;await ghFlush();return}
     try{const n=await ghGet(c,'data/notion.json');if(n){NOTION=n.data.pages||{};NOTION_AT=n.data.checkedAt||''}}catch(e){}
     const changed=ghSha&&ghSha!==g.sha;ghSha=g.sha;ghState='ok';ghAt=ghAt||new Date().toTimeString().slice(0,5);
     if(!same){ghApply(g.data);if(changed)toast('다른 기기에서 고친 내용을 불러왔습니다.')}
+    ghSetBase(rs);ghPend(0);
     ghPaint();
   }catch(e){ghBusy=false;ghState='fail';ghMsg=e.message;ghPaint()}
 }
@@ -2415,7 +2503,7 @@ $('#ghs').addEventListener('click',async e=>{
   const b=e.target.closest('[data-gh]');
   if(!b){if(!ghCfg()||ghState==='fail')openSettings();return}
   const c=ghCfg();if(!c)return;
-  if(b.dataset.gh==='pull'){try{const g=await ghGet(c,GH_PATH);ghSha=g?g.sha:null;ghDirty=false;ghState='ok';ghMsg='';if(g){undoStack.push(JSON.stringify(S));ghApply(g.data)}ghPaint();toast('저장소 내용을 불러왔습니다. 이 화면에서 고친 것은 되돌리기로 찾을 수 있습니다.')}catch(x){toast(x.message)}}
+  if(b.dataset.gh==='pull'){try{const g=await ghGet(c,GH_PATH);ghSha=g?g.sha:null;ghDirty=false;ghState='ok';ghMsg='';if(g){undoStack.push(JSON.stringify(S));ghApply(g.data);ghSetBase(JSON.stringify(S))}ghPend(0);ghPaint();toast('저장소 내용을 불러왔습니다. 이 화면에서 고친 것은 되돌리기로 찾을 수 있습니다.')}catch(x){toast(x.message)}}
   if(b.dataset.gh==='push'){try{const g=await ghGet(c,GH_PATH);ghSha=g?g.sha:null;ghState='';ghDirty=true;await ghFlush();toast('이 화면 내용으로 저장소를 덮었습니다. 덮인 내용은 저장소 기록에 남습니다.')}catch(x){toast(x.message)}}
 });
 $('#gh-save').onclick=()=>{const repo=$('#gh-repo').value.trim()||'hongky11/product-schedule',token=$('#gh-token').value.trim();
