@@ -854,11 +854,19 @@ function nodeHtml(n){
     ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="re" title="끌어서 기간 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
+// 연결선 모양: 떨어져 있으면 부드러운 곡선, 날짜가 바로 이어져 붙어 있으면 꺾인 선으로 뒤 카드 위·아래 테두리에 꽂는다 (곡선이 꼬여 보이지 않게)
+function linkPath(a,b){
+  const x1=a.x+a.w,y1=a.y+a.h/2,x2=b.x-2,y2=b.y+b.h/2;
+  if(view!=='b'||x2-x1>=40)return curve(x1,y1,x2,y2);
+  if(Math.abs(y2-y1)<4)return `M${x1} ${y1} H${x2}`;
+  const down=y2>y1,ye=down?b.y-2:b.y+b.h+2,xe=clamp(x1+12,b.x+10,b.x+b.w-10);
+  return `M${x1} ${y1} H${x1+12} V${(y1+ye)/2} H${xe} V${ye}`;
+}
 function renderLinks(){
   lkg.innerHTML=S.links.map(l=>{
     const a=nodeById(l.from),b=nodeById(l.to);if(!a||!b||(view==='b'&&a.p!==S.cur))return'';
     const lt=linkTxt(l),mx=(a.x+a.w+b.x)/2,my=(a.y+b.y+a.h)/2-6;
-    const d=curve(a.x+a.w,a.y+a.h/2,b.x-2,b.y+b.h/2);
+    const d=linkPath(a,b);
     const crit=C[a.id]&&C[b.id]&&C[a.id].crit&&C[b.id].crit,s=selL===l.id;
     return `<path class="v${crit?' crit':''}${s?' sel':''}${l.kind==='ss'||lagOf(l)<=0?' ss':''}" data-lid="${l.id}" d="${d}" marker-end="url(#${crit?'arc':'ar'})"/><path class="lh" data-id="${l.id}" d="${d}"/>${lt?`<text class="lt" x="${mx}" y="${my}" text-anchor="middle">${esc(lt)}</text>`:''}`;
   }).join('');
@@ -875,7 +883,7 @@ function boardRange(P){
 function placeByDate(P){
   if(!P)return;BR=boardRange(P);
   const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort((a,b)=>a.y-b.y);
-  ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+2;n.w=Math.max(DW*(x.ef-x.es+1)-4,DW-4)});
+  ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+5;n.w=Math.max(DW*(x.ef-x.es+1)-10,DW-10)});   // 날짜가 이어진 카드끼리도 틈이 보이게 양옆 5px씩 비운다
   gs.forEach(g=>{g.x=X(BR.a)-12;g.w=X(BR.b+1)+24-g.x});
   const gm=new Map(ts.map(n=>[n,groupOf(n)]));
   // 같은 날짜에 겹치는 카드는 아래 줄로 비킨다 (위에 있는 카드가 자리를 지킨다)
