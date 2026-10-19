@@ -127,7 +127,7 @@ section{position:absolute;inset:0}
 /* 날짜판에서 카드가 좁아 이름이 안 들어가면 이름·기간·표시를 카드 오른쪽(연결 동그라미 바깥)에 쓴다 */
 .nd.nar{padding:0}
 .nd.nar .ckw{left:50%;top:50%;margin:-8px 0 0 -8px}
-.nd.nar .tx{position:absolute;left:calc(100% + 42px);top:6px}
+.nd.nar .tx{position:absolute;left:0;overflow:hidden;background:rgba(255,255,255,.88);border-radius:6px;padding:1px 4px}.nd.nar .tx .bd{flex-wrap:nowrap}.nd.nar .dl{display:none}
 .nd.nar .tx .bd{position:static;flex-wrap:wrap;margin-top:3px}
 .nd.nar .tx .stc{position:static}
 .nd .stc.active{background:#e6efff;color:#1d4fd0;border-color:#b9cffb}
@@ -153,7 +153,7 @@ section{position:absolute;inset:0}
 #ruler .rd i{display:block;font-style:normal;color:var(--mut);font-size:10px;font-weight:400}#ruler .rd em{display:block;font-style:normal;font-size:9px;white-space:nowrap}
 #ruler .rd.off{color:#c0392b;background:rgba(239,68,68,.07)}#ruler .rd.off i{color:#c0392b}
 #ruler .rd.td{background:rgba(37,99,235,.15);font-weight:700}
-.nd .dl{position:absolute;left:0;top:-17px;font-size:11px;color:#334;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.nd .dl{position:absolute;left:0;right:0;overflow:hidden;text-overflow:ellipsis;top:-17px;font-size:11px;color:#334;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff}
 .nd .dl b{color:var(--red)}
 .nd .re,.nd .rl{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:3}.nd .re{right:-6px}.nd .rl{left:-6px}
 .nd .re:hover,.nd .rl:hover{background:rgba(37,99,235,.25);border-radius:6px}
@@ -190,7 +190,7 @@ section{position:absolute;inset:0}
 .nd.hl{box-shadow:0 0 0 3px rgba(21,128,61,.5)}
 .nd.ov{outline:3px dashed var(--red);outline-offset:2px}
 .nd .pt{position:absolute;right:-34px;top:50%;margin-top:-12px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;color:var(--blue);font-size:14px;z-index:2;cursor:crosshair;opacity:0;transition:opacity .1s}
-.nd .pt{opacity:.5!important}.nd:hover .pt,.nd.sel .pt{opacity:1!important}
+.nd .pt{opacity:0!important}.nd:hover .pt,.nd.sel .pt{opacity:1!important}
 #pn .dur{display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap}#pn .dur input[type=date]{flex:1 1 100%;font-size:15px;font-weight:700;text-align:left;width:auto}#pn .dur input{width:64px;font-size:16px;font-weight:700;text-align:center}#pn .dur .dd{margin-left:auto;font-size:12px;color:var(--mut)}
 #pn .tds{flex:none;font-size:12px;padding:2px 8px;border-radius:8px;min-width:64px}#pn .tds.ok{background:#e3f4e8;color:var(--grn);border-color:#bfe3cb}#pn .tds.na{background:#eef0f4;color:var(--mut)}
 #pn .todo.na span{color:var(--mut);text-decoration:line-through}
@@ -918,11 +918,11 @@ function nodeHtml(n){
   const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
   const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
   const fw=flowOf(n),stc=fw.k?`<span class="stc ${fw.k}" title="${esc(fw.tip)}">${fw.k==='active'?'진행 중':fw.k==='turn'?'시작할 차례':'다음 단계'}</span>`:'';
-  const nar=view==='b'&&NAR&&NAR.get(n.id);   // 좁은 카드: 글자를 카드 오른쪽에 쓴다 (placeByDate 가 정한다)
+  const nar=view==='b'&&NAR&&NAR.get(n.id);   // 좁은 카드: 글자를 카드 아래에 쓴다 (위치·폭은 placeByDate 가 정한다)
   return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${nar?' nar':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${nar?'':stc}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
-    <div class="tx"${nar?` style="width:${nar}px"`:''}><div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
-    <div class="sub"><span>${durTxt(n)}</span></div>${lmemo?`<div class="lm" title="${esc(lmemo.t)}">${esc(lmemo.m.replace(/^메모( \([^)]*\))?: /,''))}</div>`:''}${nar&&(stc||bad2)?`<div class="bd">${stc}${bad2}</div>`:''}</div>
+    <div class="tx"${nar?` style="width:${nar.w}px;top:${nar.top}px"`:''}><div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
+    <div class="sub"><span>${nar&&C[n.id]?md(x.es)+(x.ef!==x.es?'~'+md(x.ef):'')+' · ':''}${durTxt(n)}</span></div>${lmemo?`<div class="lm" title="${esc(lmemo.t)}">${esc(lmemo.m.replace(/^메모( \([^)]*\))?: /,''))}</div>`:''}${nar&&(stc||bad2)?`<div class="bd">${stc}${bad2}</div>`:''}</div>
     ${!nar&&bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="rl" title="끌어서 시작일 바꾸기 (끝나는 날은 그대로)"></i><i class="re" title="끌어서 끝나는 날 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
@@ -964,20 +964,32 @@ function placeByDate(P){
   gs.forEach((g,i)=>{g.ord=i});
   ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+5;n.w=Math.max(DW*(x.ef-x.es+1)-10,DW-10)});   // 날짜가 이어진 카드끼리도 틈이 보이게 양옆 5px씩 비운다
   gs.forEach(g=>{g.x=X(BR.a)-12;g.w=X(BR.b+1)+24-g.x});
-  // 카드가 차지하는 실제 너비: 카드 + 오른쪽 연결 동그라미 + (좁은 카드면) 오른쪽에 쓴 글자, 위쪽 날짜 줄 중 넓은 쪽
-  NAR=new Map();const VW=new Map(),VH=new Map();
+  // 이름이 카드 안에 안 들어가는 좁은 카드는 이름·날짜·표시를 카드 아래 글자 칸에 쓴다. 카드 옆을 비워 두어 이어지는 카드가 같은 줄에 붙을 수 있게 한다
+  NAR=new Map();const LB=new Map();
   ts.forEach(n=>{const x=C[n.id];if(!x)return;
-    const lm=(n.log||[]).slice().reverse().find(l=>/^메모/.test(l.m)),lmt=lm?lm.m.replace(/^메모( \([^)]*\))?: /,''):'';
-    const tw=Math.max(txtW((n.type==='decision'?'◆ ':'')+n.name,700,13),txtW(durTxt(n),400,11),txtW(lmt,400,11));
-    const dlw=txtW(`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 00일 · 달력 00일${x.late?' · 늦음':''}`,400,11);
-    if(tw+40>n.w){const cw=Math.max(tw,120);NAR.set(n.id,cw);VW.set(n.id,Math.max(n.w+42+cw+8,dlw));VH.set(n.id,TH+(lmt?16:0)+12)}
-    else{VW.set(n.id,Math.max(n.w+36,dlw));VH.set(n.id,TH)}
+    const lm=(n.log||[]).slice().reverse().find(l=>/^메모/.test(l.m)),lmt=lm?lm.m.replace(/^메모( \([^)]*\))?: /,''):'',nm=(n.type==='decision'?'◆ ':'')+n.name;
+    if(Math.max(txtW(nm,700,13),txtW(durTxt(n),400,11),txtW(lmt,400,11))+40>n.w){
+      const l2=`${md(x.es)}~${md(x.ef)} · ${durTxt(n)}`;LB.set(n.id,{w:Math.min(300,Math.max(txtW(nm,700,13),txtW(l2,400,11),txtW(lmt,400,11),170)+10),h:54+(lmt?15:0)})}
   });
-  const vw=n=>VW.get(n.id)||n.w,vh=n=>VH.get(n.id)||n.h,GAP=26,HEAD=56;
-  const pack=(arr,y0)=>{const rows=[];
-    arr.sort((a,b)=>(C[a.id]?C[a.id].es:0)-(C[b.id]?C[b.id].es:0)||a.y-b.y||(a.id<b.id?-1:1)).forEach(n=>{
-      let r=rows.findIndex(o=>o.end+10<=n.x);if(r<0){r=rows.length;rows.push({end:-1e9,h:0,ns:[]})}
-      rows[r].end=n.x+vw(n);rows[r].h=Math.max(rows[r].h,vh(n));rows[r].ns.push(n)});
+  // 화살표 흐름을 따라 줄을 정한다: 앞 작업과 같은 줄에 이어 놓고(끼워 넣은 카드도 그 줄에 들어간다),
+  // 자리가 없으면 앞 작업 줄에서 가장 가까운 빈 줄(같은 거리면 아래)에 놓는다. 앞 작업이 없으면 맨 위 빈 줄.
+  // 한 작업에서 갈래가 나뉘면 뒤로 더 길게 이어지는 쪽이 앞 작업 줄을 잇는다.
+  const PRE=new Map(),SUC=new Map(),inP=new Set(ts.map(n=>n.id));
+  S.links.forEach(l=>{if(inP.has(l.from)&&inP.has(l.to)){(PRE.get(l.to)||PRE.set(l.to,[]).get(l.to)).push(l.from);(SUC.get(l.from)||SUC.set(l.from,[]).get(l.from)).push(l.to)}});
+  const DC=new Map(),dcOf=(id,seen=new Set())=>{if(DC.has(id))return DC.get(id);if(seen.has(id))return 0;seen.add(id);let k=0;(SUC.get(id)||[]).forEach(s=>{k+=1+dcOf(s,seen)});DC.set(id,k);return k};
+  const es=n=>C[n.id]?C[n.id].es:0,ef=id=>C[id]?C[id].ef:0;
+  const GAP=26,HEAD=56;
+  const pack=(arr,y0)=>{const rows=[],rowOf=new Map();
+    arr.sort((a,b)=>es(a)-es(b)||dcOf(b.id)-dcOf(a.id)||a.y-b.y||(a.id<b.id?-1:1)).forEach(n=>{
+      const fits=i=>rows[i].end+4<=n.x;
+      const ps=(PRE.get(n.id)||[]).filter(id=>rowOf.has(id)).sort((a,b)=>ef(b)-ef(a));
+      let r=-1;for(const id of ps){const pr=rowOf.get(id);if(fits(pr)){r=pr;break}}
+      if(r<0){const want=ps.length?rowOf.get(ps[0]):0;let bd=1e9;rows.forEach((o,i)=>{if(!fits(i))return;const d=Math.abs(i-want)+(i<want?.5:0);if(d<bd){bd=d;r=i}})}
+      if(r<0){r=rows.length;rows.push({end:-1e9,h:0,ns:[]})}
+      rowOf.set(n.id,r);rows[r].end=n.x+n.w;rows[r].ns.push(n)});
+    // 줄마다 좁은 카드 글자 칸: 앞 글자와 겹치면 한 층 아래로
+    rows.forEach(o=>{const lv=[];o.ns.filter(n=>LB.has(n.id)).sort((a,b)=>a.x-b.x).forEach(n=>{const L=LB.get(n.id);let k=lv.findIndex(v=>v.end+10<=n.x);if(k<0){k=lv.length;lv.push({end:0,h:0,ns:[]})}lv[k].end=n.x+L.w;lv[k].h=Math.max(lv[k].h,L.h);lv[k].ns.push(n)});
+      let t=TH+12;lv.forEach(v=>{v.ns.forEach(n=>NAR.set(n.id,{w:LB.get(n.id).w,top:t}));t+=v.h+4});o.h=lv.length?t:TH});
     let y=y0;rows.forEach(o=>{o.ns.forEach(n=>{n.y=y});y+=o.h+GAP});
     return rows.length?y-GAP-y0:TH};
   let y=(P.y||40)+124;LANES=[];
@@ -1406,8 +1418,13 @@ function linkNear(m){
   return best&&best.l;
 }
 function afterInsert(m,P,end0,what){
+  // 자동 맞춤 끔: 끼운 카드를 앞 작업 바로 뒤(앞이 없으면 뒤 작업 자리)에 놓고, 뒤 작업은 겹치지 않을 만큼 민다
+  let mv=[];
+  if(P.auto===false&&!m.started&&!m.done){R=calc();const x=C[m.id],su=succsOf(m.id).filter(t=>C[t.id]);
+    if(x&&x.need!=null)m.notBefore=str(R.K.nextW(x.need));else if(su.length)m.notBefore=str(Math.min(...su.map(t=>C[t.id].es)));
+    mv=rippleFrom(m.id)}
   save();R=calc();selectNodes([m.id]);
-  const note=impactNote(P,end0);toast(`${what}${note?' '+note:' 입고 예상일은 그대로입니다.'}`);
+  const note=impactNote(P,end0);toast(`${what}${rippleMsg(mv)}${note?' '+note:' 입고 예상일은 그대로입니다.'}`);
   setTimeout(()=>{const i=$('#pnb [data-f=name]');if(i){i.focus();i.select()}},60);
 }
 // 앞 카드 a 와 뒤 카드 b 사이에 카드 m 을 넣는다 (a→b 를 a→m→b 로)
