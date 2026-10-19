@@ -1930,7 +1930,10 @@ async function ghLoad(ask){
   ghBusy=true;ghState='load';ghPaint();
   try{
     const g=await ghGet(c,GH_PATH);ghBusy=false;
-    if(!g){ghSha=null;if(!HAD_LOCAL&&!ask){ghState='ok';ghPaint();return}ghDirty=true;await ghFlush();toast('이 브라우저의 타임라인을 저장소에 처음 올렸습니다.');return}
+    if(!g){ghSha=null;
+      // 처음 여는 기기(저장된 것 없음)는 예시 보드를 올리지 않는다. 지금까지 쓰던 PC에서 먼저 연결해야 그 내용이 올라간다
+      if(!HAD_LOCAL){ghState='ok';ghPaint();if(ask)toast('저장소가 아직 비어 있습니다. 지금까지 타임라인을 쓰던 PC에서 먼저 연결하세요.');return}
+      ghDirty=true;await ghFlush();toast('이 브라우저의 타임라인을 저장소에 처음 올렸습니다.');return}
     const same=JSON.stringify(norm(JSON.parse(JSON.stringify(g.data))))===JSON.stringify(S);
     if(ask&&HAD_LOCAL&&!same&&S.nodes.length&&!confirm('저장소에 이미 타임라인이 있습니다.\n\n확인: 저장소 내용을 이 화면으로 불러옵니다.\n취소: 이 화면 내용을 저장소에 올립니다 (저장소 내용은 저장 기록에 남습니다).')){ghSha=g.sha;ghDirty=true;await ghFlush();return}
     try{const n=await ghGet(c,'data/notion.json');if(n){NOTION=n.data.pages||{};NOTION_AT=n.data.checkedAt||''}}catch(e){}
