@@ -271,6 +271,11 @@ section{position:absolute;inset:0}
 #pn .it2{display:block;width:100%;text-align:left;margin-top:4px}
 dialog{border:1px solid var(--line);border-radius:14px;padding:0;width:min(600px,94vw);max-height:90vh}
 dialog::backdrop{background:rgba(0,0,0,.3)}
+#pn .todo{flex-wrap:wrap}#pn .todo .tdf{flex-basis:100%;padding-left:72px;display:flex;flex-direction:column;gap:2px;font-size:12px}
+#pn .todo .tdf a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .todo .tdf a.c{color:var(--grn)}
+#dfinal .tk{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+#dfinal .tk .rw{display:flex;gap:8px;align-items:center;font-size:13px}#dfinal .tk .rw span{flex:1}#dfinal .tk .rw button{padding:2px 9px;font-size:12px}
+#dfinal .tk .mut{font-size:12px;color:var(--mut)}
 dialog .h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700}
 dialog .b{padding:12px 16px;overflow:auto;max-height:72vh;display:flex;flex-direction:column;gap:14px}
 dialog .b h4{margin:0 0 6px}
@@ -310,6 +315,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <button class="ai" id="ai-rev" hidden>AI 점검</button>
   <span id="ghs" class="ghs"></span>
   <button id="undo" title="Ctrl+Z">되돌리기</button>
+  <button id="finalbtn" title="이 제품에서 확정한 서류를 작업별로 모아 봅니다">최종 서류</button>
   <button id="set">설정</button>
 </header>
 <nav id="ptabs"></nav>
@@ -354,6 +360,11 @@ dialog td.d{width:130px;color:var(--mut)}
     <div class="note">숫자는 모두 "가정"(점선 카드)으로 들어갑니다. 입력한 설명과 작업 이름은 Anthropic API로 전송됩니다.</div>
     <div class="r"><button class="ai" id="plan-go">단계 짜기</button></div>
   </div>
+</dialog>
+
+<dialog id="dfinal">
+  <div class="h"><span id="dfinal-t">최종 서류</span><button id="dfinal-x">닫기</button></div>
+  <div class="b" id="dfinal-b"></div>
 </dialog>
 
 <dialog id="dset">
@@ -1611,7 +1622,7 @@ function renderPanel(){
       ${x.late||x.over?`<div class="line bad">${x.late?'계획보다 늦어지고 있음':''}${x.late&&x.over?' · ':''}${x.over?'마감일 넘길 예정':''}</div>`:''}
       ${chatHtml(n)}
       <div class="box"><b>체크리스트 <span class="mut">${(()=>{const ok=td.filter(i=>i.ok&&!i.na).length,na=td.filter(i=>i.na).length,left=td.length-ok-na;return td.length?`완료 ${ok} · 불필요 ${na} · 남음 ${left}`:'비어 있음'})()}</span></b>
-        ${td.map((i,k)=>{const st=i.na?'na':i.ok?'ok':'';return `<div class="todo${i.ok&&!i.na?' ok':''}${i.na?' na':''}"><button class="tds ${st}" data-tds="${k}" title="누를 때마다 미완 → 완료 → 불필요">${st==='ok'?'✓ 완료':st==='na'?'— 불필요':'□ 미완'}</button><span>${esc(i.t)}</span><button data-tdx="${k}" title="지우기">×</button></div>`}).join('')}
+        ${td.map((i,k)=>{const st=i.na?'na':i.ok?'ok':'';return `<div class="todo${i.ok&&!i.na?' ok':''}${i.na?' na':''}"><button class="tds ${st}" data-tds="${k}" title="누를 때마다 미완 → 완료 → 불필요">${st==='ok'?'✓ 완료':st==='na'?'— 불필요':'□ 미완'}</button><span>${esc(i.t)}</span><button data-tdf="${k}" title="이 항목의 증거 파일 올리기">파일</button><button data-tdx="${k}" title="지우기">×</button>${(()=>{const fs=n.files.filter(f=>f.item===i.t);return fs.length?`<div class="tdf">${fs.map(f=>`<a data-fopen="${f.id}" class="${f.st==='c'?'c':''}">${esc(f.name)}${f.st==='c'?' (확정)':''}</a>`).join('')}</div>`:''})()}</div>`}).join('')}
         <div class="lgin"><input data-tdnew placeholder="항목 추가 (Enter)"><button data-tdadd>추가</button></div>
         <div class="tdrow"><select data-tpl><option value="">자주 쓰는 체크리스트 넣기…</option>${(S.templates||[]).map((t,i)=>`<option value="${i}">${esc(t.name)} (${t.items.length})</option>`).join('')}<option value="save">지금 체크리스트를 자주 쓰는 목록에 저장…</option></select></div></div>`+
       fold('real','실제 날짜',n.done?'끝난 날 '+md(num(n.done)):n.started?'시작한 날 '+md(num(n.started)):'기록 없음',
@@ -1707,6 +1718,7 @@ $('#pnb').addEventListener('click',e=>{
     if(v==='doing'){if(n.done){n.done='';save()}if(!n.started){setStarted(n,true)}else render();return}
     if(v==='done'){if(!n.done)setDone(n,true);return}}
   if(b.dataset.tdx!=null&&n){n.todo.splice(+b.dataset.tdx,1);save();render();return}
+  if(b.dataset.tdf!=null&&n){const i=n.todo[+b.dataset.tdf];if(!i)return;const fin=$('#fin');fin.dataset.mode='item';fin.dataset.nid=n.id;fin.dataset.item=i.t;fin.multiple=true;fin.value='';fin.click();return}
   if(b.dataset.tds!=null&&n){const i=n.todo[+b.dataset.tds];if(!i)return;   // 미완 → 완료 → 불필요 → 미완
     if(!i.ok&&!i.na){i.ok=true;addLog(n,'체크 완료: '+i.t)}else if(i.ok&&!i.na){i.ok=false;i.na=true;addLog(n,'체크 불필요: '+i.t)}else{i.na=false;i.ok=false}
     save();render();return}
@@ -1899,6 +1911,16 @@ const FDB={
   async get(id){const d=await this.open();return new Promise((ok,no)=>{const r=d.transaction('f').objectStore('f').get(id);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
 };
 let fileOp=null;
+// 이 PC 서류 서버: 같은 주소에서 열렸으면 그 서버, 아니면 이 PC 안(127.0.0.1:8790)을 찾아본다. 없으면 예전처럼 이 브라우저에 저장한다
+var FS=null,FSROOT='';
+async function fsDetect(){
+  const c=[];if(/^https?:$/.test(location.protocol)&&!/github\.io$/.test(location.hostname))c.push('');c.push('http://127.0.0.1:8790');
+  for(const b of c){try{const r=await fetch(b+'/api/ping',{cache:'no-store'});const j=r.ok?await r.json():{};if(j.ok){FS=b;FSROOT=j.root||'';break}}catch(e){}}
+  if(selN.length===1)renderPanel();
+}
+const fsUrl=(rel,dl)=>`${FS}/api/files?path=${encodeURIComponent(rel)}${dl?'&dl=1':''}`;
+async function fsPost(ep,q,body){const r=await fetch(`${FS}${ep}?${new URLSearchParams(q)}`,{method:'POST',body});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('서버 응답 '+r.status));return j}
+const pnameOf=n=>{const P=pById(n.p);return P?P.name.replace(/\s*\(.*$/,''):'제품'};
 const pad2=v=>String(v).padStart(2,'0');
 function nowStr(){const d=new Date();return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
 const fmtSize=b=>b<1024?b+'B':b<1048576?(b/1024).toFixed(0)+'KB':(b/1048576).toFixed(1)+'MB';
@@ -1917,20 +1939,23 @@ function findFileMeta(fid){
 async function attachFiles(n,files,opt){
   opt=opt||{};let ok=0;
   for(const f of files){
-    const id='f'+uid();
-    try{await FDB.put(id,f)}catch(e){toast('파일을 저장하지 못했습니다: '+f.name+' (저장 공간이 모자랄 수 있습니다)');continue}
+    const id='f'+uid();let srv='';
+    if(FS!=null){try{srv=(await fsPost('/api/files',{product:pnameOf(n),task:n.name,name:f.name},f)).path}catch(e){toast('이 PC 서버에 올리지 못했습니다: '+f.name+' ('+e.message+')');continue}}
+    else{try{await FDB.put(id,f)}catch(e){toast('파일을 저장하지 못했습니다: '+f.name+' (저장 공간이 모자랄 수 있습니다)');continue}}
     const lab=opt.label||guessLabel(f.name);
-    n.files.push({id,label:lab,name:f.name,size:f.size,mime:f.type||'',at:nowStr(),st:'d',cat:'',replaces:opt.replaces||''});
+    n.files.push({id,label:lab,name:f.name,size:f.size,mime:f.type||'',at:nowStr(),st:'d',cat:'',replaces:opt.replaces||'',srv,item:opt.item||''});
     addLog(n,opt.replaces?`'${f.name}' (${lab}) 올림 — '${opt.replaces}' 대신 (임시)`:`'${f.name}' (${lab}) 올림 (임시)`);ok++;
   }
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-  if(ok){save();render();if(!opt.quiet)toast(`자료 ${ok}개를 올렸습니다. 확인되면 "확정"을 누르세요.`)}
+  if(ok){save();render();if(!opt.quiet)toast(`${FS!=null?'이 PC에 ':''}자료 ${ok}개를 올렸습니다. 최종본이면 "확정"을 누르세요.`)}
   return ok;
 }
 function archiveFile(n,fid,why,newName){
   const i=n.files.findIndex(f=>f.id===fid);if(i<0)return;
-  const f=n.files.splice(i,1)[0];
-  n.arch.push({...f,aat:nowStr(),why:why||'',rep:newName||''});
+  const f=n.files.splice(i,1)[0],a={...f,aat:nowStr(),why:why||'',rep:newName||''};
+  n.arch.push(a);
+  // 이 PC 서버: 원본은 작업 폴더의 보관함으로 옮기고, 최종 서류 복사본은 지운다
+  if(f.srv&&FS!=null)fsPost('/api/archive',{path:f.srv,final:f.final||''}).then(j=>{a.srv=j.path;a.final='';save()}).catch(e=>toast('이 PC 보관함으로 옮기지 못했습니다: '+e.message));
   const tag=`'${f.name}' (${f.label}${f.st==='c'?', 확정본':', 임시'})`;
   addLog(n,newName?`${tag} 보관함으로 이동 — '${newName}' 로 교체${why?' · 사유: '+why:''}`:`${tag} 삭제 → 보관함으로 이동${why?' · 사유: '+why:''}`);
 }
@@ -1945,9 +1970,16 @@ function confirmFile(n,fid){
   const f=n.files.find(x=>x.id===fid);if(!f||f.st==='c')return;
   if(!confirm(`'${f.name}' (${f.label}) 을(를) 확정합니다.\n확정하면 이 파일은 고칠 수 없습니다. 바꾸려면 "삭제·교체"로 보관함에 보내고 새 파일을 올려야 하며, 그 기록이 남습니다.`))return;
   f.st='c';f.cat=nowStr();addLog(n,`'${f.name}' (${f.label}) 확정`);save();render();
+  // 이 PC 서버: 제품 폴더의 "최종 서류"에 복사본을 둔다
+  if(f.srv&&FS!=null)fsPost('/api/final',{path:f.srv,product:pnameOf(n),task:n.name}).then(j=>{f.final=j.final;save();toast('최종 서류 폴더에도 넣었습니다.')}).catch(e=>toast('최종 서류 폴더에 넣지 못했습니다: '+e.message));
 }
 async function fileOpen(fid,mode){
   const meta=findFileMeta(fid);if(!meta)return;
+  if(meta.srv){
+    if(FS==null){toast('이 파일은 회사 PC 서버에 있습니다. 회사 PC 주소(Tailscale)로 연 화면에서 열 수 있습니다.');return}
+    if(mode==='dl'){const a=document.createElement('a');a.href=fsUrl(meta.srv,1);a.download=meta.name;a.click()}else window.open(fsUrl(meta.srv),'_blank');
+    return;
+  }
   let blob;try{blob=await FDB.get(fid)}catch(e){}
   if(!blob){toast('파일 본문이 이 브라우저에 없습니다. JSON으로 옮긴 보드는 파일 본문이 따라오지 않습니다. ZIP 백업으로 옮기세요.');return}
   const url=URL.createObjectURL(blob);
@@ -1959,7 +1991,7 @@ function filesHtml(n){
   const rows=n.files.map(f=>{
     const lock=f.st==='c';
     return `<div class="fr${lock?' lock':''}" data-fid="${f.id}">
-      <div class="fh"><span class="lb">${esc(f.label)}</span><b>${esc(f.name)}</b></div>
+      <div class="fh"><span class="lb">${esc(f.label)}</span><b>${esc(f.name)}</b></div>${f.item?`<div class="fm">체크리스트: ${esc(f.item)}</div>`:''}
       <div class="fm">${fmtSize(f.size)} · 올림 ${f.at} · ${lock?'<b style="color:var(--grn)">확정 '+f.cat+' (고칠 수 없음)</b>':'임시 (고칠 수 있음)'}${f.replaces?' · \''+esc(f.replaces)+'\' 대신':''}</div>
       <div class="fb">${lock?'':`<input list="lbls" data-flabel value="${esc(f.label)}" title="종류 (문안·바코드·칼선 등)"><button data-fa="confirm">확정</button>`}<button data-fa="open">열기</button><button data-fa="dl">받기</button><button data-fa="op" class="del">삭제·교체</button></div>
       ${fileOp===f.id?`<div class="opf"><div class="mut">${lock?'확정된 파일입니다. ':''}지우지 않고 보관함으로 보내며 기록이 남습니다.</div><input data-opwhy placeholder="사유 (선택) 예: 문구 수정"><div class="row2"><button data-fa="oprep">새 파일로 교체…</button><button data-fa="opdel" class="del">보관함으로만 이동</button><button data-fa="opcancel">취소</button></div></div>`:''}
@@ -1968,6 +2000,7 @@ function filesHtml(n){
   const ar=n.arch.slice().reverse().map(f=>`<div class="ar"><b>${esc(f.label)}</b> ${esc(f.name)} · ${fmtSize(f.size)}<br>올림 ${f.at}${f.cat?' · 확정 '+f.cat:' · 확정 안 됨'} · 보관 ${f.aat}${f.rep?'<br>\''+esc(f.rep)+'\' 로 교체됨':'<br>교체 없이 삭제됨'}${f.why?' · 사유: '+esc(f.why):''}<br><span class="row2" data-fid="${f.id}"><button data-fa="open">열기</button><button data-fa="dl">받기</button></span></div>`).join('');
   return `<div class="box"><b>자료 <span style="font-weight:400;color:var(--mut)">(문안·바코드·칼선 등 이 작업에 쓰는 파일)</span></b>
     <div class="dz" data-dz>파일을 여기에 끌어다 놓거나 카드 위에 놓으세요<br><button data-fa="add" style="margin-top:6px">파일 올리기</button></div>
+    <div class="mut">${FS!=null?'회사 PC 서류 폴더에 저장됩니다. 확정하면 제품 폴더의 "최종 서류"에도 들어갑니다.':'회사 PC 서버에 연결되지 않아 이 브라우저에만 저장됩니다.'}</div>
     ${rows||'<div class="mut">아직 올린 파일이 없습니다.</div>'}
     <details ${n.arch.length?'':'hidden'}><summary>보관함 (${n.arch.length}) <span style="font-weight:400;color:var(--mut)">교체·삭제된 파일</span></summary>${ar}</details></div>`;
 }
@@ -1991,13 +2024,16 @@ function fileAction(b){
 $('#fin').onchange=e=>{
   const fin=e.target,files=[...fin.files];fin.value='';if(!files.length)return;
   const n=nodeById(fin.dataset.nid);if(!n)return;
-  if(fin.dataset.mode==='rep')replaceFile(n,fin.dataset.rep,files[0],fin.dataset.why);else attachFiles(n,files);
+  if(fin.dataset.mode==='rep')replaceFile(n,fin.dataset.rep,files[0],fin.dataset.why);
+  else if(fin.dataset.mode==='item')attachFiles(n,files,{item:fin.dataset.item,label:'증거'});
+  else attachFiles(n,files);
 };
 $('#pnb').addEventListener('change',e=>{
   const i=e.target.closest('[data-flabel]');if(!i)return;
   const n=selN.length===1?nodeById(selN[0]):null,f=n&&n.files.find(x=>x.id===i.closest('[data-fid]').dataset.fid);
   if(!f||f.st==='c')return;const v=i.value.trim()||'기타';if(v!==f.label){addLog(n,`'${f.name}' 종류를 '${f.label}' → '${v}' 로 바꿈`);f.label=v;save();render()}
 });
+$('#pnb').addEventListener('click',e=>{const a=e.target.closest('[data-fopen]');if(a)fileOpen(a.dataset.fopen,'open')});
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[data-lognote]')){e.preventDefault();fileAction($('#pnb [data-fa=lognote]'))}});
 // 끌어다 놓기: 카드 위에 놓으면 그 카드의 자료로, 편집창의 점선 상자에 놓으면 지금 카드의 자료로 올라간다
 const hasFiles=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
@@ -2022,6 +2058,34 @@ $('#pnb').addEventListener('drop',e=>{
   const z=e.target.closest('[data-dz]');if(!z||!hasFiles(e))return;z.classList.remove('over');
   const n=selN.length===1?nodeById(selN[0]):null;if(n)attachFiles(n,[...e.dataTransfer.files]);
 });
+// ----- 최종 서류: 이 제품에서 확정한 서류를 작업 순서대로 모아 본다 -----
+function finalFiles(P){
+  const r=R.per[P.id],ts=(r&&r.order?r.order:S.nodes.filter(n=>n.p===P.id&&n.type!=='group'));
+  return ts.map(t=>({t,fs:(t.files||[]).filter(f=>f.st==='c'),wait:(t.files||[]).filter(f=>f.st!=='c').length}));
+}
+function openFinal(){
+  const P=curP(),rows=finalFiles(P),tot=rows.reduce((m,x)=>m+x.fs.length,0),wait=rows.reduce((m,x)=>m+x.wait,0);
+  $('#dfinal-t').textContent=`최종 서류 — ${P.name.replace(/\s*\(.*$/,'')}`;
+  $('#dfinal-b').innerHTML=`<div class="note">확정한 서류 ${tot}개${wait?` · 아직 확정 안 된 자료 ${wait}개`:''}${FS!=null&&FSROOT?`<br>회사 PC 폴더: ${esc(FSROOT)}\\${esc(P.name.replace(/\s*\(.*$/,''))}\\최종 서류`:''}</div>
+    ${tot?`<div><button id="dfinal-zip">모두 한 번에 받기 (ZIP)</button></div>`:''}
+    ${rows.filter(x=>x.fs.length||x.wait).map(x=>`<div class="tk"><b>${esc(x.t.name)}</b>${x.fs.map(f=>`<div class="rw" data-fid="${f.id}"><span>${esc(f.label)} · ${esc(f.name)}<br><small class="mut">확정 ${f.cat}${f.item?' · 체크리스트: '+esc(f.item):''}</small></span><button data-ff="open">열기</button><button data-ff="dl">받기</button></div>`).join('')}${x.wait?`<div class="mut">확정 안 된 자료 ${x.wait}개 — 작업 칸의 "자료"에서 확정하면 여기에 들어옵니다</div>`:''}</div>`).join('')||'<div class="note">아직 올린 자료가 없습니다. 작업을 눌러 "자료"나 체크리스트 "파일"로 올리고, 최종본이면 "확정"을 누르세요.</div>'}`;
+  $('#dfinal').showModal();
+}
+$('#finalbtn').onclick=openFinal;
+$('#dfinal-x').onclick=()=>$('#dfinal').close();
+$('#dfinal-b').addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.ff){fileOpen(b.closest('[data-fid]').dataset.fid,b.dataset.ff);return}
+  if(b.id==='dfinal-zip'){
+    const P=curP(),entries=[];let miss=0;b.disabled=true;b.textContent='모으는 중…';
+    for(const x of finalFiles(P))for(const f of x.fs){let blob=null;
+      try{blob=f.srv?(FS!=null?await (await fetch(fsUrl(f.srv))).blob():null):await FDB.get(f.id)}catch(err){}
+      if(!blob){miss++;continue}entries.push({name:`${x.t.name.replace(/[\\/:*?"<>|]/g,'_')}/${f.name.replace(/[\\/:*?"<>|]/g,'_')}`,blob})}
+    if(entries.length){const z=await makeZip(entries),a=document.createElement('a');a.href=URL.createObjectURL(z);a.download=`${P.name.replace(/\s*\(.*$/,'')}_최종서류_${nowStr().slice(0,10)}.zip`;a.click()}
+    b.disabled=false;b.textContent='모두 한 번에 받기 (ZIP)';toast(miss?`${entries.length}개를 받았습니다. ${miss}개는 이 화면에서 열 수 없어 빠졌습니다 (회사 PC 주소로 연 화면에서 받으세요).`:`${entries.length}개를 받았습니다.`);
+  }
+});
+
 // ----- 지운 카드 보관함, 백업(ZIP) -----
 function fileCounts(){
   const all=[...S.nodes,...S.trash];let n=0,c=0,a=0,sz=0;
@@ -2173,6 +2237,7 @@ setView('b');
 requestAnimationFrame(()=>focusProduct(S.cur,true));
 window.addEventListener('resize',()=>{if(view==='b')applyCam()});
 ghLoad(false);
+fsDetect();
 </script>
 </body>
 </html>
