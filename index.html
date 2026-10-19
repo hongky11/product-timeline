@@ -123,7 +123,13 @@ section{position:absolute;inset:0}
 #lk path.v.ins{stroke:var(--blue);stroke-width:5;stroke-dasharray:8 5}
 #lk path.v.ss{stroke-dasharray:3 5;stroke-linecap:round}
 .todo{display:flex;gap:6px;align-items:center;margin:3px 0}.todo span{flex:1}.todo.ok span{text-decoration:line-through;color:var(--mut)}.todo button{padding:0 7px}
-.nd .stc{position:absolute;left:8px;bottom:-9px;font-size:10px;font-weight:700;border-radius:9px;padding:1px 7px;background:#fff;border:1px solid var(--line)}
+.nd .stc{position:absolute;left:8px;bottom:-9px;font-size:10px;font-weight:700;border-radius:9px;padding:1px 7px;background:#fff;border:1px solid var(--line);white-space:nowrap}
+/* 날짜판에서 카드가 좁아 이름이 안 들어가면 이름·기간·표시를 카드 오른쪽(연결 동그라미 바깥)에 쓴다 */
+.nd.nar{padding:0}
+.nd.nar .ckw{left:50%;top:50%;margin:-8px 0 0 -8px}
+.nd.nar .tx{position:absolute;left:calc(100% + 42px);top:6px}
+.nd.nar .tx .bd{position:static;flex-wrap:wrap;margin-top:3px}
+.nd.nar .tx .stc{position:static}
 .nd .stc.active{background:#e6efff;color:#1d4fd0;border-color:#b9cffb}
 .nd .stc.turn{background:#fff1d6;color:#8a4b00;border-color:#f3cf8f}
 .nd .stc.next{background:#e3f4e8;color:var(--grn);border-color:#bfe3cb}
@@ -174,7 +180,7 @@ section{position:absolute;inset:0}
 .nd .ckw{position:absolute;left:7px;top:8px;display:block;line-height:0}
 .nd .ck{width:16px;height:16px;margin:0;cursor:pointer}
 .nd .bd{position:absolute;right:8px;bottom:-9px;display:flex;gap:4px}
-.nd .bd span{font-size:10px;font-weight:700;border-radius:9px;padding:1px 7px;background:#fff;border:1px solid var(--line)}
+.nd .bd span{font-size:10px;font-weight:700;border-radius:9px;padding:1px 7px;background:#fff;border:1px solid var(--line);white-space:nowrap}
 .nd .bd .late{background:#fde8e8;color:var(--red);border-color:#f5b5b5}
 .nd .bd .warn{background:#fff1d6;color:#8a4b00;border-color:#f3cf8f}
 .nd.dn{opacity:.55}.nd.dn .tt{text-decoration:line-through}
@@ -893,11 +899,12 @@ function nodeHtml(n){
   const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
   const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
   const fw=flowOf(n),stc=fw.k?`<span class="stc ${fw.k}" title="${esc(fw.tip)}">${fw.k==='active'?'진행 중':fw.k==='turn'?'시작할 차례':'다음 단계'}</span>`:'';
-  return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${stc}
+  const nar=view==='b'&&NAR&&NAR.get(n.id);   // 좁은 카드: 글자를 카드 오른쪽에 쓴다 (placeByDate 가 정한다)
+  return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${nar?' nar':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${nar?'':stc}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
-    <div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
-    <div class="sub"><span>${durTxt(n)}</span></div>${lmemo?`<div class="lm" title="${esc(lmemo.t)}">${esc(lmemo.m.replace(/^메모( \([^)]*\))?: /,''))}</div>`:''}
-    ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="rl" title="끌어서 시작일 바꾸기 (끝나는 날은 그대로)"></i><i class="re" title="끌어서 끝나는 날 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
+    <div class="tx"${nar?` style="width:${nar}px"`:''}><div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
+    <div class="sub"><span>${durTxt(n)}</span></div>${lmemo?`<div class="lm" title="${esc(lmemo.t)}">${esc(lmemo.m.replace(/^메모( \([^)]*\))?: /,''))}</div>`:''}${nar&&(stc||bad2)?`<div class="bd">${stc}${bad2}</div>`:''}</div>
+    ${!nar&&bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="rl" title="끌어서 시작일 바꾸기 (끝나는 날은 그대로)"></i><i class="re" title="끌어서 끝나는 날 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
 // 연결선 모양: 떨어져 있으면 부드러운 곡선, 날짜가 바로 이어져 붙어 있으면 꺾인 선으로 뒤 카드 위·아래 테두리에 꽂는다 (곡선이 꼬여 보이지 않게)
@@ -926,17 +933,29 @@ function boardRange(P){
   const ends=[s0+60,TODAY];if(r&&!r.empty&&!r.err){ends.push(r.pEnd,r.pHi||r.pEnd)}if(P.deadline)ends.push(num(P.deadline));
   return{a,b:Math.max(...ends)+21};
 }
+var NAR=null,TXC=null;   // NAR: 날짜판에서 이름이 안 들어가는 좁은 카드 → 오른쪽 글자 칸 너비
+function txtW(s,wt,px){if(!s)return 0;if(!TXC)TXC=document.createElement('canvas').getContext('2d');TXC.font=`${wt} ${px}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;return Math.ceil(TXC.measureText(s).width)}
 function placeByDate(P){
   if(!P)return;BR=boardRange(P);
   const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort((a,b)=>a.y-b.y);
   ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+5;n.w=Math.max(DW*(x.ef-x.es+1)-10,DW-10)});   // 날짜가 이어진 카드끼리도 틈이 보이게 양옆 5px씩 비운다
   gs.forEach(g=>{g.x=X(BR.a)-12;g.w=X(BR.b+1)+24-g.x});
   const gm=new Map(ts.map(n=>[n,groupOf(n)]));
+  // 카드가 차지하는 실제 너비: 카드 + 오른쪽 연결 동그라미 + (좁은 카드면) 오른쪽에 쓴 글자, 위쪽 날짜 줄 중 넓은 쪽
+  NAR=new Map();const VW=new Map(),VH=new Map();
+  ts.forEach(n=>{const x=C[n.id];if(!x)return;
+    const lm=(n.log||[]).slice().reverse().find(l=>/^메모/.test(l.m)),lmt=lm?lm.m.replace(/^메모( \([^)]*\))?: /,''):'';
+    const tw=Math.max(txtW((n.type==='decision'?'◆ ':'')+n.name,700,13),txtW(durTxt(n),400,11),txtW(lmt,400,11));
+    const dlw=txtW(`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 00일 · 달력 00일${x.late?' · 늦음':''}`,400,11);
+    if(tw+40>n.w){const cw=Math.max(tw,120);NAR.set(n.id,cw);VW.set(n.id,Math.max(n.w+42+cw+8,dlw));VH.set(n.id,TH+(lmt?16:0)+12)}
+    else{VW.set(n.id,Math.max(n.w+36,dlw));VH.set(n.id,TH)}
+  });
   // 같은 날짜에 겹치는 카드는 아래 줄로 비킨다 (위에 있는 카드가 자리를 지킨다)
-  const placed=[],hitR=(n,o)=>n.x<o.x+o.w+2&&n.x+n.w+2>o.x&&n.y<o.y+o.h+24&&n.y+n.h+24>o.y;
+  const vw=n=>VW.get(n.id)||n.w,vh=n=>VH.get(n.id)||n.h;
+  const placed=[],hitR=(n,o)=>n.x<o.x+vw(o)+2&&n.x+vw(n)+2>o.x&&n.y<o.y+vh(o)+24&&n.y+vh(n)+24>o.y;
   [...ts].sort((a,b)=>a.y-b.y||a.x-b.x).forEach(n=>{let k=0,hs;while((hs=placed.filter(o=>hitR(n,o))).length&&k++<80)n.y=Math.max(...hs.map(o=>o.y+o.h+24));placed.push(n)});
   // 묶음 상자는 안의 카드가 다 들어가게 늘리고, 아래 묶음과 겹치면 아래 묶음을 민다
-  gs.forEach(g=>{const ms=ts.filter(n=>gm.get(n)===g);if(ms.length)g.h=Math.max(g.h,Math.max(...ms.map(n=>n.y+n.h))-g.y+18)});
+  gs.forEach(g=>{const ms=ts.filter(n=>gm.get(n)===g);if(ms.length)g.h=Math.max(g.h,Math.max(...ms.map(n=>n.y+vh(n)))-g.y+18)});
   for(let i=1;i<gs.length;i++){const p=gs[i-1],g=gs[i],need=p.y+p.h+20-g.y;if(need>0){g.y+=need;ts.forEach(n=>{if(gm.get(n)===g)n.y+=need})}}
 }
 function boardFrame(P){const f=frameOf(P);return{x:X(BR.a),y:f.y,w:X(BR.b+1)-X(BR.a),h:f.h}}
@@ -1067,9 +1086,9 @@ function startDrag(e,id,toggle){
   const st=new Map([...moving].map(m=>[m,{x:m.x,y:m.y}])),cards=[...moving].filter(m=>m.type!=='group');
   const one=cards.length===1&&moving.size===1?cards[0]:null;   // 날짜는 카드 하나를 끌 때만 바꾼다
   const single=one&&!S.links.some(l=>l.from===id||l.to===id),K=R.K;
-  let dd=0,hoverL=null;const tip=dtip();
+  let dd=0,rawdd=0,hoverL=null;const tip=dtip();
   track(e,(dx,dy)=>{
-    const ddy=snap(dy/cam.z);dd=one&&!one.done&&C[one.id]?Math.round(dx/cam.z/DW):0;
+    const ddy=snap(dy/cam.z);rawdd=one?Math.round(dx/cam.z/DW):0;dd=one&&!one.done&&C[one.id]?rawdd:0;
     st.forEach((p,m)=>{m.y=p.y+ddy;if(m===one)m.x=p.x+dd*DW;const el=nodeEl(m.id);if(el){el.style.left=m.x+'px';el.style.top=m.y+'px'}});
     renderLinks();
     if(one&&C[one.id]){
@@ -1086,11 +1105,12 @@ function startDrag(e,id,toggle){
     if(moved&&hoverL){spliceOnLink(one,hoverL);return}
     if(moved)save();
     selectNodes(selN.length?selN:[id]);
+    if(moved&&one&&one.done&&rawdd)toast('끝난 작업은 실제 끝난 날이 기록돼 있어 옆으로 옮기지 않았습니다. 날짜를 고치려면 작업 칸 "실제 날짜"에서 바꾸거나 "대기"로 돌리세요.');
     if(moved&&one&&dd){
       const P=pById(one.p);
       if(P.auto===false){   // 자유 그리기: 놓은 날짜로 바로 바꾼다
         const t=R.K.nextW(C[one.id].es+dd),end0=prodEnd(P);one.notBefore=str(t);if(one.started)one.started=str(t);
-        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);save();R=calc();render();const note=impactNote(P,end0);if(note)toast(note);
+        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);const mv=rippleFrom(one.id);save();R=calc();render();const note=impactNote(P,end0);if(note||mv.length)toast(`${md(C[one.id].es)}부터 시작합니다.${rippleMsg(mv)}${note?' '+note:''}`);
       }else openShift(one,C[one.id].es+dd);
     }
   });
@@ -1105,8 +1125,8 @@ function startResizeTask(e,id){
     const P=pById(n.p),end0=prodEnd(P),d0=n.d;
     n.d=Math.max(1,n.unit==='c'?ef-x.es+1:K.cntW(x.es,K.prevW(ef))+(K.isW(x.es)?1:0));
     if(n.dmin!=null&&n.dmin>n.d)n.dmin=n.d;if(n.dmax!=null&&n.dmax<n.d)n.dmax=n.d;
-    addLog(n,`날짜판에서 기간 ${d0}일 → ${n.d}일`);save();R=calc();selectNodes([id]);
-    const note=impactNote(P,end0);toast(`기간을 ${n.d}${n.unit==='c'?'일(달력)':'영업일'}로 바꿨습니다.${note?' '+note:''}`);
+    addLog(n,`날짜판에서 기간 ${d0}일 → ${n.d}일`);const mv=rippleFrom(id);save();R=calc();selectNodes([id]);
+    const note=impactNote(P,end0);toast(`기간을 ${n.d}${n.unit==='c'?'일(달력)':'영업일'}로 바꿨습니다.${rippleMsg(mv)}${note?' '+note:''}`);
   });
 }
 // 왼쪽 끝 끌기: 시작일을 옮기고 끝나는 날은 그대로 둔다 (기간이 그만큼 늘거나 준다)
@@ -1118,7 +1138,7 @@ function startResizeStart(e,id){
   moved=>{tip.style.display='none';if(!moved||s2===x.es){render();return}
     const P=pById(n.p),end0=prodEnd(P),a=K.nextW(s2),d0=n.d;
     n.notBefore=str(a);if(n.started)n.started=str(a);n.d=Math.max(1,n.unit==='c'?x.ef-a+1:K.cntW(a,x.ef)+1);
-    addLog(n,`날짜판에서 시작일 ${str(a)}, 기간 ${d0}일 → ${n.d}일`);save();R=calc();selectNodes([id]);
+    addLog(n,`날짜판에서 시작일 ${str(a)}, 기간 ${d0}일 → ${n.d}일`);const mv=rippleFrom(id);save();R=calc();selectNodes([id]);if(mv.length)setTimeout(()=>toast(rippleMsg(mv).trim()),1200);
     if(P.auto!==false&&C[n.id].es!==a)toast(`자동 맞춤이 켜져 있어 앞 작업 때문에 ${md(C[n.id].es)}부터 시작합니다.`);
     else{const note=impactNote(P,end0);toast(`${md(a)}부터 ${n.d}${n.unit==='c'?'일':'영업일'}입니다.${note?' '+note:''}`)}
   });
@@ -1249,11 +1269,27 @@ board.addEventListener('dblclick',e=>{
   const p=toWorld(e.clientX,e.clientY);placeNew('task',p.x,p.y);
 });
 board.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*.0012),e.clientX,e.clientY)},{passive:false});
+// 같이 밀기: 카드를 뒤로 밀거나 늘려서 이어진 뒤 카드와 겹치면, 뒤 카드를 겹치지 않을 만큼 민다 (당기지는 않는다).
+// 자동 맞춤이 켜진 제품은 계산이 알아서 밀기 때문에 할 일이 없다. 이미 시작했거나 끝난 뒤 카드는 실제 날짜라 옮기지 않고 겹침 표시만 남긴다.
+function rippleFrom(id){
+  const n0=nodeById(id),P=n0&&pById(n0.p);if(!P||P.auto!==false)return[];
+  const moved=[],down=new Set(),q=[id];
+  while(q.length){const x=q.shift();succsOf(x).forEach(t=>{if(!down.has(t.id)){down.add(t.id);q.push(t.id)}})}
+  for(let k=0;k<300;k++){
+    R=calc();
+    const bad=[...down].map(nodeById).filter(t=>t&&C[t.id]&&C[t.id].clash&&!t.started&&!t.done).sort((a,b)=>C[a.id].es-C[b.id].es);
+    if(!bad.length)break;
+    const t=bad[0],to=R.K.nextW(C[t.id].need);t.notBefore=str(to);
+    if(!moved.includes(t)){moved.push(t);addLog(t,`앞 작업이 밀려 같이 밀림: ${str(to)} 시작`)}
+  }
+  R=calc();return moved;
+}
+const rippleMsg=mv=>mv.length?` 이어진 뒤 작업 ${mv.length}개도 같이 밀었습니다 (${mv.slice(0,3).map(t=>t.name).join(', ')}${mv.length>3?' 외':''}).`:'';
 // 앞 일정 바로 뒤로 붙이기 (자유 그리기에서 사용자가 누를 때만 맞춘다)
 function snapToPred(n){
   const x=C[n.id];if(!x||x.need==null)return;const P=pById(n.p),end0=prodEnd(P),t=R.K.nextW(x.need);
-  n.notBefore=str(t);if(n.started){n.started=str(t)}addLog(n,`앞 일정 바로 뒤로 붙임: ${str(t)} 시작`);save();R=calc();render();
-  const note=impactNote(P,end0);toast(`${md(t)}(${WD[dow(t)]})부터 시작하게 붙였습니다.${note?' '+note:''}`);
+  n.notBefore=str(t);if(n.started){n.started=str(t)}addLog(n,`앞 일정 바로 뒤로 붙임: ${str(t)} 시작`);const mv=rippleFrom(n.id);save();R=calc();render();
+  const note=impactNote(P,end0);toast(`${md(t)}(${WD[dow(t)]})부터 시작하게 붙였습니다.${rippleMsg(mv)}${note?' '+note:''}`);
 }
 nodesEl.addEventListener('click',e=>{const s=e.target.closest('[data-snap]');if(s){e.stopPropagation();snapToPred(nodeById(s.dataset.snap))}});
 nodesEl.addEventListener('change',e=>{
@@ -1811,7 +1847,9 @@ $('#pnb').addEventListener('change',e=>{
   else if('tpl' in e.target.dataset){const v=e.target.value;e.target.value='';if(v==='')return;
     if(v==='save'){if(!o.todo.length){toast('저장할 체크리스트 항목이 없습니다.');return}const nm=prompt('목록 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 목록으로 저장했습니다. 다른 작업에서 "자주 쓰는 체크리스트 넣기"로 넣을 수 있습니다.`);return}
     const t=(S.templates||[])[+v];if(!t)return;const have=new Set(o.todo.map(i=>i.t));let k=0;t.items.forEach(x=>{if(!have.has(x)){o.todo.push({t:x,ok:false});k++}});save();render();toast(`"${t.name}" 목록에서 ${k}개 넣었습니다.`)}
-  else if(['done','start','deadline','started','notBefore','due'].includes(e.target.dataset.f)){render()}
+  else if(['done','start','deadline','started','notBefore','due','d'].includes(e.target.dataset.f)){
+    if(o.type&&['d','notBefore','started','done'].includes(e.target.dataset.f)){const mv=rippleFrom(o.id);if(mv.length){save();toast(rippleMsg(mv).trim())}}
+    render()}
 });
 // 연결 칸: 기준(끝·시작)과 간격을 바꾼다. 연결을 고른 상태라 작업 칸 처리와 따로 둔다
 $('#pnb').addEventListener('change',e=>{if(!e.target.dataset||!e.target.dataset.lk)return;const l=S.links.find(x=>x.id===selL);if(l){const q=k=>$(`#pnb [data-lk="${k}"]`),old={kind:l.kind,lag:l.lag};
