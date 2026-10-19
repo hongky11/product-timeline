@@ -1131,7 +1131,7 @@ function startDrag(e,id,toggle){
   selN.forEach(i=>{const m=nodeById(i);if(m&&m.type!=='group')moving.add(m)});
   const st=new Map([...moving].map(m=>[m,{x:m.x,y:m.y}])),cards=[...moving],me=nodeById(id);let dropL=null;
   const one=cards.length===1&&moving.size===1?cards[0]:null;   // 날짜는 카드 하나를 끌 때만 바꾼다
-  const single=one&&!S.links.some(l=>l.from===id||l.to===id),K=R.K;
+  const single=one&&!S.links.some(l=>l.from===id||l.to===id),K=R.K,att=one?attachedOf(one.id):null;
   let dd=0,rawdd=0,hoverL=null;const tip=dtip();
   track(e,(dx,dy)=>{
     const ddy=snap(dy/cam.z);rawdd=one?Math.round(dx/cam.z/DW):0;dd=one&&!one.done&&C[one.id]?rawdd:0;
@@ -1161,14 +1161,14 @@ function startDrag(e,id,toggle){
       const P=pById(one.p);
       if(P.auto===false){   // 자유 그리기: 놓은 날짜로 바로 바꾼다
         const t=R.K.nextW(C[one.id].es+dd),end0=prodEnd(P);one.notBefore=str(t);if(one.started)one.started=str(t);
-        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);const mv=rippleFrom(one.id);save();R=calc();render();const note=impactNote(P,end0);toast(`${gmsg}${md(C[one.id].es)}부터 시작합니다.${rippleMsg(mv)}${note?' '+note:''}`);
+        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);const mv=rippleFrom(one.id,att);save();R=calc();render();const note=impactNote(P,end0);toast(`${gmsg}${md(C[one.id].es)}부터 시작합니다.${rippleMsg(mv)}${note?' '+note:''}`);
       }else{if(gmsg)toast(gmsg.trim());openShift(one,C[one.id].es+dd)}
     }
   });
 }
 // 오른쪽 끝 끌기: 끝나는 날을 옮겨 기간(보통 일수)을 바꾼다
 function startResizeTask(e,id){
-  const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;
+  const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;const att=attachedOf(id);
   const el=nodeEl(id),tip=dtip();let ef=x.ef;
   track(e,(dx)=>{ef=Math.max(x.es,x.ef+Math.round(dx/cam.z/DW));const w=Math.max(DW*(ef-x.es+1)-4,DW-4);el.style.width=w+'px';
     tip.style.display='block';tip.style.left=n.x+'px';tip.style.top=(n.y-42)+'px';tip.textContent=`${md(x.es)} ~ ${md(ef)}(${WD[dow(ef)]}) · 영업 ${K.cntW(x.es,ef)+(K.isW(x.es)?1:0)}일 · 달력 ${ef-x.es+1}일`},
@@ -1176,20 +1176,20 @@ function startResizeTask(e,id){
     const P=pById(n.p),end0=prodEnd(P),d0=n.d;
     n.d=Math.max(1,n.unit==='c'?ef-x.es+1:K.cntW(x.es,K.prevW(ef))+(K.isW(x.es)?1:0));
     if(n.dmin!=null&&n.dmin>n.d)n.dmin=n.d;if(n.dmax!=null&&n.dmax<n.d)n.dmax=n.d;
-    addLog(n,`날짜판에서 기간 ${d0}일 → ${n.d}일`);const mv=rippleFrom(id);save();R=calc();selectNodes([id]);
+    addLog(n,`날짜판에서 기간 ${d0}일 → ${n.d}일`);const mv=rippleFrom(id,att);save();R=calc();selectNodes([id]);
     const note=impactNote(P,end0);toast(`기간을 ${n.d}${n.unit==='c'?'일(달력)':'영업일'}로 바꿨습니다.${rippleMsg(mv)}${note?' '+note:''}`);
   });
 }
 // 왼쪽 끝 끌기: 시작일을 옮기고 끝나는 날은 그대로 둔다 (기간이 그만큼 늘거나 준다)
 function startResizeStart(e,id){
-  const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;
+  const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;const att=attachedOf(id);
   const el=nodeEl(id),tip=dtip();let s2=x.es;
   track(e,(dx)=>{s2=Math.min(x.ef,x.es+Math.round(dx/cam.z/DW));el.style.left=(X(s2)+5)+'px';el.style.width=Math.max(DW*(x.ef-s2+1)-10,DW-10)+'px';
     tip.style.display='block';tip.style.left=(X(s2)+5)+'px';tip.style.top=(n.y-42)+'px';const a=K.nextW(s2);tip.textContent=`${md(a)}(${WD[dow(a)]}) ~ ${md(x.ef)} · 영업 ${K.cntW(a,x.ef)+1}일`},
   moved=>{tip.style.display='none';if(!moved||s2===x.es){render();return}
     const P=pById(n.p),end0=prodEnd(P),a=K.nextW(s2),d0=n.d;
     n.notBefore=str(a);if(n.started)n.started=str(a);n.d=Math.max(1,n.unit==='c'?x.ef-a+1:K.cntW(a,x.ef)+1);
-    addLog(n,`날짜판에서 시작일 ${str(a)}, 기간 ${d0}일 → ${n.d}일`);const mv=rippleFrom(id);save();R=calc();selectNodes([id]);if(mv.length)setTimeout(()=>toast(rippleMsg(mv).trim()),1200);
+    addLog(n,`날짜판에서 시작일 ${str(a)}, 기간 ${d0}일 → ${n.d}일`);const mv=rippleFrom(id,att);save();R=calc();selectNodes([id]);if(mv.length)setTimeout(()=>toast(rippleMsg(mv).trim()),1200);
     if(P.auto!==false&&C[n.id].es!==a)toast(`자동 맞춤이 켜져 있어 앞 작업 때문에 ${md(C[n.id].es)}부터 시작합니다.`);
     else{const note=impactNote(P,end0);toast(`${md(a)}부터 ${n.d}${n.unit==='c'?'일':'영업일'}입니다.${note?' '+note:''}`)}
   });
@@ -1315,27 +1315,47 @@ board.addEventListener('dblclick',e=>{
   const p=toWorld(e.clientX,e.clientY);placeNew('task',p.x,p.y);
 });
 board.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*.0012),e.clientX,e.clientY)},{passive:false});
-// 같이 밀기: 카드를 뒤로 밀거나 늘려서 이어진 뒤 카드와 겹치면, 뒤 카드를 겹치지 않을 만큼 민다 (당기지는 않는다).
-// 자동 맞춤이 켜진 제품은 계산이 알아서 밀기 때문에 할 일이 없다. 이미 시작했거나 끝난 뒤 카드는 실제 날짜라 옮기지 않고 겹침 표시만 남긴다.
-function rippleFrom(id){
+// 붙어 있던 뒤 작업: 연결상 가장 이른 날에 시작하던 뒤 작업과, 그 뒤에 또 그렇게 붙어 있던 작업들. 앞 작업을 고치기 전에 구해 둔다.
+// 일부러 띄워 둔 작업(가장 이른 날보다 늦게 시작하던 것)과 그 뒤는 넣지 않는다.
+// out.need: 고치기 전 모든 작업의 "연결상 가장 이른 날". 같이 밀기는 이 날이 늦어진 작업만 민다 (원래부터 앞 작업보다 일찍 놓아 둔 작업은 그대로)
+function attachedOf(...ids){
+  const out=new Set(),q=[...ids];if(!R)return out;out.need=new Map(S.nodes.map(n=>[n.id,C[n.id]?C[n.id].need:null]));
+  while(q.length){const x=q.shift();succsOf(x).forEach(t=>{if(out.has(t.id))return;const c=C[t.id];
+    if(!c||pById(t.p).auto!==false||t.started||t.done||c.need==null||c.es!==R.K.nextW(c.need))return;out.add(t.id);q.push(t.id)})}
+  return out;
+}
+// 같이 옮기기 (자동 맞춤 끔일 때). 자동 맞춤이 켜진 제품은 계산이 알아서 맞추므로 할 일이 없다.
+// 1) att(붙어 있던 뒤 작업)는 앞 작업을 따라 당기거나 민다. 뒤 작업에 다른 앞 작업이 있으면 그중 가장 늦은 것보다 당기지 않는다.
+// 2) 그 밖의 뒤 작업은 앞 작업과 겹칠 때만 겹치지 않을 만큼 민다 (당기지 않는다).
+// 이미 시작했거나 끝난 뒤 작업은 실제 날짜라 옮기지 않고 겹침 표시만 남긴다.
+function rippleFrom(id,att){
   const n0=nodeById(id);if(!n0)return[];
-  const moved=[],down=new Set(),q=[id];
+  const moved=[],down=new Set(),q=[id];moved.pull=new Set();
   while(q.length){const x=q.shift();succsOf(x).forEach(t=>{if(!down.has(t.id)){down.add(t.id);q.push(t.id)}})}
+  const mark=(t,to,pull)=>{t.notBefore=str(to);if(pull)moved.pull.add(t.id);else moved.pull.delete(t.id);
+    if(!moved.includes(t)){moved.push(t);addLog(t,`앞 작업을 따라 ${pull?'당겨짐':'밀림'}: ${str(to)} 시작`)}};
+  if(att&&att.size)for(let k=0;k<300;k++){
+    R=calc();
+    const off=[...att].map(nodeById).filter(t=>t&&C[t.id]&&C[t.id].need!=null&&C[t.id].es!==R.K.nextW(C[t.id].need)).sort((a,b)=>C[a.id].es-C[b.id].es);
+    if(!off.length)break;
+    const t=off[0],to=R.K.nextW(C[t.id].need);mark(t,to,to<C[t.id].es);
+  }
   for(let k=0;k<300;k++){
     R=calc();
-    const bad=[...down].map(nodeById).filter(t=>t&&pById(t.p).auto===false&&C[t.id]&&C[t.id].clash&&!t.started&&!t.done).sort((a,b)=>C[a.id].es-C[b.id].es);
+    const grew=t=>{const p=att&&att.need?att.need.get(t.id):null;return p==null||C[t.id].need>p};
+    const bad=[...down].map(nodeById).filter(t=>t&&pById(t.p).auto===false&&C[t.id]&&C[t.id].clash&&!t.started&&!t.done&&grew(t)).sort((a,b)=>C[a.id].es-C[b.id].es);
     if(!bad.length)break;
-    const t=bad[0],to=R.K.nextW(C[t.id].need);t.notBefore=str(to);
-    if(!moved.includes(t)){moved.push(t);addLog(t,`앞 작업이 밀려 같이 밀림: ${str(to)} 시작`)}
+    const t=bad[0];mark(t,R.K.nextW(C[t.id].need),false);
   }
   R=calc();return moved;
 }
 const rippleMsg=mv=>{if(!mv.length)return'';const cur=curP().id,nm=t=>t.p!==cur?`[${pById(t.p).name.replace(/\s*\(.*$/,'')}] ${t.name}`:t.name;
-  return ` 이어진 뒤 작업 ${mv.length}개도 같이 밀었습니다 (${mv.slice(0,3).map(nm).join(', ')}${mv.length>3?' 외':''}).`};
+  const np=mv.pull?mv.pull.size:0,how=np===mv.length?'당겼습니다':np?'당기거나 밀었습니다':'밀었습니다';
+  return ` 이어진 뒤 작업 ${mv.length}개도 같이 ${how} (${mv.slice(0,3).map(nm).join(', ')}${mv.length>3?' 외':''}).`};
 // 앞 일정 바로 뒤로 붙이기 (자유 그리기에서 사용자가 누를 때만 맞춘다)
 function snapToPred(n){
   const x=C[n.id];if(!x||x.need==null)return;const P=pById(n.p),end0=prodEnd(P),t=R.K.nextW(x.need);
-  n.notBefore=str(t);if(n.started){n.started=str(t)}addLog(n,`앞 일정 바로 뒤로 붙임: ${str(t)} 시작`);const mv=rippleFrom(n.id);save();R=calc();render();
+  const att=attachedOf(n.id);n.notBefore=str(t);if(n.started){n.started=str(t)}addLog(n,`앞 일정 바로 뒤로 붙임: ${str(t)} 시작`);const mv=rippleFrom(n.id,att);save();R=calc();render();
   const note=impactNote(P,end0);toast(`${md(t)}(${WD[dow(t)]})부터 시작하게 붙였습니다.${rippleMsg(mv)}${note?' '+note:''}`);
 }
 nodesEl.addEventListener('click',e=>{const s=e.target.closest('[data-snap]');if(s){e.stopPropagation();snapToPred(nodeById(s.dataset.snap))}});
@@ -1417,38 +1437,38 @@ function linkNear(m){
   });
   return best&&best.l;
 }
-function afterInsert(m,P,end0,what){
+function afterInsert(m,P,end0,what,att){
   // 자동 맞춤 끔: 끼운 카드를 앞 작업 바로 뒤(앞이 없으면 뒤 작업 자리)에 놓고, 뒤 작업은 겹치지 않을 만큼 민다
   let mv=[];
   if(P.auto===false&&!m.started&&!m.done){R=calc();const x=C[m.id],su=succsOf(m.id).filter(t=>C[t.id]);
     if(x&&x.need!=null)m.notBefore=str(R.K.nextW(x.need));else if(su.length)m.notBefore=str(Math.min(...su.map(t=>C[t.id].es)));
-    mv=rippleFrom(m.id)}
+    mv=rippleFrom(m.id,att)}
   save();R=calc();selectNodes([m.id]);
   const note=impactNote(P,end0);toast(`${what}${rippleMsg(mv)}${note?' '+note:' 입고 예상일은 그대로입니다.'}`);
   setTimeout(()=>{const i=$('#pnb [data-f=name]');if(i){i.focus();i.select()}},60);
 }
 // 앞 카드 a 와 뒤 카드 b 사이에 카드 m 을 넣는다 (a→b 를 a→m→b 로)
 function spliceOnLink(m,l){
-  const a=nodeById(l.from),b=nodeById(l.to),P=pById(a.p),end0=prodEnd(P);
+  const a=nodeById(l.from),b=nodeById(l.to),P=pById(a.p),end0=prodEnd(P),att=attachedOf(a.id);
   const room=b.x-(a.x+a.w);if(room<TW+60)shiftDown([b.id],TW+60-room);
   m.x=snap((a.x+a.w+b.x)/2-m.w/2);m.y=snap((a.y+b.y)/2);
   if(!S.nodes.includes(m))S.nodes.push(m);
   S.links=S.links.filter(x=>x!==l);S.links.push({id:uid(),from:a.id,to:m.id},{id:uid(),from:m.id,to:b.id});
-  freeSpot(m);afterInsert(m,P,end0,`"${a.name}"과 "${b.name}" 사이에 끼워 넣었습니다.`);
+  freeSpot(m);afterInsert(m,P,end0,`"${a.name}"과 "${b.name}" 사이에 끼워 넣었습니다.`,att);
 }
 function insertOnLink(l){const a=nodeById(l.from);if(a)spliceOnLink(newNode('task',0,0,a.p),l)}
 function insertBefore(b){
-  const P=pById(b.p),end0=prodEnd(P),m=newNode('task',0,0,b.p),ins=S.links.filter(l=>l.to===b.id);
+  const P=pById(b.p),end0=prodEnd(P),m=newNode('task',0,0,b.p),ins=S.links.filter(l=>l.to===b.id),att=attachedOf(b.id,...ins.map(l=>l.from));
   m.x=b.x;m.y=b.y;shiftDown([b.id],TW+60);
   S.nodes.push(m);ins.forEach(l=>{l.to=m.id});S.links.push({id:uid(),from:m.id,to:b.id});
-  freeSpot(m);afterInsert(m,P,end0,`"${b.name}" 앞에 끼워 넣었습니다.`);
+  freeSpot(m);afterInsert(m,P,end0,`"${b.name}" 앞에 끼워 넣었습니다.`,att);
 }
 function insertAfter(a){
-  const P=pById(a.p),end0=prodEnd(P),m=newNode('task',0,0,a.p),outs=S.links.filter(l=>l.from===a.id);
+  const P=pById(a.p),end0=prodEnd(P),m=newNode('task',0,0,a.p),outs=S.links.filter(l=>l.from===a.id),att=attachedOf(a.id);
   if(outs.length)shiftDown(outs.map(l=>l.to),TW+60);
   m.x=snap(a.x+a.w+40);m.y=a.y;S.nodes.push(m);
   outs.forEach(l=>{l.from=m.id});S.links.push({id:uid(),from:a.id,to:m.id});
-  freeSpot(m);afterInsert(m,P,end0,`"${a.name}" 뒤에 끼워 넣었습니다.`);
+  freeSpot(m);afterInsert(m,P,end0,`"${a.name}" 뒤에 끼워 넣었습니다.`,att);
 }
 function orderHtml(n){
   const row=(t,rel)=>{const x=C[t.id]||{};const st=x.done?'끝남 '+md(x.ef):rel==='p'?md(x.ef)+' 끝날 예정':md(x.es)+' 시작 예정';const other=t.p!==n.p?`[${esc(pById(t.p).name.replace(/\s*\(.*$/,''))}] `:'';
@@ -1892,6 +1912,8 @@ $('#pnb').addEventListener('change',e=>{
   n.notion=m?m[0].toLowerCase().replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,'$1-$2-$3-$4-$5'):'';
   if(n.notion)addLog(n,'노션 발주 건 연결');save();render();
 });
+let pnAtt=null;   // 작업 칸에서 날짜·기간 칸을 누른 때의 붙어 있던 뒤 작업
+$('#pnb').addEventListener('focusin',e=>{const f=e.target.dataset&&e.target.dataset.f,o=curTarget();if(o&&o.type&&['d','notBefore','started','done'].includes(f))pnAtt={id:o.id,att:attachedOf(o.id)}});
 $('#pnb').addEventListener('input',e=>{
   const o=curTarget();if(!o)return;
   if(e.target.closest('[data-f]')==null)return;
@@ -1920,7 +1942,7 @@ $('#pnb').addEventListener('change',e=>{
     if(v==='save'){if(!o.todo.length){toast('저장할 체크리스트 항목이 없습니다.');return}const nm=prompt('목록 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 목록으로 저장했습니다. 다른 작업에서 "자주 쓰는 체크리스트 넣기"로 넣을 수 있습니다.`);return}
     const t=(S.templates||[])[+v];if(!t)return;const have=new Set(o.todo.map(i=>i.t));let k=0;t.items.forEach(x=>{if(!have.has(x)){o.todo.push({t:x,ok:false});k++}});save();render();toast(`"${t.name}" 목록에서 ${k}개 넣었습니다.`)}
   else if(['done','start','deadline','started','notBefore','due','d'].includes(e.target.dataset.f)){
-    if(o.type&&['d','notBefore','started','done'].includes(e.target.dataset.f)){const mv=rippleFrom(o.id);if(mv.length){save();toast(rippleMsg(mv).trim())}}
+    if(o.type&&['d','notBefore','started','done'].includes(e.target.dataset.f)){const mv=rippleFrom(o.id,pnAtt&&pnAtt.id===o.id?pnAtt.att:null);pnAtt=null;if(mv.length){save();toast(rippleMsg(mv).trim())}}
     render()}
 });
 // 연결 칸: 기준(끝·시작)과 간격을 바꾼다. 연결을 고른 상태라 작업 칸 처리와 따로 둔다
