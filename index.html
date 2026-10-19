@@ -1605,7 +1605,7 @@ function renderPanel(){
       <div class="box"><b>체크리스트 <span class="mut">${(()=>{const ok=td.filter(i=>i.ok&&!i.na).length,na=td.filter(i=>i.na).length,left=td.length-ok-na;return td.length?`완료 ${ok} · 불필요 ${na} · 남음 ${left}`:'비어 있음'})()}</span></b>
         ${td.map((i,k)=>{const st=i.na?'na':i.ok?'ok':'';return `<div class="todo${i.ok&&!i.na?' ok':''}${i.na?' na':''}"><button class="tds ${st}" data-tds="${k}" title="누를 때마다 미완 → 완료 → 불필요">${st==='ok'?'✓ 완료':st==='na'?'— 불필요':'□ 미완'}</button><span>${esc(i.t)}</span><button data-tdx="${k}" title="지우기">×</button></div>`}).join('')}
         <div class="lgin"><input data-tdnew placeholder="항목 추가 (Enter)"><button data-tdadd>추가</button></div>
-        <div class="tdrow"><select data-tpl><option value="">틀 불러오기…</option>${(S.templates||[]).map((t,i)=>`<option value="${i}">${esc(t.name)} (${t.items.length})</option>`).join('')}<option value="save">지금 목록을 틀로 저장…</option></select></div></div>`+
+        <div class="tdrow"><select data-tpl><option value="">자주 쓰는 체크리스트 넣기…</option>${(S.templates||[]).map((t,i)=>`<option value="${i}">${esc(t.name)} (${t.items.length})</option>`).join('')}<option value="save">지금 체크리스트를 자주 쓰는 목록에 저장…</option></select></div></div>`+
       fold('real','실제 날짜',n.done?'끝난 날 '+md(num(n.done)):n.started?'시작한 날 '+md(num(n.started)):'기록 없음',
         `<div class="three"><label class="f"><span>실제 시작한 날</span><input type="date" data-f="started" value="${n.started}"></label><label class="f"><span>실제 끝난 날</span><input type="date" data-f="done" value="${n.done}"></label></div>
         <label class="f"><span>세는 방식</span><select data-f="unit"><option value="w" ${n.unit!=='c'?'selected':''}>영업일 (주말·공휴일 건너뜀)</option><option value="c" ${n.unit==='c'?'selected':''}>달력일 (배송·건조처럼 쉬는 날도 흐름)</option></select></label>
@@ -1679,8 +1679,8 @@ $('#pnb').addEventListener('change',e=>{
   if('doneck' in e.target.dataset){if(o.type)setDone(o,e.target.checked)}
   else if('startck' in e.target.dataset){if(o.type)setStarted(o,e.target.checked)}
   else if('tpl' in e.target.dataset){const v=e.target.value;e.target.value='';if(v==='')return;
-    if(v==='save'){if(!o.todo.length){toast('저장할 항목이 없습니다.');return}const nm=prompt('틀 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 틀로 저장했습니다. 다른 작업에서 불러올 수 있습니다.`);return}
-    const t=(S.templates||[])[+v];if(!t)return;const have=new Set(o.todo.map(i=>i.t));let k=0;t.items.forEach(x=>{if(!have.has(x)){o.todo.push({t:x,ok:false});k++}});save();render();toast(`"${t.name}" 틀에서 ${k}개 넣었습니다.`)}
+    if(v==='save'){if(!o.todo.length){toast('저장할 체크리스트 항목이 없습니다.');return}const nm=prompt('목록 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 목록으로 저장했습니다. 다른 작업에서 "자주 쓰는 체크리스트 넣기"로 넣을 수 있습니다.`);return}
+    const t=(S.templates||[])[+v];if(!t)return;const have=new Set(o.todo.map(i=>i.t));let k=0;t.items.forEach(x=>{if(!have.has(x)){o.todo.push({t:x,ok:false});k++}});save();render();toast(`"${t.name}" 목록에서 ${k}개 넣었습니다.`)}
   else if(['done','start','deadline','started','notBefore','due'].includes(e.target.dataset.f)){render()}
 });
 // 연결 칸: 기준(끝·시작)과 간격을 바꾼다. 연결을 고른 상태라 작업 칸 처리와 따로 둔다
