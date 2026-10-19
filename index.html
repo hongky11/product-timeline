@@ -164,9 +164,9 @@ section{position:absolute;inset:0}
 .c.red{background:#fde8e8;color:var(--red)}.c.grn{background:#e3f4e8;color:var(--grn)}.c.amb{background:#fff1d6;color:#8a4b00}
 .nd{position:absolute;border-radius:12px;cursor:move}
 .nd.task{background:color-mix(in srgb,var(--c) 11%,#fff);border:2px solid var(--c);padding:7px 10px 6px 30px;box-shadow:0 2px 6px rgba(20,30,50,.08)}
-.nd.task:not(.cf){border-style:dashed}
+/* 가정·확인 구분(점선)은 뺐다 — 기간은 숫자 하나만 받는다 */
 .nd.dec{background:#fff6e0;border:2px solid var(--amb);padding:7px 10px 6px 30px;box-shadow:0 2px 6px rgba(20,30,50,.08);border-radius:26px 12px 26px 12px}
-.nd.dec:not(.cf){border-style:dashed}
+
 .nd .tt{font-weight:700;line-height:1.25;white-space:nowrap;text-shadow:0 0 3px #fff}
 .nd .sub{display:flex;justify-content:space-between;gap:6px;color:var(--mut);font-size:11px;margin-top:3px;white-space:nowrap}
 .nd .ckw{position:absolute;left:7px;top:8px;display:block;line-height:0}
@@ -180,8 +180,15 @@ section{position:absolute;inset:0}
 .nd.sel{box-shadow:0 0 0 3px rgba(37,99,235,.6),0 2px 8px rgba(20,30,50,.12)}
 .nd.hl{box-shadow:0 0 0 3px rgba(21,128,61,.5)}
 .nd.ov{outline:3px dashed var(--red);outline-offset:2px}
-.nd .pt{position:absolute;right:-8px;top:50%;margin-top:-8px;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--blue);cursor:crosshair;opacity:0;transition:opacity .1s}
-.nd:hover .pt,.nd.sel .pt{opacity:1}
+.nd .pt{position:absolute;right:-15px;top:50%;margin-top:-12px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;color:var(--blue);font-size:14px;z-index:2;cursor:crosshair;opacity:0;transition:opacity .1s}
+.nd .pt{opacity:.5!important}.nd:hover .pt,.nd.sel .pt{opacity:1!important}
+.nd.grp .rsb{pointer-events:auto;position:absolute;left:0;right:0;bottom:-5px;height:10px;cursor:ns-resize}
+.nd.grp .rsb:hover{background:color-mix(in srgb,var(--c) 40%,transparent);border-radius:5px}
+#pn .dur{display:flex;align-items:center;gap:6px;flex:none}#pn .dur input{width:64px;font-size:16px;font-weight:700;text-align:center}#pn .dur .dd{margin-left:auto;font-size:12px;color:var(--mut)}
+#pn .tds{flex:none;font-size:12px;padding:2px 8px;border-radius:8px;min-width:64px}#pn .tds.ok{background:#e3f4e8;color:var(--grn);border-color:#bfe3cb}#pn .tds.na{background:#eef0f4;color:var(--mut)}
+#pn .todo.na span{color:var(--mut);text-decoration:line-through}
+#pn .tdrow{display:flex;gap:6px}#pn .tdrow select{max-width:130px}
+#shiftpop .lorow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:6px 8px}#shiftpop .lorow input{width:52px}
 .nd.grp{pointer-events:none;background:color-mix(in srgb,var(--c) 7%,transparent);border:2px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:16px;cursor:default}
 .nd.grp.sel{box-shadow:0 0 0 3px rgba(37,99,235,.5)}
 .nd.grp.hl{background:color-mix(in srgb,var(--c) 18%,transparent)}
@@ -495,6 +502,7 @@ function norm(o){
   o.links.forEach(l=>{l.kind=l.kind==='ss'?'ss':'fs';l.lag=l.lag!=null&&!isNaN(+l.lag)?Math.round(+l.lag):(l.kind==='ss'?0:1)});
   if(!o.holidays)o.holidays=DEF_H.map(h=>({...h}));
   o.trash=o.trash||[];
+  if(!Array.isArray(o.templates))o.templates=[{name:'부자재 (용기·단상자 등)',items:['샘플 요청','샘플 수령 및 전달 (칼선 포함)','수정 필요 여부 확인','견적 확인','최종 샘플 확인 및 감리 일정','발주']}];
   if(!(o.warn>0))o.warn=5;
   if(!o.cur||!o.products.some(P=>P.id===o.cur))o.cur=pid0;
   delete o.name;delete o.start;delete o.deadline;
@@ -672,7 +680,7 @@ function render(skipPanel){
   $('#ai-plan').hidden=!AI_ON;$('#ai-rev').hidden=!AI_ON;$('#set-ai').hidden=!AI_ON;
   $('#tip').textContent=view==='c'?'날짜 칸을 누르면 그날 진행되는 작업이 오른쪽에 나옵니다. 막대를 누르면 그 작업을 고치고, 고른 작업은 파란 테두리로 보입니다.':view==='t'?'제품 줄의 ▾를 누르면 접히고 펴집니다. 막대나 이름을 누르면 오른쪽에서 고치고, 고른 작업의 날짜 구간이 파랗게 칠해집니다.':
     (cam.z<LOD?'지금은 요약 보기입니다. 제품 상자를 누르거나 휠로 확대하면 안쪽 카드가 보입니다.':
-    '빈 곳 더블클릭 = 그 날짜에 작업 추가 · 카드를 옆으로 끌면 날짜를 바꿀 방법을 고름 · 오른쪽 끝을 끌면 기간 · 오른쪽 점을 끌어 다른 카드에 놓으면 연결 · 휠 = 확대/축소');
+    '빈 곳 더블클릭 = 그 날짜에 작업 추가 · 카드를 옆으로 끌면 날짜 바꾸기 · 오른쪽 끝을 끌면 기간 · 오른쪽 → 를 끌어 다음 카드에 놓으면 연결 · 묶음 아래 테두리를 끌면 높이 · 휠 = 확대/축소');
 }
 function renderSum(){
   const alr=[],lnk=t=>`<a data-pick="${t.id}">${esc(t.name)}</a>`;
@@ -683,7 +691,7 @@ function renderSum(){
     if(r.empty)return;
     const open=r.order.filter(t=>!C[t.id].done),pre=S.products.length>1?`[${esc(P.name.replace(/\s*\(.*$/,''))}] `:'';
     if(r.dlLeft!=null&&r.dlLeft<=S.warn&&open.length)alr.push(`<div class="alr red">${pre}목표 입고일 ${P.deadline}이 ${r.dlLeft<0?(-r.dlLeft)+'영업일 지났습니다':r.dlLeft===0?'오늘입니다':r.dlLeft+'영업일 남았습니다'}. 예상 입고는 ${str(r.pEnd)}입니다.</div>`);
-    if(r.marginHi!=null&&r.marginHi<0&&r.margin>=0)alr.push(`<div class="alr amb">${pre}보통으로 가면 목표 안이지만 모두 "늦으면" 일수로 가면 목표 입고일을 ${-r.marginHi}영업일 넘깁니다.</div>`);
+    if(false)alr.push(`<div class="alr amb">${pre}보통으로 가면 목표 안이지만 모두 "늦으면" 일수로 가면 목표 입고일을 ${-r.marginHi}영업일 넘깁니다.</div>`);
     const lates=open.filter(t=>C[t.id].late),warns=open.filter(t=>C[t.id].warn).sort((a,b)=>C[a.id].left-C[b.id].left);
     if(lates.length)alr.push(`<div class="alr red">${pre}계획 끝이 지났는데 완료 체크가 안 된 작업 ${lates.length}개: ${lates.map(lnk).join(', ')}</div>`);
     const overs=open.filter(t=>C[t.id].over),dws=open.filter(t=>C[t.id].dueWarn);
@@ -694,7 +702,7 @@ function renderSum(){
   const P=curP(),r=R.per[P.id];
   let main='';
   if(r&&!r.empty&&!r.err){
-    const range=r.pLo!==r.pHi?` <span style="color:var(--mut)">(빠르면 ${md(r.pLo)} · 늦으면 ${md(r.pHi)})</span>`:'';
+    const range='';
     const crit=r.order.filter(t=>C[t.id].crit).map(lnk).join(' → ');
     main=`<span><span class="k">${esc(P.name.replace(/\s*\(.*$/,''))} 예상 입고</span><b>${str(r.pEnd)}(${WD[dow(r.pEnd)]})</b>${range}</span>`+
       `<span><span class="k">목표</span><b>${r.dl!=null?P.deadline:'미정'}</b></span>`+
@@ -814,11 +822,7 @@ function syncCur(){
   if(p&&p.id!==S.cur&&!selP&&!selN.length){S.cur=p.id;renderSide();renderSum();$('#pname').value=p.name;$('#pstart').value=p.start;$('#pdl').value=p.deadline||''}
 }
 function colorOf(n){const g=GM.get(n.id);return g?g.color:'#64748b'}
-function durTxt(n){
-  const lo=n.dmin!=null?Math.min(n.d,n.dmin):null,hi=n.dmax!=null?Math.max(n.d,n.dmax):null,u=n.unit==='c'?'일(달력)':'일';
-  if(lo==null&&hi==null)return n.d+u;
-  return `${n.d}${u} (${lo!=null?lo:n.d}~${hi!=null?hi:n.d})`;
-}
+function durTxt(n){return n.d+(n.unit==='c'?'일(달력)':'영업일')}   // 기간은 숫자 하나만 보인다
 // 시작~끝 사이를 "일하는 날 / 쉬는 날(주말·공휴일)" 덩어리로 나눈다. 달력일 작업은 전부 일하는 날로 센다.
 function dayRuns(es,ef,unit,K){
   if(unit==='c'||ef<es)return[{a:es,b:Math.max(es,ef),biz:true}];
@@ -834,11 +838,11 @@ function nodeHtml(n){
     let sp='';if(mem.length)sp=`${md(Math.min(...mem.map(m=>C[m.id].es)))}–${md(Math.max(...mem.map(m=>C[m.id].ef)))}`;
     // 날짜판에서는 묶음 상자가 가로로 길어서, 이름을 첫 작업이 시작하는 자리 위에 둔다
     const pl=view==='b'&&mem.length?Math.max(12,Math.min(...mem.map(m=>m.x))-n.x):12;
-    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div><i class="rs"></i></div>`;
+    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div><i class="rs"></i><i class="rsb" title="끌어서 묶음 높이 바꾸기"></i></div>`;
   }
   const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision';
-  const tdn=(n.todo||[]).length,tdk=(n.todo||[]).filter(i=>i.ok).length;
-  const bad=(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="할 일 ${tdn}개 중 ${tdk}개 끝남">할 일 ${tdk}/${tdn}</span>`:'');
+  const tdn=(n.todo||[]).filter(i=>!i.na).length,tdk=(n.todo||[]).filter(i=>i.ok&&!i.na).length;
+  const bad=(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="체크리스트 ${tdn}개 중 ${tdk}개 완료 (불필요는 빼고 셈)">체크 ${tdk}/${tdn}</span>`:'');
   const nf=(n.files||[]).length,nc=(n.files||[]).filter(f=>f.st==='c').length;
   const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
   const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
@@ -846,8 +850,8 @@ function nodeHtml(n){
   return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${stc}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
     <div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
-    <div class="sub"><span>${durTxt(n)}</span><span>${C[n.id]?md(x.es)+'–'+md(x.ef):''}</span></div>
-    ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="re" title="끌어서 기간 바꾸기"></i>'}<i class="pt" title="끌어서 다른 카드에 놓으면 연결"></i></div>`;
+    <div class="sub"><span>${durTxt(n)}</span></div>
+    ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="re" title="끌어서 기간 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
 function renderLinks(){
@@ -966,7 +970,7 @@ board.addEventListener('pointerdown',e=>{
   if(t.closest('.hint,.ck'))return;
   const pc=t.closest('.pcard');if(pc){startPan(e,()=>focusProduct(pc.dataset.pid));return}
   const pt=t.closest('.pt');if(pt){startLink(e,pt.closest('.nd').dataset.id);return}
-  const rs=t.closest('.rs');if(rs){startResize(e,rs.closest('.nd').dataset.id);return}
+  const rs=t.closest('.rs,.rsb');if(rs){startResize(e,rs.closest('.nd').dataset.id);return}
   const pfh=t.closest('.pfh');if(pfh){selectProduct(pfh.closest('.pf').dataset.pid);e.preventDefault();return}
   const re=t.closest('.re');if(re){startResizeTask(e,re.closest('.nd').dataset.id);return}
   if(t.closest('.nd.task,.nd.dec,.gh')){startDrag(e,t.closest('.nd').dataset.id,e.shiftKey||e.ctrlKey||e.metaKey);return}
@@ -1045,6 +1049,19 @@ function startResizeTask(e,id){
 }
 // 옆으로 끌어 놓았을 때: 그 날짜로 시작하게 하는 방법을 고른다. 방법마다 실제로 며칠에 시작하게 되는지 미리 계산해 보여준다
 let shiftCtx=null;
+// 화살표를 다른 카드에 놓았을 때: 어떻게 이을지 고른다
+function openLinkPop(fromId,toId,ev){
+  const a=nodeById(fromId),b=nodeById(toId);if(!a||!b)return;
+  if(S.links.some(l=>l.from===fromId&&l.to===toId)){toast('이미 이어져 있습니다. 선을 누르면 방식을 바꿀 수 있습니다.');return}
+  const pop=$('#shiftpop'),stg=$('#stage').getBoundingClientRect();
+  pop.innerHTML=`<b>"${esc(a.name)}" → "${esc(b.name)}"<br>어떻게 이을까요?</b>
+    <button data-lo="fs">앞 작업이 끝나면 시작<small>끝난 다음 영업일부터</small></button>
+    <button data-lo="ss">같이 시작<small>앞 작업이 시작하는 날 같이 시작</small></button>
+    <div class="lorow"><span>앞 작업 끝나기</span><input type="number" min="1" value="3" data-lon><span>영업일 전에 시작</span><button data-lo="pre">이렇게</button></div>
+    <button data-lo="x">취소</button>`;
+  shiftCtx={link:true,fromId,toId};pop.style.display='flex';
+  pop.style.left=clamp(ev.clientX-stg.left+10,8,stg.width-310)+'px';pop.style.top=clamp(ev.clientY-stg.top+10,8,stg.height-230)+'px';
+}
 function closeShift(){const p=$('#shiftpop');if(p)p.style.display='none';shiftCtx=null}
 function openShift(n,target){
   const K=R.K,t=K.nextW(target),P=pById(n.p),x0=C[n.id];if(!x0)return;
@@ -1068,7 +1085,15 @@ function openShift(n,target){
   const er=el?el.getBoundingClientRect():br;
   pop.style.left=clamp(er.left-stg.left,8,stg.width-310)+'px';pop.style.top=clamp(er.bottom-stg.top+10,8,stg.height-260)+'px';
 }
-$('#shiftpop').addEventListener('click',e=>{const b=e.target.closest('[data-so]');if(!b||!shiftCtx)return;const {n,opts}=shiftCtx;
+$('#shiftpop').addEventListener('click',e=>{
+  const lb=e.target.closest('[data-lo]');
+  if(lb&&shiftCtx&&shiftCtx.link){const {fromId,toId}=shiftCtx,v=lb.dataset.lo;closeShift();if(v==='x')return;
+    const a=nodeById(fromId),P=pById(a.p),end0=prodEnd(P);if(!addLink(fromId,toId))return;
+    const l=S.links[S.links.length-1];
+    if(v==='ss'){l.kind='ss';l.lag=0}
+    if(v==='pre'){const k=Math.max(1,parseInt($('#shiftpop [data-lon]')?.value)||3);l.kind='fs';l.lag=-k}
+    save();R=calc();render();const note=impactNote(P,end0);toast(`이었습니다: ${linkLong(l.kind,lagOf(l))}.${note?' '+note:''}`);return}
+  const b=e.target.closest('[data-so]');if(!b||!shiftCtx||shiftCtx.link)return;const {n,opts}=shiftCtx;
   if(b.dataset.so==='x'){closeShift();render();return}
   const o=opts[+b.dataset.so],P=pById(n.p),end0=prodEnd(P);o.go();closeShift();save();R=calc();render();
   const note=impactNote(P,end0);toast(`${md(C[n.id].es)}부터 시작합니다.${note?' '+note:''}`)});
@@ -1088,7 +1113,8 @@ function startProductDrag(e,pid){
 }
 function startResize(e,id){
   const g=nodeById(id),w0=g.w,h0=g.h;
-  track(e,(dx,dy)=>{g.w=Math.max(220,snap(w0+dx/cam.z));g.h=Math.max(120,snap(h0+dy/cam.z));const el=nodeEl(id);el.style.width=g.w+'px';el.style.height=g.h+'px'},moved=>{if(moved){save();render()}});
+  // 날짜판에서는 묶음이 가로로 날짜 전체를 덮으므로 높이만 바꾼다. 안의 카드보다 낮게는 줄지 않는다
+  track(e,(dx,dy)=>{if(view!=='b')g.w=Math.max(220,snap(w0+dx/cam.z));g.h=Math.max(80,snap(h0+dy/cam.z));const el=nodeEl(id);el.style.width=g.w+'px';el.style.height=g.h+'px'},moved=>{if(moved){save();render()}});
 }
 function addLink(from,to){
   if(from===to)return false;const a=nodeById(from),b=nodeById(to);
@@ -1110,7 +1136,7 @@ function startLink(e,fromId){
   },(moved,ev)=>{
     tmp.remove();if(hl)hl.classList.remove('hl');if(!moved)return;
     const el=document.elementFromPoint(ev.clientX,ev.clientY),nd=el&&el.closest('.nd.task,.nd.dec');
-    if(nd){if(addLink(fromId,nd.dataset.id)){save();render()}}
+    if(nd){if(nd.dataset.id!==fromId)openLinkPop(fromId,nd.dataset.id,ev)}
     else if(el&&board.contains(el)&&!el.closest('.pcard')){
       const p=toWorld(ev.clientX,ev.clientY),n=newNode('task',snap(p.x+20),snap(p.y-TH/2),a.p);
       S.nodes.push(n);freeSpot(n);addLink(fromId,n.id);save();selectNodes([n.id]);
@@ -1573,19 +1599,16 @@ function renderPanel(){
       h=`<label class="f"><span>${dec?'무엇을 정하나':'작업 이름'}</span><input data-f="name" value="${esc(n.name)}"></label>`+
       (dec?`<label class="f"><span>누가 정하나</span><input data-f="who" value="${esc(n.who)}" placeholder="이름 또는 팀"></label>`:'')+
       `<div class="seg"><button data-st="wait" class="${st==='wait'?'on':''}">대기</button><button data-st="doing" class="${st==='doing'?'on':''}">진행 중</button><button data-st="done" class="${st==='done'?'on':''}">끝남</button></div>
-      <div class="line${x.late||x.over?' bad':''}">${C[n.id]?`${md(x.es)} ~ ${md(x.ef)} · ${durTxt(n)}${n.conf==='c'?'':' · 가정'}`:''}${x.late?' · 늦음':''}${x.over?' · 마감 넘김':''}</div>
+      <div class="dur"><span>기간</span><input type="number" min="1" data-f="d" value="${n.d}" title="숫자만 넣으면 박스 길이와 끝나는 날이 바로 바뀝니다"><span>${n.unit==='c'?'달력일':'영업일'}</span><span class="dd" id="pndd">${C[n.id]?`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]})`:''}</span></div>
+      ${x.late||x.over?`<div class="line bad">${x.late?'계획보다 늦어지고 있음':''}${x.late&&x.over?' · ':''}${x.over?'마감일 넘길 예정':''}</div>`:''}
       ${chatHtml(n)}
-      <div class="box"><b>할 일 <span class="mut">${td.filter(i=>i.ok).length}/${td.length}</span></b>
-        ${td.map((i,k)=>`<div class="todo${i.ok?' ok':''}"><input type="checkbox" data-tdk="${k}" ${i.ok?'checked':''}><span>${esc(i.t)}</span><button data-tdx="${k}" title="지우기">×</button></div>`).join('')}
-        <div class="lgin"><input data-tdnew placeholder="할 일 추가 (Enter)"><button data-tdadd>추가</button></div></div>`+
-      fold('dur','기간',durTxt(n)+(n.conf==='c'?' · 확인됨':' · 가정'),
-        `<div class="three"><label class="f"><span>빠르면</span><input type="number" min="1" data-f="dmin" value="${n.dmin==null?'':n.dmin}" placeholder="-"></label>
-        <label class="f"><span>보통</span><input type="number" min="1" data-f="d" value="${n.d}"></label>
-        <label class="f"><span>늦으면</span><input type="number" min="1" data-f="dmax" value="${n.dmax==null?'':n.dmax}" placeholder="-"></label></div>
-        <label class="f"><span>세는 방식</span><select data-f="unit"><option value="w" ${n.unit!=='c'?'selected':''}>영업일 (주말·공휴일 건너뜀)</option><option value="c" ${n.unit==='c'?'selected':''}>달력일 (배송·건조·숙성)</option></select></label>
-        <div class="chips"><button data-conf="g" class="${n.conf!=='c'?'on':''}" title="협업팀 회신 전 추정">가정</button><button data-conf="c" class="${n.conf==='c'?'on':''}" title="회신·실제 소요일로 확인">확인됨</button></div>
-        ${AI_ON?`<button class="ai" data-a="est">AI에게 며칠 걸릴지 묻기</button>${est?estHtml(est):''}`:''}
-        <div class="three"><label class="f"><span>실제 시작한 날</span><input type="date" data-f="started" value="${n.started}"></label><label class="f"><span>실제 끝난 날</span><input type="date" data-f="done" value="${n.done}"></label></div>
+      <div class="box"><b>체크리스트 <span class="mut">${(()=>{const ok=td.filter(i=>i.ok&&!i.na).length,na=td.filter(i=>i.na).length,left=td.length-ok-na;return td.length?`완료 ${ok} · 불필요 ${na} · 남음 ${left}`:'비어 있음'})()}</span></b>
+        ${td.map((i,k)=>{const st=i.na?'na':i.ok?'ok':'';return `<div class="todo${i.ok&&!i.na?' ok':''}${i.na?' na':''}"><button class="tds ${st}" data-tds="${k}" title="누를 때마다 미완 → 완료 → 불필요">${st==='ok'?'✓ 완료':st==='na'?'— 불필요':'□ 미완'}</button><span>${esc(i.t)}</span><button data-tdx="${k}" title="지우기">×</button></div>`}).join('')}
+        <div class="lgin"><input data-tdnew placeholder="항목 추가 (Enter)"><button data-tdadd>추가</button></div>
+        <div class="tdrow"><select data-tpl><option value="">틀 불러오기…</option>${(S.templates||[]).map((t,i)=>`<option value="${i}">${esc(t.name)} (${t.items.length})</option>`).join('')}<option value="save">지금 목록을 틀로 저장…</option></select></div></div>`+
+      fold('real','실제 날짜',n.done?'끝난 날 '+md(num(n.done)):n.started?'시작한 날 '+md(num(n.started)):'기록 없음',
+        `<div class="three"><label class="f"><span>실제 시작한 날</span><input type="date" data-f="started" value="${n.started}"></label><label class="f"><span>실제 끝난 날</span><input type="date" data-f="done" value="${n.done}"></label></div>
+        <label class="f"><span>세는 방식</span><select data-f="unit"><option value="w" ${n.unit!=='c'?'selected':''}>영업일 (주말·공휴일 건너뜀)</option><option value="c" ${n.unit==='c'?'selected':''}>달력일 (배송·건조처럼 쉬는 날도 흐름)</option></select></label>
         <div class="info" id="pninfo">${infoHtml(n)}</div>`)+
       fold('cond','날짜 조건',dc,
         `<div class="three"><label class="f" title="앞 작업이 일찍 끝나도 이 날까지 기다린다 (감리 일정·업체 휴무 등)"><span>이 날 이후 시작</span><input type="date" data-f="notBefore" value="${n.notBefore}"></label>
@@ -1649,12 +1672,15 @@ $('#pnb').addEventListener('input',e=>{
   if((f==='start')&&!v)return;
   o[f]=v;save();render(true);
   const inf=$('#pninfo');if(inf&&o.type)inf.innerHTML=infoHtml(o);
+  const dd=$('#pndd'),x=o.type&&C[o.id];if(dd&&x)dd.textContent=`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]})`;
 });
 $('#pnb').addEventListener('change',e=>{
   const o=curTarget();if(!o)return;
   if('doneck' in e.target.dataset){if(o.type)setDone(o,e.target.checked)}
   else if('startck' in e.target.dataset){if(o.type)setStarted(o,e.target.checked)}
-  else if('tdk' in e.target.dataset){const i=o.todo&&o.todo[+e.target.dataset.tdk];if(i){i.ok=e.target.checked;if(i.ok)addLog(o,'할 일 끝남: '+i.t);save();render()}}
+  else if('tpl' in e.target.dataset){const v=e.target.value;e.target.value='';if(v==='')return;
+    if(v==='save'){if(!o.todo.length){toast('저장할 항목이 없습니다.');return}const nm=prompt('틀 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 틀로 저장했습니다. 다른 작업에서 불러올 수 있습니다.`);return}
+    const t=(S.templates||[])[+v];if(!t)return;const have=new Set(o.todo.map(i=>i.t));let k=0;t.items.forEach(x=>{if(!have.has(x)){o.todo.push({t:x,ok:false});k++}});save();render();toast(`"${t.name}" 틀에서 ${k}개 넣었습니다.`)}
   else if(['done','start','deadline','started','notBefore','due'].includes(e.target.dataset.f)){render()}
 });
 // 연결 칸: 기준(끝·시작)과 간격을 바꾼다. 연결을 고른 상태라 작업 칸 처리와 따로 둔다
@@ -1673,6 +1699,9 @@ $('#pnb').addEventListener('click',e=>{
     if(v==='doing'){if(n.done){n.done='';save()}if(!n.started){setStarted(n,true)}else render();return}
     if(v==='done'){if(!n.done)setDone(n,true);return}}
   if(b.dataset.tdx!=null&&n){n.todo.splice(+b.dataset.tdx,1);save();render();return}
+  if(b.dataset.tds!=null&&n){const i=n.todo[+b.dataset.tds];if(!i)return;   // 미완 → 완료 → 불필요 → 미완
+    if(!i.ok&&!i.na){i.ok=true;addLog(n,'체크 완료: '+i.t)}else if(i.ok&&!i.na){i.ok=false;i.na=true;addLog(n,'체크 불필요: '+i.t)}else{i.na=false;i.ok=false}
+    save();render();return}
   if(b.dataset.conf&&n){n.conf=b.dataset.conf;save();render();return}
   const a=b.dataset.a;if(!a)return;
   if(a==='inslink'){const l=S.links.find(x=>x.id===selL);if(l)insertOnLink(l);return}
