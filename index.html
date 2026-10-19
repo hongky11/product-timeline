@@ -36,6 +36,12 @@ input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:6px
 .bad{color:var(--red);font-weight:700}.ok{color:var(--grn);font-weight:700}
 /* 작업 영역: 왼쪽 제품 목록 | 도구 | 보드 | 편집창 — 서로 겹치지 않고 나란히 놓는다 */
 #work{flex:1;min-height:0;display:flex}
+#side,#side-t{display:none!important}   /* 제품 목록은 위쪽 탭으로 옮김 */
+#ptabs{display:flex;gap:4px;padding:6px 14px 0;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+#ptabs .pt2{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;padding:6px 12px;background:#f4f6fa;white-space:nowrap;font-weight:700}
+#ptabs .pt2.on{background:#fff;color:var(--blue);box-shadow:0 1px 0 #fff}
+#ptabs .pt2 small{font-weight:400;color:var(--mut)}#ptabs .pt2.add{font-weight:400;color:var(--mut)}
+#ptabs .st{width:9px;height:9px;border-radius:50%;background:#9aa3b2}#ptabs .st.red{background:var(--red)}#ptabs .st.amb{background:var(--amb)}#ptabs .st.grn{background:#22a05b}
 #side{width:216px;flex:none;border-right:1px solid var(--line);background:#fff;display:flex;flex-direction:column;overflow:hidden}
 #side .hd{padding:10px 12px 6px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
 #side .ls{flex:1;overflow:auto;padding:0 8px}
@@ -124,10 +130,33 @@ section{position:absolute;inset:0}
 #lk path.lh{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer}
 #lk path.tmp{fill:none;stroke:var(--blue);stroke-width:2;stroke-dasharray:6 4}
 #gd line{stroke:#e11d48;stroke-width:1.2;vector-effect:non-scaling-stroke}
-.pf{position:absolute;border:2px dashed #b4bfd0;border-radius:24px;background:rgba(255,255,255,.55);pointer-events:none}
+.pf{position:absolute;border:2px dashed #b4bfd0;border-radius:24px;background:transparent;pointer-events:none}
+/* 날짜판: 하루 칸, 쉬는 날, 오늘, 목표 입고일 */
+.dgrid{position:absolute;pointer-events:none;background-image:linear-gradient(90deg,#e3e8f0 1px,transparent 1px)}
+.dwk{position:absolute;width:0;border-left:1px solid #c5cedb;pointer-events:none}
+.doff{position:absolute;background:rgba(239,68,68,.07);pointer-events:none}
+.doff.hol{background:rgba(239,68,68,.16)}
+.doff span{position:absolute;top:6px;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;font-size:11px;color:#b42318;font-weight:700;white-space:nowrap}
+.dtoday{position:absolute;background:rgba(37,99,235,.08);border-left:2px solid var(--blue);pointer-events:none}
+.ddl{position:absolute;width:0;border-left:2px dashed var(--red);pointer-events:none}
+#ruler{position:absolute;left:0;right:0;top:0;height:46px;background:#fff;border-bottom:1px solid var(--line);z-index:5;pointer-events:none;overflow:hidden;font-size:11px}
+#ruler .rmr,#ruler .rdr{position:absolute;left:0;right:0}#ruler .rmr{top:2px;height:16px}#ruler .rdr{top:18px;height:28px}
+#ruler .rm{position:absolute;font-weight:700;color:#334;padding-left:3px;border-left:1px solid #c5cedb}
+#ruler .rd{position:absolute;top:0;height:28px;text-align:center;color:#334;border-left:1px solid #eef1f5;line-height:13px;overflow:hidden}
+#ruler .rd i{display:block;font-style:normal;color:var(--mut);font-size:10px}#ruler .rd em{display:block;font-style:normal;font-size:9px;white-space:nowrap}
+#ruler .rd.off{color:#c0392b;background:rgba(239,68,68,.07)}#ruler .rd.off i{color:#c0392b}
+#ruler .rd.td{background:rgba(37,99,235,.15);font-weight:700}
+.nd .dl{position:absolute;left:0;top:-17px;font-size:11px;color:#334;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.nd .dl b{color:var(--red)}
+.nd .re{position:absolute;right:-3px;top:0;bottom:0;width:7px;cursor:ew-resize}
+.dtip{position:absolute;z-index:9;background:#1d2433;color:#fff;font-size:12px;padding:3px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;display:none}
+#lk text.lt{font-size:11px;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:3px}
+#shiftpop{position:absolute;z-index:20;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(20,30,50,.18);padding:10px;display:none;flex-direction:column;gap:6px;width:300px}
+#shiftpop b{font-size:13px}#shiftpop button{text-align:left;padding:7px 10px}#shiftpop button small{display:block;color:var(--mut)}
+#pn .lkset{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#pn .lkset input{width:56px}
 .pf.cur{border-color:#8fb0f0}
 .pf.psel{box-shadow:0 0 0 3px rgba(37,99,235,.45)}
-.pf .pfh{pointer-events:auto;cursor:move;display:flex;gap:14px;align-items:center;padding:10px 20px;font-size:20px;border-radius:22px 22px 0 0;background:rgba(235,241,251,.9)}
+.pf .pfh{pointer-events:auto;cursor:pointer;display:flex;gap:14px;align-items:center;padding:10px 20px;font-size:20px;border-radius:22px 22px 0 0;background:rgba(235,241,251,.9)}
 .pf .pfh b{font-size:22px}
 .pf .pfh span{font-size:15px;color:var(--mut)}
 .pf .pfh .c{font-weight:700;padding:1px 10px;border-radius:12px;font-size:14px}
@@ -138,11 +167,11 @@ section{position:absolute;inset:0}
 .nd.task:not(.cf){border-style:dashed}
 .nd.dec{background:#fff6e0;border:2px solid var(--amb);padding:7px 10px 6px 30px;box-shadow:0 2px 6px rgba(20,30,50,.08);border-radius:26px 12px 26px 12px}
 .nd.dec:not(.cf){border-style:dashed}
-.nd .tt{font-weight:700;line-height:1.25;max-height:2.5em;overflow:hidden;word-break:keep-all}
+.nd .tt{font-weight:700;line-height:1.25;white-space:nowrap;text-shadow:0 0 3px #fff}
 .nd .sub{display:flex;justify-content:space-between;gap:6px;color:var(--mut);font-size:11px;margin-top:3px;white-space:nowrap}
 .nd .ckw{position:absolute;left:7px;top:8px;display:block;line-height:0}
 .nd .ck{width:16px;height:16px;margin:0;cursor:pointer}
-.nd .bd{position:absolute;right:8px;top:-9px;display:flex;gap:4px}
+.nd .bd{position:absolute;right:8px;bottom:-9px;display:flex;gap:4px}
 .nd .bd span{font-size:10px;font-weight:700;border-radius:9px;padding:1px 7px;background:#fff;border:1px solid var(--line)}
 .nd .bd .late{background:#fde8e8;color:var(--red);border-color:#f5b5b5}
 .nd .bd .warn{background:#fff1d6;color:#8a4b00;border-color:#f3cf8f}
@@ -276,6 +305,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <button id="undo" title="Ctrl+Z">되돌리기</button>
   <button id="set">설정</button>
 </header>
+<nav id="ptabs"></nav>
 <div id="sum"></div>
 <div id="work">
   <aside id="side">
@@ -285,6 +315,7 @@ dialog td.d{width:130px;color:var(--mut)}
   </aside>
   <nav id="tools"></nav>
   <main id="stage">
+    <div id="shiftpop"></div>
     <section id="board">
       <div id="world">
         <div id="pfs"></div>
@@ -293,6 +324,7 @@ dialog td.d{width:130px;color:var(--mut)}
         <svg id="gd"></svg>
       </div>
       <div id="sl"></div>
+      <div id="ruler"></div>
     </section>
     <section id="time">
       <div class="tl" id="tl"></div>
@@ -362,7 +394,7 @@ const WD=['일','월','화','수','목','금','토'];
 const uid=()=>'x'+Math.random().toString(36).slice(2,9);
 const TODAY=(()=>{const p=new URLSearchParams(location.search).get('today');if(p&&/^\d{4}-\d\d-\d\d$/.test(p))return num(p);const d=new Date();return num(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)})();
 const COLORS=['#2f7dd1','#d9801a','#8a5cc2','#2e9e6b','#c2415a','#0f8b8d'];
-const TW=176,TH=68,LOD=.55,MINZ=.12,MAXZ=1.8;
+const TW=176,TH=60,LOD=0,MINZ=.15,MAXZ=2.5,DW=34,RULER=46,ROWH=TH+30;   // DW: 날짜판에서 하루 너비. LOD 0: 축소해도 요약 카드로 바꾸지 않는다
 const snap=v=>Math.round(v/8)*8;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
@@ -460,7 +492,7 @@ function norm(o){
     if(n.type!=='group'){n.files=n.files||[];n.arch=n.arch||[];n.log=n.log||[];n.unit=n.unit==='c'?'c':'w'}
     if(n.type!=='group'){n.conf=n.conf||'g';n.d=Math.max(1,+n.d||1);n.dmin=n.dmin>0?+n.dmin:null;n.dmax=n.dmax>0?+n.dmax:null;
       n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.notion=n.notion||''}});
-  o.links.forEach(l=>{l.kind=l.kind==='ss'?'ss':'fs'});
+  o.links.forEach(l=>{l.kind=l.kind==='ss'?'ss':'fs';l.lag=l.lag!=null&&!isNaN(+l.lag)?Math.round(+l.lag):(l.kind==='ss'?0:1)});
   if(!o.holidays)o.holidays=DEF_H.map(h=>({...h}));
   o.trash=o.trash||[];
   if(!(o.warn>0))o.warn=5;
@@ -548,13 +580,16 @@ function mkCal(){
   const addW=(n,k)=>{n=nextW(n);while(k>0){n=nextW(n+1);k--}return n};
   const subW=(n,k)=>{n=prevW(n);while(k>0){n=prevW(n-1);k--}return n};
   const cntW=(a,b)=>{let c=0;if(b>=a){for(let i=a+1;i<=b;i++)if(isW(i))c++;return c}for(let i=b+1;i<=a;i++)if(isW(i))c--;return c};
-  return{H,isW,nextW,prevW,addW,subW,cntW};
+  const shiftW=(n,k)=>{if(k>0){for(let i=0;i<k;i++)n=nextW(n+1)}else if(k<0){for(let i=0;i<-k;i++)n=prevW(n-1)}return n};   // n 에서 영업일 k 일 뒤(음수면 앞)
+  return{H,isW,nextW,prevW,addW,subW,cntW,shiftW};
 }
 function schedule(K,mode,full,P){
   const T=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),byId=Object.fromEntries(T.map(t=>[t.id,t]));
   const pre={},succ={};
   // 연결 종류: fs = 앞 작업이 끝나야 시작, ss = 앞 작업과 같이 시작(앞 작업 시작일보다 먼저 시작하지 않음)
-  S.links.forEach(l=>{if(byId[l.from]&&byId[l.to]){(pre[l.to]=pre[l.to]||[]).push({id:l.from,k:l.kind});(succ[l.from]=succ[l.from]||[]).push({id:l.to,k:l.kind})}});
+  // 간격 g: 기준일에서 영업일 g 일 뒤에 시작할 수 있다 (끝 기준 기본 1 = 다음 영업일, 시작 기준 기본 0 = 같은 날, 음수면 그만큼 앞서)
+  const lg=l=>l.lag!=null&&!isNaN(+l.lag)?+l.lag:(l.kind==='ss'?0:1);
+  S.links.forEach(l=>{if(byId[l.from]&&byId[l.to]){(pre[l.to]=pre[l.to]||[]).push({id:l.from,k:l.kind,g:lg(l)});(succ[l.from]=succ[l.from]||[]).push({id:l.to,k:l.kind,g:lg(l)})}});
   const order=[],st={};let cyc=false;
   const visit=id=>{if(st[id]===2)return;if(st[id]===1){cyc=true;return}st[id]=1;(pre[id]||[]).forEach(p=>visit(p.id));st[id]=2;order.push(byId[id])};
   T.forEach(t=>visit(t.id));
@@ -562,7 +597,7 @@ function schedule(K,mode,full,P){
   const dur=t=>{const d=Math.max(1,+t.d||1);if(mode==='min')return Math.min(d,+t.dmin||d);if(mode==='max')return Math.max(d,+t.dmax||d);return d};
   const c={},start=K.nextW(num(P.start)),todayW=K.nextW(TODAY);
   order.forEach(t=>{
-    let es=start;(pre[t.id]||[]).forEach(p=>{es=Math.max(es,p.k==='ss'?c[p.id].es:K.nextW(c[p.id].ef+1))});
+    let es=start;(pre[t.id]||[]).forEach(p=>{es=Math.max(es,K.shiftW(p.k==='ss'?c[p.id].es:c[p.id].ef,p.g))});
     if(t.notBefore)es=Math.max(es,num(t.notBefore));   // 이 날 이후 시작
     es=K.nextW(es);
     if(t.started)es=num(t.started);   // 실제로 시작한 날이 있으면 그 날부터 센다
@@ -583,10 +618,10 @@ function schedule(K,mode,full,P){
     if(x.done){x.ls=x.es;x.lf=x.ef;x.slack=0;continue}
     const cal=t.unit==='c',de=cal?x.ef-x.es+1:K.cntW(x.es,x.ef)+1;
     const fsS=ss.filter(s=>s.k!=='ss'),ssS=ss.filter(s=>s.k==='ss');
-    x.lf=fsS.length?Math.min(...fsS.map(s=>K.prevW(c[s.id].ls-1))):target;
+    x.lf=fsS.length?Math.min(...fsS.map(s=>K.shiftW(c[s.id].ls,-s.g))):target;
     if(x.due!=null)x.lf=Math.min(x.lf,K.prevW(x.due));   // 작업 마감일도 늦어도 끝낼 날을 당긴다
     x.ls=cal?K.prevW(x.lf-de+1):K.subW(x.lf,de-1);
-    if(ssS.length)x.ls=Math.min(x.ls,...ssS.map(s=>c[s.id].ls));
+    if(ssS.length)x.ls=Math.min(x.ls,...ssS.map(s=>K.shiftW(c[s.id].ls,-s.g)));
     x.slack=K.cntW(x.es,x.ls);
   }
   const open=order.filter(t=>!c[t.id].done);
@@ -625,6 +660,7 @@ function prodStatus(r){
 // ---------- 전체 그리기 ----------
 function render(skipPanel){
   R=calc();
+  if(view==='b')placeByDate(curP());
   $('#undo').disabled=!undoStack.length;
   GM=new Map();S.nodes.forEach(n=>{if(n.type!=='group')GM.set(n.id,groupOf(n))});
   renderSum();renderSide();renderTools();
@@ -636,7 +672,7 @@ function render(skipPanel){
   $('#ai-plan').hidden=!AI_ON;$('#ai-rev').hidden=!AI_ON;$('#set-ai').hidden=!AI_ON;
   $('#tip').textContent=view==='c'?'날짜 칸을 누르면 그날 진행되는 작업이 오른쪽에 나옵니다. 막대를 누르면 그 작업을 고치고, 고른 작업은 파란 테두리로 보입니다.':view==='t'?'제품 줄의 ▾를 누르면 접히고 펴집니다. 막대나 이름을 누르면 오른쪽에서 고치고, 고른 작업의 날짜 구간이 파랗게 칠해집니다.':
     (cam.z<LOD?'지금은 요약 보기입니다. 제품 상자를 누르거나 휠로 확대하면 안쪽 카드가 보입니다.':
-    '빈 곳 더블클릭 = 작업 추가 · 카드 오른쪽 점을 끌어 다른 카드에 놓으면 연결 · Shift+끌기 = 여러 카드 선택 · 휠 = 확대/축소');
+    '빈 곳 더블클릭 = 그 날짜에 작업 추가 · 카드를 옆으로 끌면 날짜를 바꿀 방법을 고름 · 오른쪽 끝을 끌면 기간 · 오른쪽 점을 끌어 다른 카드에 놓으면 연결 · 휠 = 확대/축소');
 }
 function renderSum(){
   const alr=[],lnk=t=>`<a data-pick="${t.id}">${esc(t.name)}</a>`;
@@ -669,11 +705,13 @@ function renderSum(){
   $('#sum').innerHTML=err+alr.join('')+main;
 }
 function renderSide(){
-  $('#pls').innerHTML=S.products.map(P=>{
+  $('#ptabs').innerHTML=S.products.map(P=>{
     const r=R.per[P.id],s=prodStatus(r);
-    return `<div class="it${P.id===S.cur?' cur':''}" data-pid="${P.id}"><i class="st ${s.cls}"></i><div><b>${esc(P.name)}</b><small>${r&&!r.empty&&!r.err?'입고 '+md(r.pEnd)+' · '+s.txt+' · 완료 '+r.done+'/'+r.total:s.txt}</small></div></div>`;
-  }).join('');
+    return `<button class="pt2${P.id===S.cur?' on':''}" data-pid="${P.id}" title="${esc(P.name)}"><i class="st ${s.cls}"></i>${esc(P.name.replace(/\s*\(.*$/,''))}<small>${r&&!r.empty&&!r.err?'입고 '+md(r.pEnd)+' · '+s.txt:s.txt}</small></button>`;
+  }).join('')+'<button class="pt2 add" data-padd>＋ 제품</button>';
 }
+$('#ptabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if('padd' in b.dataset){addProduct();return}
+  S.cur=b.dataset.pid;selN=[];selL=null;selP=null;closeShift();if(view==='b'){render();focusProduct(S.cur,true)}else render()});
 $('#pls').addEventListener('click',e=>{const it=e.target.closest('[data-pid]');if(!it)return;S.cur=it.dataset.pid;if(view==='b')focusProduct(it.dataset.pid);else render()});
 $('#side-all').onclick=()=>{if(view==='b')fitAll();else toast('스케치 화면에서 누르면 모든 제품이 한 화면에 들어옵니다.')};
 $('#padd').onclick=addProduct;
@@ -701,9 +739,9 @@ function renderTools(){
     $('#tools').innerHTML=
       `<div class="tg"><b>마우스</b><button data-tool="hand" class="${tool==='hand'?'on':''}" title="빈 곳을 끌면 화면이 움직입니다">✋<span>이동</span></button><button data-tool="select" class="${tool==='select'?'on':''}" title="빈 곳을 끌면 상자가 그려지고 안의 카드가 선택됩니다 (Shift+끌기도 같음)">▭<span>선택</span></button></div>`+
       `<div class="tg"><b>끌어다 놓기</b><button data-add="task" title="작업 카드">＋<span>작업</span></button><button data-add="decision" title="사람이 정해야 하는 지점">◆<span>결정</span></button><button data-add="group" title="카드를 묶는 상자">▢<span>묶음</span></button></div>`+
-      `<div class="tg"><b>정렬${n<2?'':' ('+n+')'}</b>${al('l','왼쪽')}${al('cx','가운데')}${al('r','오른쪽')}${al('t','위')}${al('cy','중간')}${al('b','아래')}${al('dh','가로간격')}${al('dv','세로간격')}</div>`+
-      `<div class="tg"><b>자동 정리</b><button data-arr="one" title="이 제품의 카드를 앞뒤 순서와 묶음에 맞춰 다시 늘어놓습니다">⇶<span>이 제품</span></button><button data-arr="all" title="모든 제품을 정리하고 위아래로 나란히 놓습니다">⇶<span>모든 제품</span></button></div>`+
-      `<div class="tg"><b>보기</b><button data-z="in">＋<span>확대</span></button><div class="z" id="zpct">${Math.round(cam.z*100)}%</div><button data-z="out">－<span>축소</span></button><button data-z="prod" title="선택한 제품이 화면에 꽉 차게">▣<span>제품 보기</span></button><button data-z="all" title="모든 제품이 한 화면에 들어오게 축소">▦<span>전체 보기</span></button></div>`;
+      `<div class="tg"><b>줄 맞춤${n<2?'':' ('+n+')'}</b>${al('t','위')}${al('cy','중간')}${al('b','아래')}${al('dv','세로간격')}</div>`+
+      `<div class="tg"><b>자동 정리</b><button data-arr="one" title="겹치지 않게 묶음마다 줄을 다시 나눕니다 (날짜는 그대로)">⇶<span>줄 정리</span></button></div>`+
+      `<div class="tg"><b>보기</b><button data-z="in">＋<span>확대</span></button><div class="z" id="zpct">${Math.round(cam.z*100)}%</div><button data-z="out">－<span>축소</span></button><button data-z="prod" title="이 제품의 작업이 화면에 들어오게">▣<span>제품 보기</span></button><button data-z="today" title="오늘 날짜로 이동">●<span>오늘</span></button></div>`;
   }else if(view==='c'){
     $('#tools').innerHTML=`<div class="tg"><b>달력</b><button data-cal="prev">◀<span>이전 달</span></button><button data-cal="today">●<span>오늘</span></button><button data-cal="next">▶<span>다음 달</span></button></div>`;
   }else{
@@ -717,7 +755,7 @@ $('#tools').addEventListener('click',e=>{
   if(d.tool){tool=d.tool;board.classList.toggle('selmode',tool==='select');renderTools();return}
   if(d.al){alignSel(d.al);return}
   if(d.arr){arrange(d.arr);return}
-  if(d.z==='in'){zoomAt(1.25)}else if(d.z==='out'){zoomAt(1/1.25)}else if(d.z==='prod'){focusProduct(S.cur)}else if(d.z==='all'){fitAll()}
+  if(d.z==='in'){zoomAt(1.25)}else if(d.z==='out'){zoomAt(1/1.25)}else if(d.z==='prod'){focusProduct(S.cur)}else if(d.z==='today'){const r=board.getBoundingClientRect();cam.x=r.width/3-X(TODAY)*cam.z;applyCam()}
   if(d.tz==='in'){const i=STEPS.indexOf(dw);dw=STEPS[clamp((i<0?4:i)+1,0,STEPS.length-1)];render()}
   if(d.tz==='out'){const i=STEPS.indexOf(dw);dw=STEPS[clamp((i<0?4:i)-1,0,STEPS.length-1)];render()}
   if(d.tz==='open'){S.products.forEach(P=>P.col=false);save();render()}
@@ -733,6 +771,7 @@ function applyCam(){
   world.style.opacity=sum?0:1;world.style.pointerEvents=sum?'none':'';
   sl.style.display=sum?'block':'none';if(sum)posSumLayer();
   const z=$('#zpct');if(z)z.textContent=Math.round(cam.z*100)+'%';
+  renderRuler();
   $('#tip').textContent!==undefined&&(lastCam!==sum)&&(lastCam=sum,render(true));
 }
 const toWorld=(cx,cy)=>{const r=board.getBoundingClientRect();return{x:(cx-r.left-cam.x)/cam.z,y:(cy-r.top-cam.y)/cam.z}};
@@ -749,8 +788,16 @@ function fitBounds(b,pad,anim,readable){
   animT=requestAnimationFrame(step);
   fitBounds._t=setTimeout(()=>{cancelAnimationFrame(animT);cam=to;applyCam()},340);   // 화면이 가려져 애니메이션이 멈춰도 도착 위치는 보장한다
 }
-function focusProduct(pid,noAnim){const P=pById(pid);if(!P)return;S.cur=pid;fitBounds(frameOf(P),30,!noAnim,true);renderSide();const r=R.per[pid];if(document.activeElement!==$('#pname'))$('#pname').value=P.name;$('#pstart').value=P.start;$('#pdl').value=P.deadline||'';renderSum()}
+function focusProduct(pid,noAnim){const P=pById(pid);if(!P)return;S.cur=pid;
+  if(view==='b'){if(!R)R=calc();placeByDate(P);renderBoard();
+    // 날짜판: 글자가 읽히는 크기(75~100%)로 보이고, 가로로 넘치면 오늘 1주 전부터 보여준다
+    const f=frameOf(P),r=board.getBoundingClientRect();
+    if(r.width){const z=clamp((r.height-RULER-50)/f.h,.75,1);cam={z,x:30-f.x*z,y:RULER+16-f.y*z};
+      if(f.w*z>r.width-60)cam.x=30-Math.max(f.x,X(TODAY-7))*z;applyCam()}}
+  else fitBounds(frameOf(P),30,!noAnim,true);
+  renderSide();const r=R.per[pid];if(document.activeElement!==$('#pname'))$('#pname').value=P.name;$('#pstart').value=P.start;$('#pdl').value=P.deadline||'';renderSum()}
 function fitAll(){
+  if(view==='b'){focusProduct(S.cur);return}   // 날짜판은 제품 하나만 보인다
   const fs=S.products.map(frameOf),x0=Math.min(...fs.map(f=>f.x)),y0=Math.min(...fs.map(f=>f.y)),x1=Math.max(...fs.map(f=>f.x+f.w)),y1=Math.max(...fs.map(f=>f.y+f.h));
   fitBounds({x:x0,y:y0,w:x1-x0,h:y1-y0},30,true);
 }
@@ -761,6 +808,7 @@ function zoomAt(f,cx,cy){
 function centerOn(id){const n=nodeById(id);if(!n||view!=='b')return;const r=board.getBoundingClientRect();if(cam.z<LOD)cam.z=.8;cam.x=r.width/2-(n.x+n.w/2)*cam.z;cam.y=r.height/2-(n.y+n.h/2)*cam.z;applyCam()}
 // 화면 한가운데에 있는 제품을 "지금 제품"으로 삼는다
 function syncCur(){
+  return;   // 날짜판은 탭으로 제품을 고른다. 화면 가운데로 제품을 바꾸지 않는다
   if(view!=='b'||cam.z<LOD)return;
   const r=board.getBoundingClientRect(),p=productAt((r.width/2-cam.x)/cam.z,(r.height/2-cam.y)/cam.z);
   if(p&&p.id!==S.cur&&!selP&&!selN.length){S.cur=p.id;renderSide();renderSum();$('#pname').value=p.name;$('#pstart').value=p.start;$('#pdl').value=p.deadline||''}
@@ -784,38 +832,89 @@ function nodeHtml(n){
   if(n.type==='group'){
     const mem=S.nodes.filter(m=>m.type!=='group'&&GM.get(m.id)===n&&C[m.id]);
     let sp='';if(mem.length)sp=`${md(Math.min(...mem.map(m=>C[m.id].es)))}–${md(Math.max(...mem.map(m=>C[m.id].ef)))}`;
-    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh"><b>${esc(n.name)}</b><span>${sp}</span></div><i class="rs"></i></div>`;
+    // 날짜판에서는 묶음 상자가 가로로 길어서, 이름을 첫 작업이 시작하는 자리 위에 둔다
+    const pl=view==='b'&&mem.length?Math.max(12,Math.min(...mem.map(m=>m.x))-n.x):12;
+    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div><i class="rs"></i></div>`;
   }
   const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision';
   const tdn=(n.todo||[]).length,tdk=(n.todo||[]).filter(i=>i.ok).length;
   const bad=(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="할 일 ${tdn}개 중 ${tdk}개 끝남">할 일 ${tdk}/${tdn}</span>`:'');
   const nf=(n.files||[]).length,nc=(n.files||[]).filter(f=>f.st==='c').length;
-  const fl=nf?`<span class="fl${nc===nf?' all':''}" title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'';
+  const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
+  const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
   const fw=flowOf(n),stc=fw.k?`<span class="stc ${fw.k}" title="${esc(fw.tip)}">${fw.k==='active'?'진행 중':fw.k==='turn'?'시작할 차례':'다음 단계'}</span>`:'';
   return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${stc}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
     <div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
     <div class="sub"><span>${durTxt(n)}</span><span>${C[n.id]?md(x.es)+'–'+md(x.ef):''}</span></div>
-    ${bad?`<div class="bd">${bad}</div>`:''}<i class="pt" title="끌어서 다른 카드에 놓으면 연결"></i></div>`;
+    ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="re" title="끌어서 기간 바꾸기"></i>'}<i class="pt" title="끌어서 다른 카드에 놓으면 연결"></i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
 function renderLinks(){
   lkg.innerHTML=S.links.map(l=>{
-    const a=nodeById(l.from),b=nodeById(l.to);if(!a||!b)return'';
+    const a=nodeById(l.from),b=nodeById(l.to);if(!a||!b||(view==='b'&&a.p!==S.cur))return'';
+    const lt=linkTxt(l),mx=(a.x+a.w+b.x)/2,my=(a.y+b.y+a.h)/2-6;
     const d=curve(a.x+a.w,a.y+a.h/2,b.x-2,b.y+b.h/2);
     const crit=C[a.id]&&C[b.id]&&C[a.id].crit&&C[b.id].crit,s=selL===l.id;
-    return `<path class="v${crit?' crit':''}${s?' sel':''}${l.kind==='ss'?' ss':''}" data-lid="${l.id}" d="${d}" marker-end="url(#${crit?'arc':'ar'})"/><path class="lh" data-id="${l.id}" d="${d}"/>`;
+    return `<path class="v${crit?' crit':''}${s?' sel':''}${l.kind==='ss'||lagOf(l)<=0?' ss':''}" data-lid="${l.id}" d="${d}" marker-end="url(#${crit?'arc':'ar'})"/><path class="lh" data-id="${l.id}" d="${d}"/>${lt?`<text class="lt" x="${mx}" y="${my}" text-anchor="middle">${esc(lt)}</text>`:''}`;
   }).join('');
 }
+// ---------- 날짜판 ----------
+// 박스 왼쪽 끝 = 시작일, 오른쪽 끝 = 끝나는 날. 위아래(줄)만 사용자가 정한다.
+let BR={a:0,b:0};
+const X=d=>(d-BR.a)*DW;
+function boardRange(P){
+  const r=R&&R.per[P.id],s0=num(P.start);let a=s0-7;while(dow(a)!==1)a--;   // 시작일 1주 전 월요일부터
+  const ends=[s0+60,TODAY];if(r&&!r.empty&&!r.err){ends.push(r.pEnd,r.pHi||r.pEnd)}if(P.deadline)ends.push(num(P.deadline));
+  return{a,b:Math.max(...ends)+21};
+}
+function placeByDate(P){
+  if(!P)return;BR=boardRange(P);
+  const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort((a,b)=>a.y-b.y);
+  ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+2;n.w=Math.max(DW*(x.ef-x.es+1)-4,DW-4)});
+  gs.forEach(g=>{g.x=X(BR.a)-12;g.w=X(BR.b+1)+24-g.x});
+  const gm=new Map(ts.map(n=>[n,groupOf(n)]));
+  // 같은 날짜에 겹치는 카드는 아래 줄로 비킨다 (위에 있는 카드가 자리를 지킨다)
+  const placed=[],hitR=(n,o)=>n.x<o.x+o.w+2&&n.x+n.w+2>o.x&&n.y<o.y+o.h+24&&n.y+n.h+24>o.y;
+  [...ts].sort((a,b)=>a.y-b.y||a.x-b.x).forEach(n=>{let k=0,hs;while((hs=placed.filter(o=>hitR(n,o))).length&&k++<80)n.y=Math.max(...hs.map(o=>o.y+o.h+24));placed.push(n)});
+  // 묶음 상자는 안의 카드가 다 들어가게 늘리고, 아래 묶음과 겹치면 아래 묶음을 민다
+  gs.forEach(g=>{const ms=ts.filter(n=>gm.get(n)===g);if(ms.length)g.h=Math.max(g.h,Math.max(...ms.map(n=>n.y+n.h))-g.y+18)});
+  for(let i=1;i<gs.length;i++){const p=gs[i-1],g=gs[i],need=p.y+p.h+20-g.y;if(need>0){g.y+=need;ts.forEach(n=>{if(gm.get(n)===g)n.y+=need})}}
+}
+function boardFrame(P){const f=frameOf(P);return{x:X(BR.a),y:f.y,w:X(BR.b+1)-X(BR.a),h:f.h}}
+function daysHtml(P,f){
+  const K=R.K;let o='';
+  for(let d=BR.a;d<=BR.b;d++){
+    if(!K.isW(d)){const h=S.holidays.find(x=>num(x.d)===d);o+=`<div class="doff${h?' hol':''}" style="left:${X(d)}px;top:${f.y}px;width:${DW}px;height:${f.h}px">${h?`<span>${esc(h.n)}</span>`:''}</div>`}
+    if(dow(d)===1)o+=`<div class="dwk" style="left:${X(d)}px;top:${f.y}px;height:${f.h}px"></div>`;
+  }
+  o+=`<div class="dgrid" style="left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;background-size:${DW}px 100%"></div>`;
+  if(TODAY>=BR.a&&TODAY<=BR.b)o+=`<div class="dtoday" style="left:${X(TODAY)}px;top:${f.y}px;width:${DW}px;height:${f.h}px" title="오늘"></div>`;
+  if(P.deadline){const dl=num(P.deadline);o+=`<div class="ddl" style="left:${X(dl)+DW}px;top:${f.y}px;height:${f.h}px" title="목표 입고일 ${P.deadline}"></div>`}
+  return o;
+}
+// 위쪽 날짜 눈금: 연·월, 날짜, 요일, 공휴일 이름. 쉬는 날은 빨간 글자
+function renderRuler(){
+  const el=$('#ruler');if(!el)return;if(view!=='b'||!R){el.style.display='none';return}el.style.display='';
+  const r=board.getBoundingClientRect(),px=DW*cam.z,K=R.K,sx=d=>cam.x+X(d)*cam.z;
+  const d0=Math.max(BR.a,BR.a+Math.floor(-cam.x/px)-1),d1=Math.min(BR.b,BR.a+Math.ceil((r.width-cam.x)/px)+1);
+  let m='',dd='';
+  for(let d=d0;d<=d1;d++){
+    const dt=new Date(d*864e5),day=dt.getUTCDate();
+    if(day===1||d===d0)m+=`<span class="rm" style="left:${Math.max(0,sx(d))}px">${dt.getUTCFullYear()}년 ${dt.getUTCMonth()+1}월</span>`;
+    const off=!K.isW(d),h=off&&S.holidays.find(x=>num(x.d)===d);
+    if(px>=15||dow(d)===1)dd+=`<span class="rd${off?' off':''}${d===TODAY?' td':''}" style="left:${sx(d)}px;width:${px>=15?px:px*7}px">${day}${px>=26?`<i>${WD[dow(d)]}</i>`:''}${h&&px>=40?`<em>${esc(h.n)}</em>`:''}</span>`;
+  }
+  el.innerHTML=`<div class="rmr">${m}</div><div class="rdr">${dd}</div>`;
+}
 function renderBoard(){
-  pfsEl.innerHTML=S.products.map(P=>{
-    const f=frameOf(P),r=R.per[P.id],s=prodStatus(r);
-    return `<div class="pf${P.id===S.cur?' cur':''}${selP===P.id?' psel':''}" data-pid="${P.id}" style="left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px"><div class="pfh"><b>${esc(P.name)}</b>${r&&!r.empty&&!r.err?`<span>입고 예상 ${md(r.pEnd)}${P.deadline?' · 목표 '+md(num(P.deadline)):''}</span><span class="c ${s.cls}">${s.txt}</span>`:''}</div>${r&&r.empty?'<p class="pfe">왼쪽 도구 상자에서 카드를 끌어다 놓거나, 빈 곳을 더블클릭하세요</p>':''}</div>`;
-  }).join('');
-  const gs=S.nodes.filter(n=>n.type==='group'),ts=S.nodes.filter(n=>n.type!=='group');
+  const P=curP(),r=R.per[P.id],s=prodStatus(r),f=boardFrame(P);
+  pfsEl.innerHTML=daysHtml(P,f)+`<div class="pf cur${selP===P.id?' psel':''}" data-pid="${P.id}" style="left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px"><div class="pfh"><b>${esc(P.name)}</b>${r&&!r.empty&&!r.err?`<span>입고 예상 ${md(r.pEnd)}${P.deadline?' · 목표 '+md(num(P.deadline)):''}</span><span class="c ${s.cls}">${s.txt}</span>`:''}</div>${r&&r.empty?'<p class="pfe">빈 곳을 더블클릭하면 그 날짜에 작업이 생깁니다</p>':''}</div>`;
+  const gs=S.nodes.filter(n=>n.type==='group'&&n.p===P.id),ts=S.nodes.filter(n=>n.type!=='group'&&n.p===P.id);
   nodesEl.innerHTML=[...gs,...ts].map(nodeHtml).join('');
   renderLinks();buildSumLayer();
   const none=!S.nodes.length;let h=board.querySelector('.hint');
+  renderRuler();
   if(none&&S.products.length===1){if(!h){h=document.createElement('div');h.className='hint';h.innerHTML='<p>빈 보드입니다.<br>빈 곳을 더블클릭하면 작업이 생기고, 왼쪽 도구 상자에서 끌어다 놓을 수도 있습니다.</p><div class="row"><button data-hint="sample">예시 제품 2개 불러오기</button></div>';board.appendChild(h)}}else if(h)h.remove();
   const sum=cam.z<LOD;world.style.opacity=sum?0:1;world.style.pointerEvents=sum?'none':'';sl.style.display=sum?'block':'none';if(sum)posSumLayer();
 }
@@ -868,7 +967,8 @@ board.addEventListener('pointerdown',e=>{
   const pc=t.closest('.pcard');if(pc){startPan(e,()=>focusProduct(pc.dataset.pid));return}
   const pt=t.closest('.pt');if(pt){startLink(e,pt.closest('.nd').dataset.id);return}
   const rs=t.closest('.rs');if(rs){startResize(e,rs.closest('.nd').dataset.id);return}
-  const pfh=t.closest('.pfh');if(pfh){startProductDrag(e,pfh.closest('.pf').dataset.pid);return}
+  const pfh=t.closest('.pfh');if(pfh){selectProduct(pfh.closest('.pf').dataset.pid);e.preventDefault();return}
+  const re=t.closest('.re');if(re){startResizeTask(e,re.closest('.nd').dataset.id);return}
   if(t.closest('.nd.task,.nd.dec,.gh')){startDrag(e,t.closest('.nd').dataset.id,e.shiftKey||e.ctrlKey||e.metaKey);return}
   const lh=t.closest('.lh');if(lh){selectLink(lh.dataset.id);e.preventDefault();return}
   if(tool==='select'||e.shiftKey){startMarquee(e);return}
@@ -896,60 +996,83 @@ function selectNodes(ids){selN=ids;selL=null;selP=null;pmode='edit';if(ids.lengt
 function selectLink(id){selN=[];selL=id;selP=null;pmode='edit';render()}
 function selectProduct(id){selN=[];selL=null;selP=id;S.cur=id;pmode='edit';render()}
 function clearSel(){selN=[];selL=null;selP=null;pmode='edit';render()}
-// 카드 끌기: 다른 카드와 선이 맞으면 안내선이 뜨고 달라붙는다. 겹치면 빨간 점선, 놓으면 가까운 빈 자리로 밀린다.
+// 카드 끌기: 위아래로 끌면 줄이 바뀌고, 옆으로 끌면 날짜 칸에 맞춰 움직인다. 놓으면 날짜를 어떻게 바꿀지 고른다.
+function dtip(){let el=$('#world .dtip');if(!el){el=document.createElement('div');el.className='dtip';world.appendChild(el)}return el}
 function startDrag(e,id,toggle){
   if(toggle){selL=null;selP=null;selN=isSel(id)?selN.filter(x=>x!==id):[...selN,id];pmode='edit';render();e.preventDefault();return}
+  closeShift();
   if(!isSel(id)){selN=[id];selL=null;selP=null;paintSel()}
   const moving=new Set();
   selN.forEach(i=>{const m=nodeById(i);if(!m)return;moving.add(m);if(m.type==='group')membersOf(m).forEach(x=>moving.add(x))});
-  const st=new Map([...moving].map(m=>[m,{x:m.x,y:m.y}])),arr=[...moving];
-  const bx0=Math.min(...arr.map(m=>m.x)),by0=Math.min(...arr.map(m=>m.y)),bx1=Math.max(...arr.map(m=>m.x+m.w)),by1=Math.max(...arr.map(m=>m.y+m.h));
-  const pid=nodeById(id).p,others=cardsOf(pid,moving),cards=arr.filter(m=>m.type!=='group');
-  let hl=null,hoverL=null;
-  // 연결이 하나도 없는 카드 하나를 끌어서 연결선 위에 놓으면 그 사이에 끼워 넣는다
-  const single=cards.length===1&&moving.size===1&&!S.links.some(l=>l.from===id||l.to===id);
+  const st=new Map([...moving].map(m=>[m,{x:m.x,y:m.y}])),cards=[...moving].filter(m=>m.type!=='group');
+  const one=cards.length===1&&moving.size===1?cards[0]:null;   // 날짜는 카드 하나를 끌 때만 바꾼다
+  const single=one&&!S.links.some(l=>l.from===id||l.to===id),K=R.K;
+  let dd=0,hoverL=null;const tip=dtip();
   track(e,(dx,dy)=>{
-    let ddx=dx/cam.z,ddy=dy/cam.z;const T=7/cam.z;
-    let bestX=null,bestY=null;
-    const mx=[bx0+ddx,(bx0+bx1)/2+ddx,bx1+ddx],my=[by0+ddy,(by0+by1)/2+ddy,by1+ddy];
-    others.forEach(o=>{
-      const ox=[o.x,o.x+o.w/2,o.x+o.w],oy=[o.y,o.y+o.h/2,o.y+o.h];
-      mx.forEach(a=>ox.forEach(b=>{const d=b-a;if(Math.abs(d)<=T&&(!bestX||Math.abs(d)<Math.abs(bestX)))bestX=d}));
-      my.forEach(a=>oy.forEach(b=>{const d=b-a;if(Math.abs(d)<=T&&(!bestY||Math.abs(d)<Math.abs(bestY)))bestY=d}));
-    });
-    ddx=bestX!=null?ddx+bestX:snap(bx0+ddx)-bx0;ddy=bestY!=null?ddy+bestY:snap(by0+ddy)-by0;
-    st.forEach((p,m)=>{m.x=p.x+ddx;m.y=p.y+ddy;const el=nodeEl(m.id);if(el){el.style.left=m.x+'px';el.style.top=m.y+'px'}});
+    const ddy=snap(dy/cam.z);dd=one&&!one.done&&C[one.id]?Math.round(dx/cam.z/DW):0;
+    st.forEach((p,m)=>{m.y=p.y+ddy;if(m===one)m.x=p.x+dd*DW;const el=nodeEl(m.id);if(el){el.style.left=m.x+'px';el.style.top=m.y+'px'}});
     renderLinks();
-    // 안내선
-    const nx=[bx0+ddx,(bx0+bx1)/2+ddx,bx1+ddx],ny=[by0+ddy,(by0+by1)/2+ddy,by1+ddy];let g='';
-    others.forEach(o=>{
-      const ox=[o.x,o.x+o.w/2,o.x+o.w],oy=[o.y,o.y+o.h/2,o.y+o.h];
-      nx.forEach(a=>ox.forEach(b=>{if(Math.abs(a-b)<.6)g+=`<line x1="${b}" x2="${b}" y1="${Math.min(by0+ddy,o.y)-10}" y2="${Math.max(by1+ddy,o.y+o.h)+10}"/>`}));
-      ny.forEach(a=>oy.forEach(b=>{if(Math.abs(a-b)<.6)g+=`<line y1="${b}" y2="${b}" x1="${Math.min(bx0+ddx,o.x)-10}" x2="${Math.max(bx1+ddx,o.x+o.w)+10}"/>`}));
-    });
-    gd.innerHTML=g;
-    // 겹침 표시
-    cards.forEach(m=>{const el=nodeEl(m.id);if(el)el.classList.toggle('ov',others.some(o=>hit(m,o,0)))});
-    // 묶음·제품 위에 올라가면 강조
-    if(cards.length===1){const m=cards[0],g2=groupOf(m);const gid=g2?g2.id:null;if(hl&&hl!==gid){const o=nodeEl(hl);o&&o.classList.remove('hl')}hl=gid;if(gid){const o=nodeEl(gid);o&&o.classList.add('hl')}}
-    hoverL=single?linkNear(cards[0]):null;
-    lkg.querySelectorAll('.ins').forEach(p=>p.classList.remove('ins'));
-    if(hoverL){const p=lkg.querySelector(`path.v[data-lid="${hoverL.id}"]`);p&&p.classList.add('ins');cards.forEach(m=>{const el=nodeEl(m.id);el&&el.classList.remove('ov')})}
-  },moved=>{
-    gd.innerHTML='';nodesEl.querySelectorAll('.ov,.hl').forEach(el=>el.classList.remove('ov','hl'));
-    if(moved&&hoverL){spliceOnLink(cards[0],hoverL);return}
-    if(moved){
-      // 카드 하나를 다른 제품 상자로 옮기면 그 제품 소속이 된다
-      if(cards.length===1&&moving.size===1){
-        const m=cards[0],p2=productAt(m.x+m.w/2,m.y+m.h/2);
-        if(p2&&p2.id!==m.p){m.p=p2.id;const before=S.links.length;S.links=S.links.filter(l=>{const a=nodeById(l.from),b=nodeById(l.to);return a&&b&&a.p===b.p});if(S.links.length<before)toast('다른 제품의 카드와 이어진 연결은 지웠습니다.')}
-        if(freeSpot(m))toast('카드가 겹쳐서 가까운 빈 자리로 옮겼습니다.');
-      }else if(cards.some(m=>others.some(o=>hit(m,o,0))))toast('카드가 겹쳐 있습니다. 왼쪽의 "자동 정리"를 누르면 풀립니다.');
-      save();
+    if(one&&C[one.id]){
+      const x=C[one.id],s2=K.nextW(x.es+dd),e2=one.unit==='c'?s2+x.d-1:K.addW(s2,x.d-1),f=boardFrame(curP());
+      gd.innerHTML=`<rect x="${X(s2)}" y="${f.y}" width="${X(e2+1)-X(s2)}" height="${f.h}" fill="rgba(37,99,235,.08)"/><line x1="${X(s2)}" x2="${X(s2)}" y1="${f.y}" y2="${f.y+f.h}"/><line x1="${X(e2+1)}" x2="${X(e2+1)}" y1="${f.y}" y2="${f.y+f.h}"/>`;
+      tip.style.display='block';tip.style.left=one.x+'px';tip.style.top=(one.y-42)+'px';
+      tip.textContent=dd?`${md(s2)}(${WD[dow(s2)]}) 시작 → ${md(e2)}(${WD[dow(e2)]}) 끝 · 영업 ${K.cntW(s2,e2)+1}일`:`${md(x.es)} ~ ${md(x.ef)} (날짜 그대로, 줄만 이동)`;
     }
+    hoverL=single?linkNear(one):null;
+    lkg.querySelectorAll('.ins').forEach(p=>p.classList.remove('ins'));
+    if(hoverL){const p=lkg.querySelector(`path.v[data-lid="${hoverL.id}"]`);p&&p.classList.add('ins')}
+  },moved=>{
+    gd.innerHTML='';tip.style.display='none';
+    if(moved&&hoverL){spliceOnLink(one,hoverL);return}
+    if(moved)save();
     selectNodes(selN.length?selN:[id]);
+    if(moved&&one&&dd)openShift(one,C[one.id].es+dd);
   });
 }
+// 오른쪽 끝 끌기: 끝나는 날을 옮겨 기간(보통 일수)을 바꾼다
+function startResizeTask(e,id){
+  const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;
+  const el=nodeEl(id),tip=dtip();let ef=x.ef;
+  track(e,(dx)=>{ef=Math.max(x.es,x.ef+Math.round(dx/cam.z/DW));const w=Math.max(DW*(ef-x.es+1)-4,DW-4);el.style.width=w+'px';
+    tip.style.display='block';tip.style.left=n.x+'px';tip.style.top=(n.y-42)+'px';tip.textContent=`${md(x.es)} ~ ${md(ef)}(${WD[dow(ef)]}) · 영업 ${K.cntW(x.es,ef)+(K.isW(x.es)?1:0)}일 · 달력 ${ef-x.es+1}일`},
+  moved=>{tip.style.display='none';if(!moved||ef===x.ef){render();return}
+    const P=pById(n.p),end0=prodEnd(P),d0=n.d;
+    n.d=Math.max(1,n.unit==='c'?ef-x.es+1:K.cntW(x.es,K.prevW(ef))+(K.isW(x.es)?1:0));
+    if(n.dmin!=null&&n.dmin>n.d)n.dmin=n.d;if(n.dmax!=null&&n.dmax<n.d)n.dmax=n.d;
+    addLog(n,`날짜판에서 기간 ${d0}일 → ${n.d}일`);save();R=calc();selectNodes([id]);
+    const note=impactNote(P,end0);toast(`기간을 ${n.d}${n.unit==='c'?'일(달력)':'영업일'}로 바꿨습니다.${note?' '+note:''}`);
+  });
+}
+// 옆으로 끌어 놓았을 때: 그 날짜로 시작하게 하는 방법을 고른다. 방법마다 실제로 며칠에 시작하게 되는지 미리 계산해 보여준다
+let shiftCtx=null;
+function closeShift(){const p=$('#shiftpop');if(p)p.style.display='none';shiftCtx=null}
+function openShift(n,target){
+  const K=R.K,t=K.nextW(target),P=pById(n.p),x0=C[n.id];if(!x0)return;
+  const ins=S.links.filter(l=>l.to===n.id);
+  let bind=null,bv=-1e9;ins.forEach(l=>{const a=C[l.from];if(!a)return;const v=K.shiftW(l.kind==='ss'?a.es:a.ef,lagOf(l));if(v>bv){bv=v;bind=l}});
+  const opts=[];
+  const trial=(set,undo)=>{set();const r=calc(),es=C[n.id]?C[n.id].es:null,err=r.per[n.p].err;undo();return err?null:es};
+  if(bind){
+    const a=nodeById(bind.from),ax=C[bind.from],base=bind.kind==='ss'?ax.es:ax.ef,g=K.cntW(base,t),old=bind.lag;
+        opts.push({t:`연결 바꾸기: "${a.name}" ${linkLong(bind.kind,g)}`,
+      es:trial(()=>{bind.lag=g},()=>{bind.lag=old}),go:()=>{bind.lag=g;addLog(n,`연결 바꿈: ${a.name} ${linkLong(bind.kind,g)}`)}});
+  }
+  {const old=n.notBefore;opts.push({t:old&&num(old)>t?`"이 날 이후 시작"을 ${md(t)}로 당기기`:`날짜 고정: ${md(t)} 이후 시작 (연결은 그대로)`,
+    es:trial(()=>{n.notBefore=str(t)},()=>{n.notBefore=old}),go:()=>{n.notBefore=str(t);addLog(n,`이 날 이후 시작: ${str(t)}`)}})}
+  if(n.started){const old=n.started;opts.push({t:`실제 시작한 날을 ${md(t)}로`,es:trial(()=>{n.started=str(t)},()=>{n.started=old}),go:()=>{n.started=str(t);addLog(n,`실제 시작한 날: ${str(t)}`)}})}
+  if(!ins.length&&t<num(P.start)){const old=P.start;opts.push({t:`제품 시작일을 ${md(t)}로`,es:trial(()=>{P.start=str(t)},()=>{P.start=old}),go:()=>{P.start=str(t)}})}
+  R=calc();
+  const pop=$('#shiftpop'),el=nodeEl(n.id),br=board.getBoundingClientRect(),stg=$('#stage').getBoundingClientRect();
+  pop.innerHTML=`<b>${md(t)}(${WD[dow(t)]})부터 시작하게 하려면</b>`+opts.map((o,i)=>`<button data-so="${i}"${o.es==null?' disabled':''}>${esc(o.t)}<small>${o.es==null?'이렇게 하면 서로를 기다리게 됩니다':o.es===t?`→ ${md(o.es)}(${WD[dow(o.es)]}) 시작`:`→ ${md(o.es)}(${WD[dow(o.es)]}) 시작 (다른 조건 때문에 ${md(t)}이 아님)`}</small></button>`).join('')+'<button data-so="x">취소 (날짜 그대로)</button>';
+  shiftCtx={n,opts};pop.style.display='flex';
+  const er=el?el.getBoundingClientRect():br;
+  pop.style.left=clamp(er.left-stg.left,8,stg.width-310)+'px';pop.style.top=clamp(er.bottom-stg.top+10,8,stg.height-260)+'px';
+}
+$('#shiftpop').addEventListener('click',e=>{const b=e.target.closest('[data-so]');if(!b||!shiftCtx)return;const {n,opts}=shiftCtx;
+  if(b.dataset.so==='x'){closeShift();render();return}
+  const o=opts[+b.dataset.so],P=pById(n.p),end0=prodEnd(P);o.go();closeShift();save();R=calc();render();
+  const note=impactNote(P,end0);toast(`${md(C[n.id].es)}부터 시작합니다.${note?' '+note:''}`)});
+document.addEventListener('pointerdown',e=>{if(shiftCtx&&!e.target.closest('#shiftpop'))closeShift()},true);
 function startProductDrag(e,pid){
   const P=pById(pid),ns=S.nodes.filter(n=>n.p===pid),st=new Map(ns.map(n=>[n,{x:n.x,y:n.y}])),p0={x:P.x,y:P.y};
   track(e,(dx,dy)=>{
@@ -972,7 +1095,7 @@ function addLink(from,to){
   if(!a||!b||a.type==='group'||b.type==='group')return false;
   if(a.p!==b.p){toast('다른 제품의 카드와는 이을 수 없습니다.');return false}
   if(S.links.some(l=>l.from===from&&l.to===to))return false;
-  S.links.push({id:uid(),from,to,kind:'fs'});
+  S.links.push({id:uid(),from,to,kind:'fs',lag:1});
   const r=calc();if(r.per[a.p].err){S.links.pop();toast('이렇게 이으면 서로를 기다리게 되어 연결할 수 없습니다.');return false}
   return true;
 }
@@ -999,8 +1122,9 @@ function newNode(type,x,y,p){
   return{id:uid(),p,type,name:type==='decision'?'정할 것':'새 작업',x,y,w:TW,h:TH,d:type==='decision'?1:5,dmin:null,dmax:null,conf:'g',done:'',memo:'',who:'',files:[],arch:[],log:[],unit:'w'};
 }
 function placeNew(type,wx,wy){
-  const pr=productAt(wx,wy)||curP(),n=newNode(type,0,0,pr.id);
+  const pr=view==='b'?curP():(productAt(wx,wy)||curP()),n=newNode(type,0,0,pr.id);
   n.x=snap(wx-n.w/2);n.y=snap(wy-(type==='group'?30:n.h/2));
+  if(view==='b'&&type!=='group'){const d=R.K.nextW(BR.a+Math.floor(wx/DW));if(d>num(pr.start))n.notBefore=str(d)}   // 날짜판: 누른 날짜 이후 시작
   S.nodes.push(n);if(type!=='group')freeSpot(n);save();selectNodes([n.id]);
   setTimeout(()=>{const i=$('#pnb [data-f=name]');if(i){i.focus();i.select()}},60);
 }
@@ -1034,7 +1158,17 @@ const predsOf=id=>S.links.filter(l=>l.to===id).map(l=>nodeById(l.from)).filter(B
 const succsOf=id=>S.links.filter(l=>l.from===id).map(l=>nodeById(l.to)).filter(Boolean);
 // 앞 작업이 모두 끝났는지에 따라 카드에 "진행 중 / 다음 단계"를 붙인다
 // 앞 작업 조건이 풀렸는지: 끝나야 시작 연결은 앞 작업이 끝났을 때, 같이 시작 연결은 앞 작업이 시작했거나 끝났을 때
-const predsOk=id=>S.links.filter(l=>l.to===id).every(l=>{const p=nodeById(l.from);return !p||p.done||(l.kind==='ss'&&p.started)});
+const lagOf=l=>l.lag!=null&&!isNaN(+l.lag)?+l.lag:(l.kind==='ss'?0:1);
+// 앞 작업 조건이 풀렸는지: 앞 작업이 끝났거나, 시작 기준이거나 끝나기 전에 시작하는 연결이면 앞 작업이 시작했을 때
+const predsOk=id=>S.links.filter(l=>l.to===id).every(l=>{const p=nodeById(l.from);return !p||p.done||(p.started&&(l.kind==='ss'||lagOf(l)<=0))});
+// 연결 설명: 기본(끝난 다음 영업일)은 빈 글자
+function linkTxt(l){const g=lagOf(l),n=Math.abs(g),d=g<0?'전':'뒤';
+  if(l.kind==='ss')return g===0?'같이 시작':`시작 ${n}일 ${d}`;
+  return g===1?'':g===0?'끝나는 날':`끝 ${n}일 ${d}`}
+// 풀어 쓴 설명 (고르기 창·연결 칸에서 쓴다)
+function linkLong(kind,g){const n=Math.abs(g);
+  if(kind==='ss')return g===0?'시작하는 날 같이 시작':g>0?`시작하고 ${n}영업일 뒤 시작`:`시작하기 ${n}영업일 전 시작`;
+  return g===1?'끝난 다음 영업일 시작':g===0?'끝나는 날 시작':g>0?`끝나고 ${n}영업일 뒤 시작`:`끝나기 ${n}영업일 전 시작`}
 function flowOf(n){
   const x=C[n.id];if(!x||x.done||n.type==='group')return{k:''};
   if(n.started)return{k:'active',tip:n.started+'에 시작해 진행 중입니다'};
@@ -1150,6 +1284,16 @@ function alignSel(k){
   if(bad)toast('맞추고 나니 카드가 겹쳤습니다. 되돌리기를 누르거나 "자동 정리"로 푸세요.');
 }
 function arrangeProduct(P){
+  if(view==='b'){
+    placeByDate(P);
+    const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'),gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort((a,b)=>a.y-b.y);
+    if(!ts.length)return;
+    const gm=new Map(ts.map(n=>[n,groupOf(n)]));let y=Math.min(...[...gs,...ts].map(n=>n.y));
+    const lane=(arr,y0)=>{const rows=[];arr.sort((a,b)=>a.x-b.x).forEach(n=>{let r=rows.findIndex(e=>e+8<=n.x);if(r<0){r=rows.length;rows.push(0)}rows[r]=n.x+n.w;n.y=y0+r*ROWH});return rows.length};
+    gs.forEach(g=>{g.y=y;const k=lane(ts.filter(n=>gm.get(n)===g),y+56);g.h=56+Math.max(1,k)*ROWH-12;y=g.y+g.h+24});
+    lane(ts.filter(n=>!gm.get(n)),y+24);
+    return;
+  }
   const ns=S.nodes.filter(n=>n.p===P.id),ts=ns.filter(n=>n.type!=='group'),gs=ns.filter(n=>n.type==='group').sort((a,b)=>a.y-b.y||a.x-b.x);
   if(!ts.length)return;
   const f=frameOf(P);
@@ -1159,8 +1303,8 @@ function arrangeProduct(P){
   ts.forEach(t=>delete t._g);
 }
 function arrange(mode){
-  if(mode==='one'){arrangeProduct(curP())}else{S.products.forEach(arrangeProduct)}
-  stackProducts();save();render();
+  if(mode==='one'||view==='b'){arrangeProduct(curP())}else{S.products.forEach(arrangeProduct)}
+  if(view!=='b')stackProducts();save();render();
   if(mode==='one')focusProduct(S.cur);else fitAll();
   toast('카드를 정리했습니다. 마음에 안 들면 되돌리기를 누르세요.');
 }
@@ -1392,8 +1536,12 @@ function renderPanel(){
   if(selL){
     const l=S.links.find(l=>l.id===selL);if(!l){pn.classList.remove('on');return}
     const a=nodeById(l.from),b=nodeById(l.to);$('#pnt').textContent='연결';
-    h=`<label class="f"><span>연결 종류</span><select data-lkind><option value="fs" ${l.kind!=='ss'?'selected':''}>끝나야 시작 — 앞 작업이 끝난 다음 날 시작</option><option value="ss" ${l.kind==='ss'?'selected':''}>같이 시작 — 앞 작업이 시작하면 같이 시작 (점선)</option></select></label>
-      <div class="info">${l.kind==='ss'?`<b>${esc(b.name)}</b> 은(는) <b>${esc(a.name)}</b> 이(가) 시작하는 날보다 먼저 시작하지 않습니다.`:`<b>${esc(a.name)}</b> 이(가) 끝나야 <b>${esc(b.name)}</b> 을(를) 시작합니다.`}</div><div class="row2"><button data-a="inslink">이 사이에 새 작업 끼워 넣기</button><button class="del" data-a="dellink">이 연결 지우기</button></div>`;
+    const g=lagOf(l),ax=C[a.id],K=R.K,base=ax?(l.kind==='ss'?ax.es:ax.ef):null,can=base!=null?K.shiftW(base,g):null;
+    h=`<div class="info"><b>${esc(a.name)}</b> → <b>${esc(b.name)}</b></div>
+      <div class="lkset"><span>앞 작업이</span><select data-lk="base"><option value="fs" ${l.kind!=='ss'?'selected':''}>끝나는 날</option><option value="ss" ${l.kind==='ss'?'selected':''}>시작하는 날</option></select><span>기준</span>
+      <input type="number" min="0" data-lk="n" value="${Math.abs(g)}"><span>영업일</span><select data-lk="dir"><option value="1" ${g>=0?'selected':''}>뒤에</option><option value="-1" ${g<0?'selected':''}>전에</option></select><span>시작할 수 있다</span></div>
+      <div class="mut">예: 끝나는 날 1일 뒤 = 끝난 다음 영업일(기본) · 끝나는 날 3일 전 = 끝날 때쯤 미리 시작 · 시작하는 날 0일 뒤 = 같이 시작</div>
+      ${can!=null?`<div class="info">지금: 앞 작업 ${l.kind==='ss'?'시작':'끝'} ${md(base)}(${WD[dow(base)]}) 기준 → <b>${md(can)}(${WD[dow(can)]})</b>부터 시작할 수 있습니다.</div>`:''}<div class="row2"><button data-a="inslink">이 사이에 새 작업 끼워 넣기</button><button class="del" data-a="dellink">이 연결 지우기</button></div>`;
   }else if(selP){
     const P=pById(selP);if(!P){pn.classList.remove('on');return}$('#pnt').textContent='제품';
     const r=R.per[P.id],s=prodStatus(r);
@@ -1506,10 +1654,15 @@ $('#pnb').addEventListener('change',e=>{
   const o=curTarget();if(!o)return;
   if('doneck' in e.target.dataset){if(o.type)setDone(o,e.target.checked)}
   else if('startck' in e.target.dataset){if(o.type)setStarted(o,e.target.checked)}
-  else if('lkind' in e.target.dataset){const l=S.links.find(x=>x.id===selL);if(l){l.kind=e.target.value;const r=calc(),a=nodeById(l.from);if(a&&r.per[a.p].err){l.kind=l.kind==='ss'?'fs':'ss';toast('이렇게 바꾸면 서로를 기다리게 됩니다.')}save();render()}}
   else if('tdk' in e.target.dataset){const i=o.todo&&o.todo[+e.target.dataset.tdk];if(i){i.ok=e.target.checked;if(i.ok)addLog(o,'할 일 끝남: '+i.t);save();render()}}
   else if(['done','start','deadline','started','notBefore','due'].includes(e.target.dataset.f)){render()}
 });
+// 연결 칸: 기준(끝·시작)과 간격을 바꾼다. 연결을 고른 상태라 작업 칸 처리와 따로 둔다
+$('#pnb').addEventListener('change',e=>{if(!e.target.dataset||!e.target.dataset.lk)return;const l=S.links.find(x=>x.id===selL);if(l){const q=k=>$(`#pnb [data-lk="${k}"]`),old={kind:l.kind,lag:l.lag};
+    const kind=q('base').value,nn=Math.max(0,parseInt(q('n').value)||0),dir=+q('dir').value;
+    // 기준을 바꾸면 그 기준의 기본 간격으로 맞춘다 (끝 1일 뒤 / 시작 0일 뒤)
+    l.kind=kind;l.lag=e.target.dataset.lk==='base'?(kind==='ss'?0:1):nn*dir;
+    const r=calc(),a=nodeById(l.from);if(a&&r.per[a.p].err){l.kind=old.kind;l.lag=old.lag;toast('이렇게 바꾸면 서로를 기다리게 됩니다.')}save();render()}});
 $('#pnb').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.dataset.pick)return;
   if(b.dataset.fa){fileAction(b);return}
