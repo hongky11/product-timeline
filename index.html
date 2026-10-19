@@ -148,7 +148,9 @@ section{position:absolute;inset:0}
 #ruler .rd.td{background:rgba(37,99,235,.15);font-weight:700}
 .nd .dl{position:absolute;left:0;top:-17px;font-size:11px;color:#334;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff}
 .nd .dl b{color:var(--red)}
-.nd .re{position:absolute;right:-3px;top:0;bottom:0;width:7px;cursor:ew-resize}
+.nd .re,.nd .rl{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:3}.nd .re{right:-6px}.nd .rl{left:-6px}
+.nd .re:hover,.nd .rl:hover{background:rgba(37,99,235,.25);border-radius:6px}
+.nd .bd .snap{cursor:pointer;text-decoration:underline}
 .dtip{position:absolute;z-index:9;background:#1d2433;color:#fff;font-size:12px;padding:3px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;display:none}
 #lk text.lt{font-size:11px;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:3px}
 #shiftpop{position:absolute;z-index:20;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(20,30,50,.18);padding:10px;display:none;flex-direction:column;gap:6px;width:300px}
@@ -180,11 +182,11 @@ section{position:absolute;inset:0}
 .nd.sel{box-shadow:0 0 0 3px rgba(37,99,235,.6),0 2px 8px rgba(20,30,50,.12)}
 .nd.hl{box-shadow:0 0 0 3px rgba(21,128,61,.5)}
 .nd.ov{outline:3px dashed var(--red);outline-offset:2px}
-.nd .pt{position:absolute;right:-15px;top:50%;margin-top:-12px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;color:var(--blue);font-size:14px;z-index:2;cursor:crosshair;opacity:0;transition:opacity .1s}
+.nd .pt{position:absolute;right:-34px;top:50%;margin-top:-12px;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;color:var(--blue);font-size:14px;z-index:2;cursor:crosshair;opacity:0;transition:opacity .1s}
 .nd .pt{opacity:.5!important}.nd:hover .pt,.nd.sel .pt{opacity:1!important}
 .nd.grp .rsb{pointer-events:auto;position:absolute;left:0;right:0;bottom:-5px;height:10px;cursor:ns-resize}
 .nd.grp .rsb:hover{background:color-mix(in srgb,var(--c) 40%,transparent);border-radius:5px}
-#pn .dur{display:flex;align-items:center;gap:6px;flex:none}#pn .dur input{width:64px;font-size:16px;font-weight:700;text-align:center}#pn .dur .dd{margin-left:auto;font-size:12px;color:var(--mut)}
+#pn .dur{display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap}#pn .dur input[type=date]{flex:1 1 100%;font-size:15px;font-weight:700;text-align:left;width:auto}#pn .dur input{width:64px;font-size:16px;font-weight:700;text-align:center}#pn .dur .dd{margin-left:auto;font-size:12px;color:var(--mut)}
 #pn .tds{flex:none;font-size:12px;padding:2px 8px;border-radius:8px;min-width:64px}#pn .tds.ok{background:#e3f4e8;color:var(--grn);border-color:#bfe3cb}#pn .tds.na{background:#eef0f4;color:var(--mut)}
 #pn .todo.na span{color:var(--mut);text-decoration:line-through}
 #pn .tdrow{display:flex;gap:6px}#pn .tdrow select{max-width:130px}
@@ -315,6 +317,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <button class="ai" id="ai-rev" hidden>AI 점검</button>
   <span id="ghs" class="ghs"></span>
   <button id="undo" title="Ctrl+Z">되돌리기</button>
+  <button id="askai" title="말로 일정을 고쳐 달라고 Claude에게 부탁합니다">Claude에게 부탁</button>
   <button id="finalbtn" title="이 제품에서 확정한 서류를 작업별로 모아 봅니다">최종 서류</button>
   <button id="set">설정</button>
 </header>
@@ -362,6 +365,15 @@ dialog td.d{width:130px;color:var(--mut)}
   </div>
 </dialog>
 
+<dialog id="dask">
+  <div class="h"><span>Claude에게 부탁</span><button id="dask-x">닫기</button></div>
+  <div class="b">
+    <textarea id="ask-t" maxlength="120" placeholder="예) 단상자 디자인 3일 늘리고 뒤 일정 다 붙여줘"></textarea>
+    <div class="note">"Claude 앱에서 열기"를 누르면 회사 PC의 Claude 앱에 새 대화가 열리고 이 글이 들어가 있습니다. 거기서 보내기를 누르면 Claude가 일정을 고치고, 이 화면으로 돌아오면 바뀐 일정이 보입니다. 회사 PC에서만 됩니다.</div>
+    <div class="r"><a id="ask-go" class="chat" style="padding:8px 14px;border-radius:10px;background:#e6efff;color:#1d4fd0;font-weight:700;text-decoration:none">Claude 앱에서 열기</a></div>
+  </div>
+</dialog>
+
 <dialog id="dfinal">
   <div class="h"><span id="dfinal-t">최종 서류</span><button id="dfinal-x">닫기</button></div>
   <div class="b" id="dfinal-b"></div>
@@ -378,6 +390,7 @@ dialog td.d{width:130px;color:var(--mut)}
     <div><h4>온라인 저장소 (GitHub)</h4>
       <div class="r"><input type="text" id="gh-repo" placeholder="hongky11/product-schedule" style="width:220px"><input type="password" id="gh-token" placeholder="저장소 열쇠 (github_pat_...)" autocomplete="off"><button id="gh-save">연결</button><button id="gh-del">연결 끊기</button></div>
       <div class="note" id="gh-note">연결하면 이 화면에서 고친 내용이 3초 뒤 저장소에 올라가고, 다른 PC·폰에서 열어도 같은 내용이 보입니다. 열쇠는 이 브라우저에만 저장됩니다. 붙여 둔 자료 파일 본문은 저장소에 올라가지 않습니다.</div></div>
+    <details><summary><b>그 밖의 설정</b> (예시 보드·백업·마감 경고·지운 카드)</summary><div style="display:flex;flex-direction:column;gap:14px;margin-top:10px">
     <div><h4>마감 경고</h4>
       <label class="r">마감 <input type="number" id="set-warn" min="1" max="30" style="width:64px"> 영업일 전부터 경고</label></div>
     <div><h4>보드</h4>
@@ -387,6 +400,7 @@ dialog td.d{width:130px;color:var(--mut)}
       <div class="note" id="set-fstat"></div>
       <div class="note">자료 파일 본문은 이 브라우저 안에 저장됩니다. 브라우저 데이터를 지우거나 다른 PC에서 쓰려면 ZIP 백업을 받아 두세요. 이전 버전 JSON도 열립니다.</div></div>
     <div><h4>지운 카드 보관함</h4><div id="set-trash"></div></div>
+    </div></details>
     <details><summary><b>공휴일·휴무일</b> (이 날은 영업일에서 빠집니다)</summary>
       <table id="ht" style="margin-top:8px"></table>
       <div class="r" style="margin-top:8px"><input type="date" id="hdd"><input type="text" id="hdn" placeholder="이름 (예: 회사 창립기념일)"><button id="hda">추가</button><button id="hdr">기본값 복원</button></div>
@@ -545,7 +559,7 @@ function frameOf(P){
   const ns=S.nodes.filter(n=>n.p===P.id);
   if(!ns.length)return{x:P.x,y:P.y,w:900,h:520};
   const x0=Math.min(...ns.map(n=>n.x)),y0=Math.min(...ns.map(n=>n.y)),x1=Math.max(...ns.map(n=>n.x+n.w)),y1=Math.max(...ns.map(n=>n.y+n.h));
-  return{x:x0-40,y:y0-70,w:Math.max(x1-x0+80,900),h:Math.max(y1-y0+110,520)};
+  return{x:x0-40,y:y0-(view==='b'?124:70),w:Math.max(x1-x0+80,900),h:Math.max(y1-y0+(view==='b'?164:110),520)};   // 날짜판은 제품 이름 아래 달력 줄 자리를 비운다
 }
 function productAt(x,y){const f=S.products.find(P=>{const r=frameOf(P);return x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h});return f||null}
 function groupOf(n){
@@ -616,8 +630,11 @@ function schedule(K,mode,full,P){
   const dur=t=>{const d=Math.max(1,+t.d||1);if(mode==='min')return Math.min(d,+t.dmin||d);if(mode==='max')return Math.max(d,+t.dmax||d);return d};
   const c={},start=K.nextW(num(P.start)),todayW=K.nextW(TODAY);
   order.forEach(t=>{
-    let es=start;(pre[t.id]||[]).forEach(p=>{es=Math.max(es,K.shiftW(p.k==='ss'?c[p.id].es:c[p.id].ef,p.g))});
-    if(t.notBefore)es=Math.max(es,num(t.notBefore));   // 이 날 이후 시작
+    // need: 앞 작업 연결대로라면 가장 이르게 시작할 수 있는 날
+    let need=null;(pre[t.id]||[]).forEach(p=>{const v=K.shiftW(p.k==='ss'?c[p.id].es:c[p.id].ef,p.g);need=need==null?v:Math.max(need,v)});
+    let es=start;
+    if(P.auto===false){if(t.notBefore)es=num(t.notBefore)}   // 자유 그리기: 사용자가 놓은 시작일 그대로 (연결은 겹침 표시만)
+    else{if(need!=null)es=Math.max(es,need);if(t.notBefore)es=Math.max(es,num(t.notBefore))}   // 자동 맞춤: 앞 작업에 맞춰 밀린다
     es=K.nextW(es);
     if(t.started)es=num(t.started);   // 실제로 시작한 날이 있으면 그 날부터 센다
     const d=dur(t);let pef=t.unit==='c'?es+d-1:K.addW(es,d-1);   // 달력일 작업은 쉬는 날도 센다
@@ -626,7 +643,7 @@ function schedule(K,mode,full,P){
     let ef=pef,late=false;
     if(t.done){ef=num(t.done);if(ef<es)es=ef}else if(pef<TODAY){late=true;ef=todayW}
     const due=t.due?num(t.due):null;
-    c[t.id]={es,d,pef,ef,late,done:!!t.done,started:!!t.started,due,over:!t.done&&due!=null&&ef>due};
+    c[t.id]={es,d,pef,ef,late,done:!!t.done,started:!!t.started,due,over:!t.done&&due!=null&&ef>due,need,clash:!t.done&&need!=null&&need>es};
   });
   const pEnd=Math.max(...order.map(t=>c[t.id].ef));
   const res={c,order,byId,pEnd};
@@ -677,7 +694,10 @@ function prodStatus(r){
 }
 
 // ---------- 전체 그리기 ----------
+// 제품을 자유 그리기로 바꿀 때 지금 화면에 보이는 시작일을 그대로 굳힌다 (박스가 제자리에 머문다)
+function freezeStarts(P){const r=calc();S.nodes.forEach(n=>{if(n.p!==P.id||n.type==='group'||n.done||n.started)return;const x=C[n.id];if(x)n.notBefore=str(x.es)});P.auto=false}
 function render(skipPanel){
+  if(S.products.some(P=>P.auto===undefined)){S.products.forEach(P=>{if(P.auto===undefined)freezeStarts(P)});save()}
   R=calc();
   if(view==='b')placeByDate(curP());
   $('#undo').disabled=!undoStack.length;
@@ -691,7 +711,7 @@ function render(skipPanel){
   $('#ai-plan').hidden=!AI_ON;$('#ai-rev').hidden=!AI_ON;$('#set-ai').hidden=!AI_ON;
   $('#tip').textContent=view==='c'?'날짜 칸을 누르면 그날 진행되는 작업이 오른쪽에 나옵니다. 막대를 누르면 그 작업을 고치고, 고른 작업은 파란 테두리로 보입니다.':view==='t'?'제품 줄의 ▾를 누르면 접히고 펴집니다. 막대나 이름을 누르면 오른쪽에서 고치고, 고른 작업의 날짜 구간이 파랗게 칠해집니다.':
     (cam.z<LOD?'지금은 요약 보기입니다. 제품 상자를 누르거나 휠로 확대하면 안쪽 카드가 보입니다.':
-    '빈 곳 더블클릭 = 그 날짜에 작업 추가 · 카드를 옆으로 끌면 날짜 바꾸기 · 오른쪽 끝을 끌면 기간 · 오른쪽 → 를 끌어 다음 카드에 놓으면 연결 · 묶음 아래 테두리를 끌면 높이 · 휠 = 확대/축소');
+    '빈 곳 더블클릭 = 그 날짜에 작업 · 카드를 끌면 날짜 이동 · 카드 양쪽 끝을 끌면 시작일·끝나는 날 · 카드 오른쪽 → 를 다음 카드에 놓으면 연결 · 휠 = 확대/축소');
 }
 function renderSum(){
   const alr=[],lnk=t=>`<a data-pick="${t.id}">${esc(t.name)}</a>`;
@@ -735,7 +755,7 @@ $('#pls').addEventListener('click',e=>{const it=e.target.closest('[data-pid]');i
 $('#side-all').onclick=()=>{if(view==='b')fitAll();else toast('스케치 화면에서 누르면 모든 제품이 한 화면에 들어옵니다.')};
 $('#padd').onclick=addProduct;
 function addProduct(){
-  const n=S.products.length+1,P={id:uid(),name:'새 제품 '+n,start:str(nextWorkNow()),deadline:'',x:40,y:40};
+  const n=S.products.length+1,P={id:uid(),name:'새 제품 '+n,start:str(nextWorkNow()),deadline:'',x:40,y:40,auto:false};
   S.products.push(P);stackProducts();S.cur=P.id;selN=[];selL=null;selP=P.id;save();
   if(view!=='b')setView('b');else render();focusProduct(P.id);
 }
@@ -756,11 +776,9 @@ function renderTools(){
   const al=(k,t)=>`<button data-al="${k}" ${dis} title="${t}">${IC[k]}${t}</button>`;
   if(view==='b'){
     $('#tools').innerHTML=
-      `<div class="tg"><b>마우스</b><button data-tool="hand" class="${tool==='hand'?'on':''}" title="빈 곳을 끌면 화면이 움직입니다">✋<span>이동</span></button><button data-tool="select" class="${tool==='select'?'on':''}" title="빈 곳을 끌면 상자가 그려지고 안의 카드가 선택됩니다 (Shift+끌기도 같음)">▭<span>선택</span></button></div>`+
-      `<div class="tg"><b>끌어다 놓기</b><button data-add="task" title="작업 카드">＋<span>작업</span></button><button data-add="decision" title="사람이 정해야 하는 지점">◆<span>결정</span></button><button data-add="group" title="카드를 묶는 상자">▢<span>묶음</span></button></div>`+
-      `<div class="tg"><b>줄 맞춤${n<2?'':' ('+n+')'}</b>${al('t','위')}${al('cy','중간')}${al('b','아래')}${al('dv','세로간격')}</div>`+
-      `<div class="tg"><b>자동 정리</b><button data-arr="one" title="겹치지 않게 묶음마다 줄을 다시 나눕니다 (날짜는 그대로)">⇶<span>줄 정리</span></button></div>`+
-      `<div class="tg"><b>보기</b><button data-z="in">＋<span>확대</span></button><div class="z" id="zpct">${Math.round(cam.z*100)}%</div><button data-z="out">－<span>축소</span></button><button data-z="prod" title="이 제품의 작업이 화면에 들어오게">▣<span>제품 보기</span></button><button data-z="today" title="오늘 날짜로 이동">●<span>오늘</span></button></div>`;
+      `<div class="tg"><b>추가</b><button data-add="task" title="누르거나 끌어다 놓으면 작업 카드가 생깁니다">＋<span>작업</span></button><button data-add="group" title="카드를 묶는 줄 (예: 본체, 패키지)">▢<span>묶음</span></button></div>`+
+      `<div class="tg"><b>자동 맞춤</b><button data-auto class="${curP().auto===false?'':'on'}" title="켜면 앞 일정이 늦어질 때 뒤 일정이 저절로 밀립니다. 끄면 그린 대로 둡니다">${curP().auto===false?'끔':'켬'}</button></div>`+
+      `<div class="tg"><b>보기</b><button data-z="today" title="오늘 날짜로 이동">●<span>오늘</span></button><button data-z="in">＋<span>확대</span></button><div class="z" id="zpct">${Math.round(cam.z*100)}%</div><button data-z="out">－<span>축소</span></button><button data-arr="one" title="겹치지 않게 묶음마다 줄을 다시 나눕니다 (날짜는 그대로)">⇶<span>줄 정리</span></button></div>`;
   }else if(view==='c'){
     $('#tools').innerHTML=`<div class="tg"><b>달력</b><button data-cal="prev">◀<span>이전 달</span></button><button data-cal="today">●<span>오늘</span></button><button data-cal="next">▶<span>다음 달</span></button></div>`;
   }else{
@@ -773,6 +791,10 @@ $('#tools').addEventListener('click',e=>{
   if(d.cal){calNav(d.cal);return}
   if(d.tool){tool=d.tool;board.classList.toggle('selmode',tool==='select');renderTools();return}
   if(d.al){alignSel(d.al);return}
+  if('auto' in d){const P=curP();
+    if(P.auto===false){P.auto=true;toast('자동 맞춤을 켰습니다. 이제 앞 일정이 늦어지면 뒤 일정이 저절로 밀립니다.')}
+    else{freezeStarts(P);toast('자동 맞춤을 껐습니다. 카드는 그린 자리에 머물고, 앞 작업과 겹치면 표시만 합니다.')}
+    save();render();return}
   if(d.arr){arrange(d.arr);return}
   if(d.z==='in'){zoomAt(1.25)}else if(d.z==='out'){zoomAt(1/1.25)}else if(d.z==='prod'){focusProduct(S.cur)}else if(d.z==='today'){const r=board.getBoundingClientRect();cam.x=r.width/3-X(TODAY)*cam.z;applyCam()}
   if(d.tz==='in'){const i=STEPS.indexOf(dw);dw=STEPS[clamp((i<0?4:i)+1,0,STEPS.length-1)];render()}
@@ -811,7 +833,7 @@ function focusProduct(pid,noAnim){const P=pById(pid);if(!P)return;S.cur=pid;
   if(view==='b'){if(!R)R=calc();placeByDate(P);renderBoard();
     // 날짜판: 글자가 읽히는 크기(75~100%)로 보이고, 가로로 넘치면 오늘 1주 전부터 보여준다
     const f=frameOf(P),r=board.getBoundingClientRect();
-    if(r.width){const z=clamp((r.height-RULER-50)/f.h,.75,1);cam={z,x:30-f.x*z,y:RULER+16-f.y*z};
+    if(r.width){const z=clamp((r.height-50)/f.h,.75,1);cam={z,x:30-f.x*z,y:16-f.y*z};
       if(f.w*z>r.width-60)cam.x=30-Math.max(f.x,X(TODAY-7))*z;applyCam()}}
   else fitBounds(frameOf(P),30,!noAnim,true);
   renderSide();const r=R.per[pid];if(document.activeElement!==$('#pname'))$('#pname').value=P.name;$('#pstart').value=P.start;$('#pdl').value=P.deadline||'';renderSum()}
@@ -853,7 +875,7 @@ function nodeHtml(n){
   }
   const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision';
   const tdn=(n.todo||[]).filter(i=>!i.na).length,tdk=(n.todo||[]).filter(i=>i.ok&&!i.na).length;
-  const bad=(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="체크리스트 ${tdn}개 중 ${tdk}개 완료 (불필요는 빼고 셈)">체크 ${tdk}/${tdn}</span>`:'');
+  const bad=(x.clash?`<span class="late snap" data-snap="${n.id}" title="앞 작업이 끝나기 전에 시작하게 그려져 있습니다. 누르면 앞 일정 바로 뒤로 붙입니다">앞 작업과 겹침 · 붙이기</span>`:'')+(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="체크리스트 ${tdn}개 중 ${tdk}개 완료 (불필요는 빼고 셈)">체크 ${tdk}/${tdn}</span>`:'');
   const nf=(n.files||[]).length,nc=(n.files||[]).filter(f=>f.st==='c').length;
   const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
   const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
@@ -862,7 +884,7 @@ function nodeHtml(n){
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
     <div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
     <div class="sub"><span>${durTxt(n)}</span></div>
-    ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="re" title="끌어서 기간 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
+    ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="rl" title="끌어서 시작일 바꾸기 (끝나는 날은 그대로)"></i><i class="re" title="끌어서 끝나는 날 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
 // 연결선 모양: 떨어져 있으면 부드러운 곡선, 날짜가 바로 이어져 붙어 있으면 꺾인 선으로 뒤 카드 위·아래 테두리에 꽂는다 (곡선이 꼬여 보이지 않게)
@@ -929,6 +951,7 @@ function renderRuler(){
     if(px>=15||dow(d)===1)dd+=`<span class="rd${off?' off':''}${d===TODAY?' td':''}" style="left:${sx(d)}px;width:${px>=15?px:px*7}px">${day}${px>=26?`<i>${WD[dow(d)]}</i>`:''}${h&&px>=40?`<em>${esc(h.n)}</em>`:''}</span>`;
   }
   el.innerHTML=`<div class="rmr">${m}</div><div class="rdr">${dd}</div>`;
+  const f=frameOf(curP());el.style.top=Math.max(0,cam.y+(f.y+58)*cam.z)+'px';   // 제품 이름 바로 아래, 카드들 위
 }
 function renderBoard(){
   const P=curP(),r=R.per[P.id],s=prodStatus(r),f=boardFrame(P);
@@ -986,12 +1009,13 @@ function track(e,onMove,onUp){
 board.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse'&&e.button!==0)return;
   const t=e.target;
-  if(t.closest('.hint,.ck'))return;
+  if(t.closest('.hint,.ck,[data-snap]'))return;
   const pc=t.closest('.pcard');if(pc){startPan(e,()=>focusProduct(pc.dataset.pid));return}
   const pt=t.closest('.pt');if(pt){startLink(e,pt.closest('.nd').dataset.id);return}
   const rs=t.closest('.rs,.rsb');if(rs){startResize(e,rs.closest('.nd').dataset.id);return}
   const pfh=t.closest('.pfh');if(pfh){selectProduct(pfh.closest('.pf').dataset.pid);e.preventDefault();return}
   const re=t.closest('.re');if(re){startResizeTask(e,re.closest('.nd').dataset.id);return}
+  const rl=t.closest('.rl');if(rl){startResizeStart(e,rl.closest('.nd').dataset.id);return}
   if(t.closest('.nd.task,.nd.dec,.gh')){startDrag(e,t.closest('.nd').dataset.id,e.shiftKey||e.ctrlKey||e.metaKey);return}
   const lh=t.closest('.lh');if(lh){selectLink(lh.dataset.id);e.preventDefault();return}
   if(tool==='select'||e.shiftKey){startMarquee(e);return}
@@ -1049,7 +1073,13 @@ function startDrag(e,id,toggle){
     if(moved&&hoverL){spliceOnLink(one,hoverL);return}
     if(moved)save();
     selectNodes(selN.length?selN:[id]);
-    if(moved&&one&&dd)openShift(one,C[one.id].es+dd);
+    if(moved&&one&&dd){
+      const P=pById(one.p);
+      if(P.auto===false){   // 자유 그리기: 놓은 날짜로 바로 바꾼다
+        const t=R.K.nextW(C[one.id].es+dd),end0=prodEnd(P);one.notBefore=str(t);if(one.started)one.started=str(t);
+        addLog(one,`날짜판에서 옮김: ${str(t)} 시작`);save();R=calc();render();const note=impactNote(P,end0);if(note)toast(note);
+      }else openShift(one,C[one.id].es+dd);
+    }
   });
 }
 // 오른쪽 끝 끌기: 끝나는 날을 옮겨 기간(보통 일수)을 바꾼다
@@ -1064,6 +1094,20 @@ function startResizeTask(e,id){
     if(n.dmin!=null&&n.dmin>n.d)n.dmin=n.d;if(n.dmax!=null&&n.dmax<n.d)n.dmax=n.d;
     addLog(n,`날짜판에서 기간 ${d0}일 → ${n.d}일`);save();R=calc();selectNodes([id]);
     const note=impactNote(P,end0);toast(`기간을 ${n.d}${n.unit==='c'?'일(달력)':'영업일'}로 바꿨습니다.${note?' '+note:''}`);
+  });
+}
+// 왼쪽 끝 끌기: 시작일을 옮기고 끝나는 날은 그대로 둔다 (기간이 그만큼 늘거나 준다)
+function startResizeStart(e,id){
+  const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;
+  const el=nodeEl(id),tip=dtip();let s2=x.es;
+  track(e,(dx)=>{s2=Math.min(x.ef,x.es+Math.round(dx/cam.z/DW));el.style.left=(X(s2)+5)+'px';el.style.width=Math.max(DW*(x.ef-s2+1)-10,DW-10)+'px';
+    tip.style.display='block';tip.style.left=(X(s2)+5)+'px';tip.style.top=(n.y-42)+'px';const a=K.nextW(s2);tip.textContent=`${md(a)}(${WD[dow(a)]}) ~ ${md(x.ef)} · 영업 ${K.cntW(a,x.ef)+1}일`},
+  moved=>{tip.style.display='none';if(!moved||s2===x.es){render();return}
+    const P=pById(n.p),end0=prodEnd(P),a=K.nextW(s2),d0=n.d;
+    n.notBefore=str(a);if(n.started)n.started=str(a);n.d=Math.max(1,n.unit==='c'?x.ef-a+1:K.cntW(a,x.ef)+1);
+    addLog(n,`날짜판에서 시작일 ${str(a)}, 기간 ${d0}일 → ${n.d}일`);save();R=calc();selectNodes([id]);
+    if(P.auto!==false&&C[n.id].es!==a)toast(`자동 맞춤이 켜져 있어 앞 작업 때문에 ${md(C[n.id].es)}부터 시작합니다.`);
+    else{const note=impactNote(P,end0);toast(`${md(a)}부터 ${n.d}${n.unit==='c'?'일':'영업일'}입니다.${note?' '+note:''}`)}
   });
 }
 // 옆으로 끌어 놓았을 때: 그 날짜로 시작하게 하는 방법을 고른다. 방법마다 실제로 며칠에 시작하게 되는지 미리 계산해 보여준다
@@ -1155,7 +1199,7 @@ function startLink(e,fromId){
   },(moved,ev)=>{
     tmp.remove();if(hl)hl.classList.remove('hl');if(!moved)return;
     const el=document.elementFromPoint(ev.clientX,ev.clientY),nd=el&&el.closest('.nd.task,.nd.dec');
-    if(nd){if(nd.dataset.id!==fromId)openLinkPop(fromId,nd.dataset.id,ev)}
+    if(nd){if(nd.dataset.id!==fromId){const b=nodeById(nd.dataset.id);if(addLink(fromId,b.id)){save();render();const x=C[b.id];toast(x&&x.clash?`이었습니다. "${b.name}"이(가) 앞 작업과 겹칩니다 — 카드의 "붙이기"를 누르면 바로 뒤로 붙습니다.`:'이었습니다. 선을 누르면 잇는 방식을 바꿀 수 있습니다.')}}}
     else if(el&&board.contains(el)&&!el.closest('.pcard')){
       const p=toWorld(ev.clientX,ev.clientY),n=newNode('task',snap(p.x+20),snap(p.y-TH/2),a.p);
       S.nodes.push(n);freeSpot(n);addLink(fromId,n.id);save();selectNodes([n.id]);
@@ -1192,6 +1236,13 @@ board.addEventListener('dblclick',e=>{
   const p=toWorld(e.clientX,e.clientY);placeNew('task',p.x,p.y);
 });
 board.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*.0012),e.clientX,e.clientY)},{passive:false});
+// 앞 일정 바로 뒤로 붙이기 (자유 그리기에서 사용자가 누를 때만 맞춘다)
+function snapToPred(n){
+  const x=C[n.id];if(!x||x.need==null)return;const P=pById(n.p),end0=prodEnd(P),t=R.K.nextW(x.need);
+  n.notBefore=str(t);if(n.started){n.started=str(t)}addLog(n,`앞 일정 바로 뒤로 붙임: ${str(t)} 시작`);save();R=calc();render();
+  const note=impactNote(P,end0);toast(`${md(t)}(${WD[dow(t)]})부터 시작하게 붙였습니다.${note?' '+note:''}`);
+}
+nodesEl.addEventListener('click',e=>{const s=e.target.closest('[data-snap]');if(s){e.stopPropagation();snapToPred(nodeById(s.dataset.snap))}});
 nodesEl.addEventListener('change',e=>{
   const ck=e.target.closest('.ck');if(!ck)return;
   setDone(nodeById(ck.closest('.nd').dataset.id),ck.checked);
@@ -1618,8 +1669,9 @@ function renderPanel(){
       h=`<label class="f"><span>${dec?'무엇을 정하나':'작업 이름'}</span><input data-f="name" value="${esc(n.name)}"></label>`+
       (dec?`<label class="f"><span>누가 정하나</span><input data-f="who" value="${esc(n.who)}" placeholder="이름 또는 팀"></label>`:'')+
       `<div class="seg"><button data-st="wait" class="${st==='wait'?'on':''}">대기</button><button data-st="doing" class="${st==='doing'?'on':''}">진행 중</button><button data-st="done" class="${st==='done'?'on':''}">끝남</button></div>
-      <div class="dur"><span>기간</span><input type="number" min="1" data-f="d" value="${n.d}" title="숫자만 넣으면 박스 길이와 끝나는 날이 바로 바뀝니다"><span>${n.unit==='c'?'달력일':'영업일'}</span><span class="dd" id="pndd">${C[n.id]?`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]})`:''}</span></div>
-      ${x.late||x.over?`<div class="line bad">${x.late?'계획보다 늦어지고 있음':''}${x.late&&x.over?' · ':''}${x.over?'마감일 넘길 예정':''}</div>`:''}
+      <div class="dur">${n.started||n.done?`<span>${md(x.es)}(${WD[dow(x.es)]})</span>`:`<input type="date" data-f="notBefore" value="${C[n.id]?str(x.es):n.notBefore}" title="시작일">`}<span>부터</span><input type="number" min="1" data-f="d" value="${n.d}" title="숫자만 넣으면 박스 길이와 끝나는 날이 바로 바뀝니다"><span>${n.unit==='c'?'일':'영업일'}</span><span class="dd" id="pndd">${C[n.id]?`→ ${md(x.ef)}(${WD[dow(x.ef)]}) 끝`:''}</span></div>
+      ${x.late||x.over||x.clash?`<div class="line bad">${[x.clash?'앞 작업이 끝나기 전에 시작하게 그려져 있음':'',x.late?'계획보다 늦어지고 있음':'',x.over?'마감일 넘길 예정':''].filter(Boolean).join(' · ')}</div>`:''}
+      ${x.need!=null&&!n.done&&x.need!==x.es?`<button data-a="snap">앞 일정 바로 뒤로 붙이기 (→ ${md(R.K.nextW(x.need))} 시작)</button>`:''}
       ${chatHtml(n)}
       <div class="box"><b>체크리스트 <span class="mut">${(()=>{const ok=td.filter(i=>i.ok&&!i.na).length,na=td.filter(i=>i.na).length,left=td.length-ok-na;return td.length?`완료 ${ok} · 불필요 ${na} · 남음 ${left}`:'비어 있음'})()}</span></b>
         ${td.map((i,k)=>{const st=i.na?'na':i.ok?'ok':'';return `<div class="todo${i.ok&&!i.na?' ok':''}${i.na?' na':''}"><button class="tds ${st}" data-tds="${k}" title="누를 때마다 미완 → 완료 → 불필요">${st==='ok'?'✓ 완료':st==='na'?'— 불필요':'□ 미완'}</button><span>${esc(i.t)}</span><button data-tdf="${k}" title="이 항목의 증거 파일 올리기">파일</button><button data-tdx="${k}" title="지우기">×</button>${(()=>{const fs=n.files.filter(f=>f.item===i.t);return fs.length?`<div class="tdf">${fs.map(f=>`<a data-fopen="${f.id}" class="${f.st==='c'?'c':''}">${esc(f.name)}${f.st==='c'?' (확정)':''}</a>`).join('')}</div>`:''})()}</div>`}).join('')}
@@ -1629,9 +1681,8 @@ function renderPanel(){
         `<div class="three"><label class="f"><span>실제 시작한 날</span><input type="date" data-f="started" value="${n.started}"></label><label class="f"><span>실제 끝난 날</span><input type="date" data-f="done" value="${n.done}"></label></div>
         <label class="f"><span>세는 방식</span><select data-f="unit"><option value="w" ${n.unit!=='c'?'selected':''}>영업일 (주말·공휴일 건너뜀)</option><option value="c" ${n.unit==='c'?'selected':''}>달력일 (배송·건조처럼 쉬는 날도 흐름)</option></select></label>
         <div class="info" id="pninfo">${infoHtml(n)}</div>`)+
-      fold('cond','날짜 조건',dc,
-        `<div class="three"><label class="f" title="앞 작업이 일찍 끝나도 이 날까지 기다린다 (감리 일정·업체 휴무 등)"><span>이 날 이후 시작</span><input type="date" data-f="notBefore" value="${n.notBefore}"></label>
-        <label class="f"><span>이 작업 마감일</span><input type="date" data-f="due" value="${n.due}"></label></div>`)+
+      fold('cond','마감일',n.due?md(num(n.due))+(x.over?' · 넘길 예정':''):'없음',
+        `<label class="f"><span>이 작업 마감일</span><input type="date" data-f="due" value="${n.due}"></label>`)+
       fold('notion','노션 발주 건',ns,
         `<label class="f"><span>노션 발주 페이지 주소</span><input data-notion value="${esc(n.notion?'https://www.notion.so/'+n.notion.replace(/-/g,''):'')}" placeholder="노션 '링크 복사' 주소 붙여넣기"></label>${n.notion?notionHtml(n):''}`)+
       fold('order','앞뒤 작업',os,orderHtml(n)+`<div class="row2"><button data-a="incal">달력에서 보기</button><button data-a="intime">막대표에서 보기</button></div>`)+
@@ -1691,7 +1742,7 @@ $('#pnb').addEventListener('input',e=>{
   if((f==='start')&&!v)return;
   o[f]=v;save();render(true);
   const inf=$('#pninfo');if(inf&&o.type)inf.innerHTML=infoHtml(o);
-  const dd=$('#pndd'),x=o.type&&C[o.id];if(dd&&x)dd.textContent=`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]})`;
+  const dd=$('#pndd'),x=o.type&&C[o.id];if(dd&&x)dd.textContent=`→ ${md(x.ef)}(${WD[dow(x.ef)]}) 끝`;
 });
 $('#pnb').addEventListener('change',e=>{
   const o=curTarget();if(!o)return;
@@ -1724,6 +1775,7 @@ $('#pnb').addEventListener('click',e=>{
     save();render();return}
   if(b.dataset.conf&&n){n.conf=b.dataset.conf;save();render();return}
   const a=b.dataset.a;if(!a)return;
+  if(a==='snap'&&n){snapToPred(n);return}
   if(a==='inslink'){const l=S.links.find(x=>x.id===selL);if(l)insertOnLink(l);return}
   if(a==='insbefore'&&n){insertBefore(n);return}
   if(a==='insafter'&&n){insertAfter(n);return}
@@ -2072,6 +2124,14 @@ function openFinal(){
   $('#dfinal').showModal();
 }
 $('#finalbtn').onclick=openFinal;
+// Claude에게 부탁: 회사 PC의 Claude 앱에 새 대화를 열고 부탁 글을 넣어 둔다 (보내기는 사용자가 누른다)
+function askHref(){const P=curP(),t=$('#ask-t').value.trim().replace(/\s+/g,' ');
+  const q=`[제품 일정 고치기] 제품: ${P.name.replace(/\s*\(.*$/,'')} / ${t} — product-schedule CLAUDE.md 의 "말로 일정 고치기"대로`.slice(0,200);
+  return `claude://code/new?q=${encodeURIComponent(q)}&folder=${encodeURIComponent(CHAT_DIR)}`}
+$('#askai').onclick=()=>{$('#ask-t').value='';$('#ask-go').href=askHref();$('#dask').showModal();setTimeout(()=>$('#ask-t').focus(),50)};
+$('#ask-t').oninput=()=>{$('#ask-go').href=askHref()};
+$('#ask-go').onclick=e=>{if(!$('#ask-t').value.trim()){e.preventDefault();toast('어떻게 바꿀지 먼저 적어 주세요.');return}setTimeout(()=>$('#dask').close(),300)};
+$('#dask-x').onclick=()=>$('#dask').close();
 $('#dfinal-x').onclick=()=>$('#dfinal').close();
 $('#dfinal-b').addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
