@@ -953,7 +953,7 @@ function placeByDate(P){
   // 같은 날짜에 겹치는 카드는 아래 줄로 비킨다 (위에 있는 카드가 자리를 지킨다)
   const vw=n=>VW.get(n.id)||n.w,vh=n=>VH.get(n.id)||n.h;
   const placed=[],hitR=(n,o)=>n.x<o.x+vw(o)+2&&n.x+vw(n)+2>o.x&&n.y<o.y+vh(o)+24&&n.y+vh(n)+24>o.y;
-  [...ts].sort((a,b)=>a.y-b.y||a.x-b.x).forEach(n=>{let k=0,hs;while((hs=placed.filter(o=>hitR(n,o))).length&&k++<80)n.y=Math.max(...hs.map(o=>o.y+o.h+24));placed.push(n)});
+  [...ts].sort((a,b)=>a.y-b.y||a.x-b.x).forEach(n=>{let k=0,hs;while((hs=placed.filter(o=>hitR(n,o))).length&&k++<80)n.y=Math.max(...hs.map(o=>o.y+vh(o)+24));placed.push(n)});
   // 묶음 상자는 안의 카드가 다 들어가게 늘리고, 아래 묶음과 겹치면 아래 묶음을 민다
   gs.forEach(g=>{const ms=ts.filter(n=>gm.get(n)===g);if(ms.length)g.h=Math.max(g.h,Math.max(...ms.map(n=>n.y+vh(n)))-g.y+18)});
   for(let i=1;i<gs.length;i++){const p=gs[i-1],g=gs[i],need=p.y+p.h+20-g.y;if(need>0){g.y+=need;ts.forEach(n=>{if(gm.get(n)===g)n.y+=need})}}
