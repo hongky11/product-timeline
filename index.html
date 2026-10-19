@@ -273,7 +273,17 @@ section{position:absolute;inset:0}
 #pn .it2{display:block;width:100%;text-align:left;margin-top:4px}
 dialog{border:1px solid var(--line);border-radius:14px;padding:0;width:min(600px,94vw);max-height:90vh}
 dialog::backdrop{background:rgba(0,0,0,.3)}
-#pn .todo{flex-wrap:wrap}#pn .todo .tdf{flex-basis:100%;padding-left:72px;display:flex;flex-direction:column;gap:2px;font-size:12px}
+#pn .todo{flex-wrap:wrap}
+#pn .sub2{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:#fff;display:flex;flex-direction:column;gap:5px}
+#pn .sub2.ok{background:#f3faf5;border-color:#bfe3cb}#pn .sub2.na{background:#f4f6fa;opacity:.75}#pn .sub2.later{background:#fff8ec;border-color:#f3cf8f}
+#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 b{flex:1;font-size:13px}#pn .sub2.na .r1 b{text-decoration:line-through;color:var(--mut)}
+#pn .sub2 select{font-size:12px;padding:2px 4px;max-width:118px}#pn .sub2 input[data-tdmemo]{font-size:12px;padding:3px 6px}
+#pn .sub2 .docs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px}
+#pn .sub2 .docs a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .sub2 .docs a.c{color:var(--grn);font-weight:700}
+#pn .sub2 .docs button{padding:1px 7px;font-size:11px}#pn .sub2 .need{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:4px}
+#pn .sub2 .warn2{font-size:12px;color:#b42318;font-weight:700}#pn .sub2 .from{font-size:11px;color:#8a4b00}
+#pn .qmemo{display:flex;gap:6px;flex:none}#pn .qmemo input{flex:1}
+.nd .lm{font-size:11px;color:#475569;white-space:nowrap;margin-top:1px;text-shadow:0 0 3px #fff}#pn .todo .tdf{flex-basis:100%;padding-left:72px;display:flex;flex-direction:column;gap:2px;font-size:12px}
 #pn .todo .tdf a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .todo .tdf a.c{color:var(--grn)}
 #dfinal .tk{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
 #dfinal .tk .rw{display:flex;gap:8px;align-items:center;font-size:13px}#dfinal .tk .rw span{flex:1}#dfinal .tk .rw button{padding:2px 9px;font-size:12px}
@@ -523,7 +533,7 @@ function norm(o){
     n.w=n.w||(n.type==='group'?300:TW);n.h=n.h||(n.type==='group'?200:TH);n.done=n.done||'';n.memo=n.memo||'';n.who=n.who||'';
     if(n.type!=='group'){n.files=n.files||[];n.arch=n.arch||[];n.log=n.log||[];n.unit=n.unit==='c'?'c':'w'}
     if(n.type!=='group'){n.conf=n.conf||'g';n.d=Math.max(1,+n.d||1);n.dmin=n.dmin>0?+n.dmin:null;n.dmax=n.dmax>0?+n.dmax:null;
-      n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.notion=n.notion||''}});
+      n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.todo.forEach(i=>{if(!i.id)i.id='i'+Math.random().toString(36).slice(2,8);i.memo=i.memo||''});n.notion=n.notion||''}});
   o.links.forEach(l=>{l.kind=l.kind==='ss'?'ss':'fs';l.lag=l.lag!=null&&!isNaN(+l.lag)?Math.round(+l.lag):(l.kind==='ss'?0:1)});
   if(!o.holidays)o.holidays=DEF_H.map(h=>({...h}));
   o.trash=o.trash||[];
@@ -697,7 +707,8 @@ function prodStatus(r){
 // 제품을 자유 그리기로 바꿀 때 지금 화면에 보이는 시작일을 그대로 굳힌다 (박스가 제자리에 머문다)
 function freezeStarts(P){const r=calc();S.nodes.forEach(n=>{if(n.p!==P.id||n.type==='group'||n.done||n.started)return;const x=C[n.id];if(x)n.notBefore=str(x.es)});P.auto=false}
 function render(skipPanel){
-  if(S.products.some(P=>P.auto===undefined)){S.products.forEach(P=>{if(P.auto===undefined)freezeStarts(P)});save()}
+  // 저장소에 올리지는 않는다 (새 기기에서 예시 보드가 저장소의 실제 일정과 충돌하던 문제) — 다음에 사용자가 고칠 때 같이 저장된다
+  if(S.products.some(P=>P.auto===undefined)){S.products.forEach(P=>{if(P.auto===undefined)freezeStarts(P)});try{localStorage.setItem('ptl-v3',JSON.stringify(S))}catch(e){}}
   R=calc();
   if(view==='b')placeByDate(curP());
   $('#undo').disabled=!undoStack.length;
@@ -874,8 +885,10 @@ function nodeHtml(n){
     return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}"><div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div><i class="rs"></i><i class="rsb" title="끌어서 묶음 높이 바꾸기"></i></div>`;
   }
   const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision';
-  const tdn=(n.todo||[]).filter(i=>!i.na).length,tdk=(n.todo||[]).filter(i=>i.ok&&!i.na).length;
-  const bad=(x.clash?`<span class="late snap" data-snap="${n.id}" title="앞 작업이 끝나기 전에 시작하게 그려져 있습니다. 누르면 앞 일정 바로 뒤로 붙입니다">앞 작업과 겹침 · 붙이기</span>`:'')+(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="체크리스트 ${tdn}개 중 ${tdk}개 완료 (불필요는 빼고 셈)">체크 ${tdk}/${tdn}</span>`:'');
+  const live=(n.todo||[]).filter(i=>!i.na&&!i.later),tdn=live.length,tdk=live.filter(i=>i.ok).length;
+  const dmiss=live.filter(i=>i.needDoc&&!(n.files||[]).some(f=>(f.item===i.id||f.item===i.t)&&f.st==='c')).length;
+  const lmemo=(n.log||[]).slice().reverse().find(l=>/^메모/.test(l.m));
+  const bad=(x.clash?`<span class="late snap" data-snap="${n.id}" title="앞 작업이 끝나기 전에 시작하게 그려져 있습니다. 누르면 앞 일정 바로 뒤로 붙입니다">앞 작업과 겹침 · 붙이기</span>`:'')+(x.late?'<span class="late">늦음</span>':'')+(x.over?'<span class="late">마감 넘김</span>':x.dueWarn?`<span class="warn">마감 ${x.dueLeft<=0?'오늘':'D-'+x.dueLeft}</span>`:'')+(x.warn?`<span class="warn">${x.left<=0?'오늘 마감':'D-'+x.left}</span>`:'')+(tdn?`<span title="하위 할 일 ${tdn}개 중 ${tdk}개 완료 (상관없음·넘김은 빼고 셈)">체크 ${tdk}/${tdn}</span>`:'')+(dmiss?`<span class="warn" title="서류가 필요한데 최종 서류를 아직 안 고른 하위 할 일">서류 ${dmiss} 빠짐</span>`:'');
   const nf=(n.files||[]).length,nc=(n.files||[]).filter(f=>f.st==='c').length;
   const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
   const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
@@ -883,7 +896,7 @@ function nodeHtml(n){
   return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${stc}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
     <div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
-    <div class="sub"><span>${durTxt(n)}</span></div>
+    <div class="sub"><span>${durTxt(n)}</span></div>${lmemo?`<div class="lm" title="${esc(lmemo.t)}">${esc(lmemo.m.replace(/^메모( \([^)]*\))?: /,''))}</div>`:''}
     ${bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="rl" title="끌어서 시작일 바꾸기 (끝나는 날은 그대로)"></i><i class="re" title="끌어서 끝나는 날 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
@@ -1673,9 +1686,10 @@ function renderPanel(){
       ${x.late||x.over||x.clash?`<div class="line bad">${[x.clash?'앞 작업이 끝나기 전에 시작하게 그려져 있음':'',x.late?'계획보다 늦어지고 있음':'',x.over?'마감일 넘길 예정':''].filter(Boolean).join(' · ')}</div>`:''}
       ${x.need!=null&&!n.done&&x.need!==x.es?`<button data-a="snap">앞 일정 바로 뒤로 붙이기 (→ ${md(R.K.nextW(x.need))} 시작)</button>`:''}
       ${chatHtml(n)}
-      <div class="box"><b>체크리스트 <span class="mut">${(()=>{const ok=td.filter(i=>i.ok&&!i.na).length,na=td.filter(i=>i.na).length,left=td.length-ok-na;return td.length?`완료 ${ok} · 불필요 ${na} · 남음 ${left}`:'비어 있음'})()}</span></b>
-        ${td.map((i,k)=>{const st=i.na?'na':i.ok?'ok':'';return `<div class="todo${i.ok&&!i.na?' ok':''}${i.na?' na':''}"><button class="tds ${st}" data-tds="${k}" title="누를 때마다 미완 → 완료 → 불필요">${st==='ok'?'✓ 완료':st==='na'?'— 불필요':'□ 미완'}</button><span>${esc(i.t)}</span><button data-tdf="${k}" title="이 항목의 증거 파일 올리기">파일</button><button data-tdx="${k}" title="지우기">×</button>${(()=>{const fs=n.files.filter(f=>f.item===i.t);return fs.length?`<div class="tdf">${fs.map(f=>`<a data-fopen="${f.id}" class="${f.st==='c'?'c':''}">${esc(f.name)}${f.st==='c'?' (확정)':''}</a>`).join('')}</div>`:''})()}</div>`}).join('')}
-        <div class="lgin"><input data-tdnew placeholder="항목 추가 (Enter)"><button data-tdadd>추가</button></div>
+      <div class="qmemo"><input data-qmemo placeholder="진행 메모 남기기 (Enter) — 카드에 바로 보입니다"><button data-qmemo-go>남기기</button></div>
+      <div class="box"><b>체크리스트 <span class="mut">${todoSummary(n)}</span></b>
+        ${td.map(i=>subCardHtml(n,i)).join('')}
+        <div class="lgin"><input data-tdnew placeholder="하위 할 일 추가 (Enter)"><button data-tdadd>추가</button></div>
         <div class="tdrow"><select data-tpl><option value="">자주 쓰는 체크리스트 넣기…</option>${(S.templates||[]).map((t,i)=>`<option value="${i}">${esc(t.name)} (${t.items.length})</option>`).join('')}<option value="save">지금 체크리스트를 자주 쓰는 목록에 저장…</option></select></div></div>`+
       fold('real','실제 날짜',n.done?'끝난 날 '+md(num(n.done)):n.started?'시작한 날 '+md(num(n.started)):'기록 없음',
         `<div class="three"><label class="f"><span>실제 시작한 날</span><input type="date" data-f="started" value="${n.started}"></label><label class="f"><span>실제 끝난 날</span><input type="date" data-f="done" value="${n.done}"></label></div>
@@ -1704,6 +1718,41 @@ function chatHtml(n){
   const P=pById(n.p),q=`[제품 일정 작업 대화] 제품: ${P.name.replace(/\s*\(.*$/,'')} / 작업: ${n.name} (작업 ${n.id}). product-schedule CLAUDE.md 의 "작업 대화 등록"대로 등록하고 이 작업 상황을 정리해 줘`.slice(0,200);
   return `<a class="chat" href="claude://code/new?q=${encodeURIComponent(q)}&folder=${encodeURIComponent(CHAT_DIR)}" title="회사 PC의 Claude 앱에 새 대화가 열립니다. 보내기를 누르면 시작되고, 그 뒤 여기에 '대화 열기'가 생깁니다">대화 만들기</a>`;
 }
+// 하위 카드: 상태(미완·완료·상관없음·나중에 다른 작업에서), 서류 필요 여부, 서류 여러 개와 최종 선택, 진행 메모, 넘긴 곳·온 곳
+const tdState=i=>i.later?'later':i.na?'na':i.ok?'ok':'';
+const itemFiles=(n,i)=>(n.files||[]).filter(f=>f.item===i.id||f.item===i.t);
+function todoSummary(n){
+  const td=n.todo||[];if(!td.length)return'비어 있음';
+  const c={ok:0,na:0,later:0,'':0};td.forEach(i=>c[tdState(i)]++);
+  const miss=td.filter(i=>i.needDoc&&tdState(i)!=='na'&&tdState(i)!=='later'&&!itemFiles(n,i).some(f=>f.st==='c')).length;
+  return `완료 ${c.ok} · 남음 ${c['']}${c.na?' · 상관없음 '+c.na:''}${c.later?' · 넘김 '+c.later:''}${miss?` · <b style="color:#b42318">최종 서류 빠짐 ${miss}</b>`:''}`;
+}
+function subCardHtml(n,i){
+  const st=tdState(i),fs=itemFiles(n,i),fin=fs.some(f=>f.st==='c');
+  const others=S.nodes.filter(t=>t.p===n.p&&t.type!=='group'&&t.id!==n.id&&!t.done);
+  const lt=i.later&&nodeById(i.later);
+  return `<div class="sub2 ${st}" data-iid="${i.id}">
+    <div class="r1"><b>${esc(i.t)}</b>
+      <select data-tds2 title="상태"><option value="" ${st===''?'selected':''}>미완</option><option value="ok" ${st==='ok'?'selected':''}>완료</option><option value="na" ${st==='na'?'selected':''}>진행에 상관없음</option><option value="later" ${st==='later'?'selected':''}>나중에 다른 작업에서</option></select>
+      <button data-tdx2 title="지우기">×</button></div>
+    ${st==='later'?`<div class="from">→ 이어서 할 작업: <select data-tdlater><option value="">고르세요…</option>${others.map(t=>`<option value="${t.id}" ${i.later===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>${lt?'':' <b>(아직 안 고름)</b>'}</div>`:''}
+    ${i.from?`<div class="from">← "${esc(i.from.name)}"에서 넘어온 할 일</div>`:''}
+    <input data-tdmemo value="${esc(i.memo||'')}" placeholder="진행 메모 (예: 10/20 업체 회신 대기)">
+    <div class="docs"><label class="need"><input type="checkbox" data-tdneed ${i.needDoc?'checked':''}>서류 필요</label>
+      ${fs.map(f=>`<a data-fopen="${f.id}" class="${f.st==='c'?'c':''}" title="${f.st==='c'?'최종 서류':'누르면 열림'}">${esc(f.name)}${f.st==='c'?' (최종)':''}</a>${f.st==='c'?'':`<button data-tdfin="${f.id}" title="이 파일을 최종 서류로 고릅니다">최종으로</button>`}`).join(' ')}
+      <button data-tdf2 title="서류 올리기 (여러 개 가능)">＋ 서류</button></div>
+    ${i.needDoc&&!fin&&st!=='na'&&st!=='later'?`<div class="warn2">${fs.length?'최종 서류를 아직 안 골랐습니다':'필요한 서류를 아직 안 올렸습니다'}</div>`:''}
+  </div>`;
+}
+// 나중에 다른 작업에서: 고른 작업에 같은 할 일을 하위 카드로 넣고, 어디서 왔는지 적는다. 다시 고르면 앞서 넣은 것은 빼낸다
+function deferItem(n,i,tid){
+  const old=i.later&&nodeById(i.later);
+  if(old)old.todo=old.todo.filter(x=>!(x.from&&x.from.id===n.id&&x.from.iid===i.id));
+  i.later=tid||'';i.ok=false;i.na=false;
+  const t=tid&&nodeById(tid);
+  if(t){t.todo.push({id:'i'+Math.random().toString(36).slice(2,8),t:i.t,ok:false,na:false,needDoc:!!i.needDoc,memo:i.memo||'',from:{id:n.id,name:n.name,iid:i.id}});
+    addLog(n,`할 일 "${i.t}" → "${t.name}"에서 이어서 하기로 넘김`);addLog(t,`"${n.name}"에서 할 일 "${i.t}" 넘어옴`)}
+}
 function notionHtml(n){
   if(!n.notion)return'';
   const d=NOTION[n.notion];
@@ -1722,7 +1771,8 @@ function reviewHtml(){
   return `<div class="info">${esc(aiRes.verdict)}</div>`+aiRes.issues.map(s=>`<div class="iss ${s.level==='tip'?'tip':''}"><b>${s.level==='tip'?'조언':'주의'} · ${esc(s.title)}</b>${esc(s.detail)}${s.fix?`<div class="fx">→ ${esc(s.fix)}</div>`:''}${s.nodeId&&nodeById(s.nodeId)?`<button data-pick="${s.nodeId}">해당 카드 보기</button>`:''}</div>`).join('')+(aiRes.issues.length||aiRes.plan?'':'<div class="info">지적할 점이 없습니다.</div>')+'<div class="info">AI 의견입니다. 확인되지 않은 숫자는 담당 팀·업체에 확인하세요.</div>';
 }
 $('#pnb').addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.fold){if(d.open)pnOpen.add(d.dataset.fold);else pnOpen.delete(d.dataset.fold)}},true);
-function addTodo(n){const i=$('#pnb [data-tdnew]');const t=i&&i.value.trim();if(!t)return;n.todo.push({t,ok:false});save();render();const j=$('#pnb [data-tdnew]');if(j)j.focus()}
+function addTodo(n){const i=$('#pnb [data-tdnew]');const t=i&&i.value.trim();if(!t)return;n.todo.push({id:'i'+Math.random().toString(36).slice(2,8),t,ok:false,memo:''});save();render();const j=$('#pnb [data-tdnew]');if(j)j.focus()}
+$('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'qmemo' in e.target.dataset&&!e.isComposing){e.preventDefault();$('#pnb [data-qmemo-go]').click()}});
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'tdnew' in e.target.dataset&&!e.isComposing){e.preventDefault();const n=selN.length===1?nodeById(selN[0]):null;if(n)addTodo(n)}});
 $('#pnb').addEventListener('change',e=>{
   if(!('notion' in e.target.dataset))return;const n=selN.length===1?nodeById(selN[0]):null;if(!n)return;
@@ -1749,6 +1799,15 @@ $('#pnb').addEventListener('change',e=>{
   const o=curTarget();if(!o)return;
   if('doneck' in e.target.dataset){if(o.type)setDone(o,e.target.checked)}
   else if('startck' in e.target.dataset){if(o.type)setStarted(o,e.target.checked)}
+  else if(e.target.closest&&e.target.closest('[data-iid]')&&o.todo){
+    const it=o.todo.find(x=>x.id===e.target.closest('[data-iid]').dataset.iid);if(!it)return;const d=e.target.dataset;
+    if('tds2' in d){const v=e.target.value;if(v!=='later'&&it.later)deferItem(o,it,'');
+      it.ok=v==='ok';it.na=v==='na';if(v==='later'){it.later=it.later||'pending'}else it.later='';
+      if(v==='ok')addLog(o,'완료: '+it.t);if(v==='na')addLog(o,'진행에 상관없음: '+it.t);save();render();return}
+    if('tdlater' in d){deferItem(o,it,e.target.value);save();render();if(e.target.value)toast(`"${nodeById(e.target.value).name}" 작업에 하위 할 일로 넣었습니다.`);return}
+    if('tdneed' in d){it.needDoc=e.target.checked;save();render();return}
+    if('tdmemo' in d){it.memo=e.target.value.trim();if(it.memo)addLog(o,`메모 (${it.t}): ${it.memo}`);save();render();return}
+  }
   else if('tpl' in e.target.dataset){const v=e.target.value;e.target.value='';if(v==='')return;
     if(v==='save'){if(!o.todo.length){toast('저장할 체크리스트 항목이 없습니다.');return}const nm=prompt('목록 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 목록으로 저장했습니다. 다른 작업에서 "자주 쓰는 체크리스트 넣기"로 넣을 수 있습니다.`);return}
     const t=(S.templates||[])[+v];if(!t)return;const have=new Set(o.todo.map(i=>i.t));let k=0;t.items.forEach(x=>{if(!have.has(x)){o.todo.push({t:x,ok:false});k++}});save();render();toast(`"${t.name}" 목록에서 ${k}개 넣었습니다.`)}
@@ -1765,11 +1824,16 @@ $('#pnb').addEventListener('click',e=>{
   if(b.dataset.fa){fileAction(b);return}
   const n=selN.length===1?nodeById(selN[0]):null;
   if('tdadd' in b.dataset&&n){addTodo(n);return}
+  if('qmemoGo' in b.dataset&&n){const i=$('#pnb [data-qmemo]'),t=i&&i.value.trim();if(!t)return;addLog(n,'메모: '+t);save();render();toast('메모를 남겼습니다. 카드에 보입니다.');return}
   if(b.dataset.st&&n){const v=b.dataset.st;
     if(v==='wait'){n.started='';n.done='';save();render();return}
     if(v==='doing'){if(n.done){n.done='';save()}if(!n.started){setStarted(n,true)}else render();return}
     if(v==='done'){if(!n.done)setDone(n,true);return}}
   if(b.dataset.tdx!=null&&n){n.todo.splice(+b.dataset.tdx,1);save();render();return}
+  const sc=b.closest('[data-iid]'),it=sc&&n&&n.todo.find(x=>x.id===sc.dataset.iid);
+  if('tdx2' in b.dataset&&it){if(it.later)deferItem(n,it,'');n.todo=n.todo.filter(x=>x!==it);save();render();return}
+  if('tdf2' in b.dataset&&it){const fin=$('#fin');fin.dataset.mode='item';fin.dataset.nid=n.id;fin.dataset.item=it.id;fin.multiple=true;fin.value='';fin.click();return}
+  if(b.dataset.tdfin&&n){confirmFile(n,b.dataset.tdfin);return}
   if(b.dataset.tdf!=null&&n){const i=n.todo[+b.dataset.tdf];if(!i)return;const fin=$('#fin');fin.dataset.mode='item';fin.dataset.nid=n.id;fin.dataset.item=i.t;fin.multiple=true;fin.value='';fin.click();return}
   if(b.dataset.tds!=null&&n){const i=n.todo[+b.dataset.tds];if(!i)return;   // 미완 → 완료 → 불필요 → 미완
     if(!i.ok&&!i.na){i.ok=true;addLog(n,'체크 완료: '+i.t)}else if(i.ok&&!i.na){i.ok=false;i.na=true;addLog(n,'체크 불필요: '+i.t)}else{i.na=false;i.ok=false}
@@ -2078,7 +2142,7 @@ $('#fin').onchange=e=>{
   const fin=e.target,files=[...fin.files];fin.value='';if(!files.length)return;
   const n=nodeById(fin.dataset.nid);if(!n)return;
   if(fin.dataset.mode==='rep')replaceFile(n,fin.dataset.rep,files[0],fin.dataset.why);
-  else if(fin.dataset.mode==='item')attachFiles(n,files,{item:fin.dataset.item,label:'증거'});
+  else if(fin.dataset.mode==='item'){const it=n.todo.find(x=>x.id===fin.dataset.item);attachFiles(n,files,{item:fin.dataset.item,label:it?it.t.slice(0,12):'서류'})}
   else attachFiles(n,files);
 };
 $('#pnb').addEventListener('change',e=>{
@@ -2241,7 +2305,8 @@ async function ghPut(c){
   if(!r.ok){const x=new Error(ghErr(r.status));x.st=r.status;throw x}
   ghSha=(await r.json()).content.sha;
 }
-function ghQueue(){if(!ghCfg()||ghState==='conflict')return;ghDirty=true;if(ghState!=='fail'){ghState='wait';ghPaint()}clearTimeout(ghTimer);ghTimer=setTimeout(ghFlush,3000)}
+var ghLoaded=false;   // 처음 저장소를 읽기 전에는 올리지 않는다
+function ghQueue(){if(!ghCfg()||ghState==='conflict'||!ghLoaded)return;ghDirty=true;if(ghState!=='fail'){ghState='wait';ghPaint()}clearTimeout(ghTimer);ghTimer=setTimeout(ghFlush,3000)}
 async function ghFlush(){
   const c=ghCfg();if(!c||ghBusy||!ghDirty||ghState==='conflict')return;
   ghBusy=true;ghDirty=false;ghState='saving';ghPaint();
@@ -2263,7 +2328,10 @@ function ghPaint(){
 function ghApply(data){S=norm(data);prevJson=JSON.stringify(S);try{localStorage.setItem('ptl-v3',prevJson)}catch(e){}selN=selN.filter(id=>nodeById(id));if(selL&&!S.links.some(l=>l.id===selL))selL=null;if(selP&&!pById(selP))selP=null;render()}
 // 처음 열 때·창으로 돌아올 때 저장소 내용을 확인한다. ask=true 는 이 브라우저를 처음 연결할 때
 async function ghLoad(ask){
-  const c=ghCfg();ghPaint();if(!c||ghBusy||ghDirty)return;
+  const c=ghCfg();ghPaint();if(!c){ghLoaded=true;return}if(ghBusy||ghDirty)return;
+  try{await ghLoad2(c,ask)}finally{ghLoaded=true}
+}
+async function ghLoad2(c,ask){
   ghBusy=true;ghState='load';ghPaint();
   try{
     const g=await ghGet(c,GH_PATH);ghBusy=false;
