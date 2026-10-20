@@ -289,6 +289,7 @@ dialog::backdrop{background:rgba(0,0,0,.3)}
 #pn .qmemo{display:flex;gap:6px;flex:none}#pn .qmemo input{flex:1}
 .nd .lm{font-size:11px;color:#475569;white-space:nowrap;margin-top:1px;text-shadow:0 0 3px #fff}#pn .todo .tdf{flex-basis:100%;padding-left:72px;display:flex;flex-direction:column;gap:2px;font-size:12px}
 #pn .todo .tdf a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .todo .tdf a.c{color:var(--grn)}
+#dshare{width:min(1240px,96vw)}#dshare img{width:100%;border:1px solid var(--line);border-radius:8px}
 #dfinal .tk{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
 #dfinal .tk .rw{display:flex;gap:8px;align-items:center;font-size:13px}#dfinal .tk .rw span{flex:1}#dfinal .tk .rw button{padding:2px 9px;font-size:12px}
 #dfinal .tk .mut{font-size:12px;color:var(--mut)}
@@ -332,6 +333,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <span id="ghs" class="ghs"></span>
   <button id="undo" title="Ctrl+Z">되돌리기</button>
   <button id="askai" title="이 제품의 프로젝트관리 대화(Claude)를 엽니다. 상황을 말하면 일정을 짜고 고칩니다">프로젝트관리 대화</button>
+  <button id="sharebtn" title="지금 보는 제품의 일정을 다른 사람에게 보낼 한 장 그림으로 만듭니다">공유 이미지</button>
   <button id="finalbtn" title="이 제품에서 확정한 서류를 작업별로 모아 봅니다">최종 서류</button>
   <button id="set">설정</button>
 </header>
@@ -388,6 +390,10 @@ dialog td.d{width:130px;color:var(--mut)}
   </div>
 </dialog>
 
+<dialog id="dshare">
+  <div class="h"><span id="dshare-t">공유 이미지</span><button id="dshare-x">닫기</button></div>
+  <div class="b" id="dshare-b"></div>
+</dialog>
 <dialog id="dfinal">
   <div class="h"><span id="dfinal-t">최종 서류</span><button id="dfinal-x">닫기</button></div>
   <div class="b" id="dfinal-b"></div>
@@ -2334,6 +2340,82 @@ function openFinal(){
   $('#dfinal').showModal();
 }
 $('#finalbtn').onclick=openFinal;
+
+// ---------- 공유 이미지 ----------
+// 다른 사람에게 "이 일의 일정이 이렇다"를 보내는 한 장. 관리 화면을 찍지 않고 줄여서 다시 그린다.
+// 묶음 하나 = 한 줄 (처음~끝 막대, 지난 기간은 회색). 주요 날짜(D.O·발주·입고·런칭·생산이 이름에 있는 작업, 없으면 묶음의 마지막 작업)는 점으로,
+// 막대 아래에는 지금 하는 작업과 다음 작업 3개까지. 연결선·체크리스트·메모·서류·겹침 표시는 뺀다.
+// 숫자가 하나라도 "가정"이면 제목에 (가안). 점이 채워져 있으면 확인된 날짜·끝난 작업, 속이 비어 있으면 예상.
+function shareSvg(P){
+  const r=R.per[P.id];if(!r||r.empty||r.err)return null;
+  const W=1200,L=40,X0=230,X1=1160,F='font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif"';
+  const ts=S.nodes.filter(n=>n.p===P.id&&n.type!=='group'&&C[n.id]);
+  let a=Math.min(...ts.map(t=>C[t.id].es),TODAY);while(dow(a)!==1)a--;
+  const b=Math.max(...ts.map(t=>C[t.id].ef),r.pEnd,P.deadline?num(P.deadline):0)+4,pd=(X1-X0)/(b-a+1),x=d=>X0+(d-a)*pd;
+  const nm=t=>{const s=t.name.replace(/\s*\([^)]*\)/g,'').trim()||t.name.trim();return s.length>16?s.slice(0,15)+'…':s};   // 괄호 안(담당 팀 등)은 빼고 짧게
+  const key=t=>/D\.?O|발주|입고|런칭|출시|생산/i.test(t.name);
+  const gs=S.nodes.filter(n=>n.p===P.id&&n.type==='group').sort(gOrd);
+  const rows=gs.map(g=>({name:g.name,color:g.color,t:ts.filter(t=>GM.get(t.id)===g)})).filter(o=>o.t.length);
+  const loose=ts.filter(t=>!GM.get(t.id));if(loose.length)rows.push({name:'기타',color:'#64748b',t:loose});
+  const draft=ts.some(t=>t.conf!=='c'&&!t.done);
+  const H=150+rows.length*74+50;let o='';
+  const T=(x0,y,txt,sz,wt,fill,anc)=>`<text x="${x0}" y="${y}" ${F} font-size="${sz}" font-weight="${wt||400}" fill="${fill||'#1f2a3a'}"${anc?` text-anchor="${anc}"`:''}>${esc(txt)}</text>`;
+  o+=`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  o+=T(L,46,`${P.name} 일정${draft?' (가안)':''}`,24,700);
+  const st=prodStatus(r);
+  o+=T(L,76,`기준 ${md(TODAY)}(${WD[dow(TODAY)]}) · 입고 예상 ${md(r.pEnd)}(${WD[dow(r.pEnd)]})${P.deadline?` · 목표 ${md(num(P.deadline))}`:''} · ${st.txt}`,15,400,'#475569');
+  // 날짜 눈금: 달 이름, 월요일 선
+  const top=104,bot=H-48;
+  for(let d=a;d<=b;d++){const dt=new Date(d*864e5),day=dt.getUTCDate();
+    if(dow(d)===1){o+=`<line x1="${x(d)}" x2="${x(d)}" y1="${top+8}" y2="${bot}" stroke="#eef1f5"/>`;if(pd*7>=44)o+=T(x(d)+3,top+22,`${dt.getUTCMonth()+1}/${day}`,11,400,'#94a3b8')}
+    if(day===1||d===a){o+=`<line x1="${x(d)}" x2="${x(d)}" y1="${top-8}" y2="${bot}" stroke="#94a3b8"/>`;o+=T(x(d)+4,top+4,`${dt.getUTCMonth()+1}월`,14,700,'#334155')}}
+  if(P.deadline){const dl=num(P.deadline)+1;o+=`<line x1="${x(dl)}" x2="${x(dl)}" y1="${top+8}" y2="${bot}" stroke="#1f2a3a" stroke-dasharray="2 3"/>`+T(x(dl)+4,bot+16,`목표 ${md(num(P.deadline))}`,12,700,'#1f2a3a')}
+  o+=`<line x1="${x(TODAY)}" x2="${x(TODAY)}" y1="${top+8}" y2="${bot}" stroke="#e24b4a" stroke-width="1.5" stroke-dasharray="4 3"/>`+T(x(TODAY)+4,bot+16,`오늘 ${md(TODAY)}`,12,700,'#e24b4a');
+  rows.forEach((g,i)=>{
+    const y=top+40+i*74,es=Math.min(...g.t.map(t=>C[t.id].es)),ef=Math.max(...g.t.map(t=>C[t.id].ef)),allDone=g.t.every(t=>t.done);
+    o+=T(L,y+15,g.name,16,700);o+=T(L,y+35,`${md(es)} ~ ${md(ef)}`,13,400,'#64748b');
+    const bx=x(es),bw=x(ef+1)-bx,cut=Math.min(Math.max(x(TODAY),bx),bx+bw);
+    if(g.t.every(t=>C[t.id].ef-C[t.id].es<=1))o+=`<line x1="${bx}" x2="${bx+bw}" y1="${y+12}" y2="${y+12}" stroke="${g.color}" stroke-width="2" stroke-dasharray="3 4"/>`;   // 하루짜리 날짜만 있는 줄은 막대 대신 점선
+    else{o+=`<rect x="${bx}" y="${y+2}" width="${bw}" height="20" rx="5" fill="${g.color}" fill-opacity="${allDone?0.15:0.5}"/>`;
+      if(cut>bx)o+=`<rect x="${bx}" y="${y+2}" width="${cut-bx}" height="20" rx="5" fill="#b8c0cc"/>`}
+    const ms=[...g.t.filter(key)].sort((p,q)=>C[p.id].ef-C[q.id].ef);if(!ms.length)ms.push([...g.t].sort((p,q)=>C[q.id].ef-C[p.id].ef)[0]);
+    const dateOnly=g.t.every(t=>C[t.id].ef-C[t.id].es<=1);
+    ms.slice(dateOnly?-5:-3).forEach(t=>{const cx=x(C[t.id].ef+0.5),sure=t.done||t.conf==='c';o+=`<circle cx="${cx}" cy="${y+12}" r="7" fill="${sure?'#d85a30':'#fff'}" stroke="#d85a30" stroke-width="2.5"/>`});
+    // 막대 아래 한 줄: 지금 하는 작업 → 다음 작업 3개 (외 n건), 주요 날짜
+    let line;
+    if(allDone)line=`완료 ${md(ef)}`;
+    else{const open=g.t.filter(t=>!t.done).sort((p,q)=>C[p.id].es-C[q.id].es),now=open.filter(t=>C[t.id].es<=TODAY),next=open.filter(t=>C[t.id].es>TODAY);
+      const parts=[...now.slice(0,1).map(t=>`지금 ${nm(t)}(~${md(C[t.id].ef)})`),...next.slice(0,now.length?2:3).map(t=>`${md(C[t.id].es)} ${nm(t)}`)];
+      const rest=open.length-parts.length;line=parts.join(' → ')+(rest>0?` 외 ${rest}건`:'')}
+    let w=txtW(line,400,13);if(w>X1-X0){while(line.length>10&&txtW(line+'…',400,13)>X1-X0)line=line.slice(0,-1);line+='…';w=txtW(line,400,13)}
+    o+=T(Math.max(X0,Math.min(bx,X1-w)),y+44,line,13,400,'#334155').replace('<text ','<text stroke="#fff" stroke-width="4" paint-order="stroke" ');   // 눈금선 위에서도 읽히게 흰 테두리
+  });
+  const ly=H-18;
+  o+=`<rect x="${L}" y="${ly-10}" width="14" height="10" rx="2" fill="#b8c0cc"/>`+T(L+20,ly,'지난 기간',12,400,'#475569');
+  o+=`<rect x="${L+100}" y="${ly-10}" width="14" height="10" rx="2" fill="#378add" fill-opacity="0.5"/>`+T(L+120,ly,'남은 기간',12,400,'#475569');
+  o+=`<circle cx="${L+207}" cy="${ly-5}" r="6" fill="#d85a30"/>`+T(L+219,ly,'주요 날짜(확인됨·끝남)',12,400,'#475569');
+  o+=`<circle cx="${L+380}" cy="${ly-5}" r="6" fill="#fff" stroke="#d85a30" stroke-width="2.5"/>`+T(L+392,ly,'주요 날짜(예상)',12,400,'#475569');
+  return{svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${o}</svg>`,W,H};
+}
+async function sharePng(sh){
+  const img=new Image(),url=URL.createObjectURL(new Blob([sh.svg],{type:'image/svg+xml'}));
+  await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=url});
+  const c=document.createElement('canvas');c.width=sh.W*2;c.height=sh.H*2;const g=c.getContext('2d');g.scale(2,2);g.drawImage(img,0,0);URL.revokeObjectURL(url);
+  return await new Promise(ok=>c.toBlob(ok,'image/png'));
+}
+async function openShare(){
+  const P=curP();R=calc();const sh=shareSvg(P);
+  $('#dshare-t').textContent=`공유 이미지 — ${P.name.replace(/\s*\(.*$/,'')}`;
+  if(!sh){$('#dshare-b').innerHTML='<div class="note">이 제품에는 그릴 일정이 없습니다.</div>';$('#dshare').showModal();return}
+  $('#dshare-b').innerHTML=`<img alt="공유용 일정 그림" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(sh.svg)}"><div class="r"><button id="dshare-dl">PNG로 받기</button><button id="dshare-cp">그림 복사 (슬랙에 붙여넣기)</button></div>
+    <div class="note">묶음마다 한 줄입니다. 점은 주요 날짜이고, 속이 빈 점은 아직 예상인 날짜입니다. 체크리스트·메모·서류는 넣지 않습니다.</div>`;
+  $('#dshare').showModal();
+  const fn=`${P.name.replace(/\s*\(.*$/,'').replace(/[\\/:*?"<>|]/g,' ')} 일정 ${str(TODAY)}.png`;
+  $('#dshare-dl').onclick=async()=>{try{const bl=await sharePng(sh),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=fn;a.click();toast('그림을 받았습니다: '+fn)}catch(e){toast('그림을 만들지 못했습니다: '+e.message)}};
+  $('#dshare-cp').onclick=async()=>{try{const bl=await sharePng(sh);await navigator.clipboard.write([new ClipboardItem({'image/png':bl})]);toast('그림을 복사했습니다. 슬랙 입력칸에 Ctrl+V 로 붙여넣으세요.')}catch(e){toast('이 화면에서는 복사가 안 됩니다. "PNG로 받기"를 눌러 주세요.')}};
+}
+$('#sharebtn').onclick=openShare;
+$('#dshare-x').onclick=()=>$('#dshare').close();
 // Claude에게 부탁: 회사 PC의 Claude 앱에 새 대화를 열고 부탁 글을 넣어 둔다 (보내기는 사용자가 누른다)
 function askHref(){const P=curP(),t=$('#ask-t').value.trim().replace(/\s+/g,' ');
   const q=`[제품 일정 고치기] 제품: ${P.name.replace(/\s*\(.*$/,'')} / ${t} — product-schedule CLAUDE.md 의 "말로 일정 고치기"대로`.slice(0,200);
