@@ -2428,8 +2428,10 @@ $('#set-zip').onclick=async()=>{
 // ---------- 온라인 저장소 (GitHub 비공개 저장소) ----------
 // 연결하면 저장소의 data/timeline.json 이 원본이다. 고친 뒤 3초 동안 손을 떼면 올린다.
 // 실패하면 위쪽에 빨간 글씨로 띄우고 1분마다 다시 시도한다. 다른 기기에서 먼저 고쳤으면 어느 쪽을 남길지 고르게 한다.
-const GH_API=new URLSearchParams(location.search).get('gh_api')||'https://api.github.com',GH_PATH='data/timeline.json';
-function ghCfg(){try{const c=JSON.parse(localStorage.getItem('ptl-gh')||'null');return c&&c.token&&c.repo?c:null}catch(e){return null}}   // save()가 이 줄보다 먼저 불려도 되게 함수·var 로 둔다
+// 회사 PC 서버가 보여 준 화면(127.0.0.1:8790·Tailscale 주소)은 열쇠 없이 서버를 거쳐 같은 저장소를 쓴다. 파일로 연 화면·github.io 는 열쇠로 직접 쓴다
+function ghViaPC(){return /^https?:$/.test(location.protocol)&&!/github\.io$/.test(location.hostname)&&!new URLSearchParams(location.search).get('gh_api')}
+const GH_API=new URLSearchParams(location.search).get('gh_api')||(ghViaPC()?location.origin+'/gh':'https://api.github.com'),GH_PATH='data/timeline.json';
+function ghCfg(){if(ghViaPC())return{repo:'hongky11/product-schedule',token:'pc'};try{const c=JSON.parse(localStorage.getItem('ptl-gh')||'null');return c&&c.token&&c.repo?c:null}catch(e){return null}}   // save()가 이 줄보다 먼저 불려도 되게 함수·var 로 둔다
 var ghSha=null,ghTimer=null,ghRetry=null,ghBusy=false,ghDirty=false,ghState='',ghMsg='',ghAt='';
 const ghHead=c=>({Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'});
 const b64e=t=>{const b=new TextEncoder().encode(t);let r='';for(let i=0;i<b.length;i+=0x8000)r+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(r)};
