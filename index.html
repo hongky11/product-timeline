@@ -145,6 +145,10 @@ section{position:absolute;inset:0}
 .doff span{position:absolute;top:6px;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;font-size:11px;color:#b42318;font-weight:700;white-space:nowrap}
 .dtoday{position:absolute;background:rgba(37,99,235,.08);border-left:2px solid var(--blue);pointer-events:none}
 .ddl{position:absolute;width:0;border-left:2px dashed var(--red);pointer-events:none}
+#lanecol{position:absolute;left:0;top:0;bottom:0;width:118px;z-index:4;pointer-events:none;overflow:hidden}
+#lanecol .ln{position:absolute;left:0;width:118px;box-sizing:border-box;background:rgba(255,255,255,.94);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:8px 8px;pointer-events:auto;cursor:pointer;overflow:hidden}
+#lanecol .ln b{display:block;font-size:13px;line-height:1.25;word-break:keep-all}#lanecol .ln span{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+#lanecol .ln:hover{background:#f1f5ff}
 #ruler{position:absolute;left:0;right:0;top:0;height:52px;background:#fff;border-bottom:1px solid var(--line);z-index:5;pointer-events:none;overflow:hidden;font-size:12px}
 #ruler .rmr,#ruler .rdr{position:absolute;left:0;right:0}#ruler .rmr{top:0;height:20px}#ruler .rdr{top:20px;height:32px}
 #ruler .rm{position:absolute;top:0;height:20px;line-height:20px;font-size:13px;font-weight:700;color:#1f2a3a;padding-left:6px;border-left:2px solid #8a97ab;background:#fff;white-space:nowrap}
@@ -200,7 +204,7 @@ section{position:absolute;inset:0}
 .nd.grp.sel{box-shadow:0 0 0 3px rgba(37,99,235,.5)}
 .nd.grp.hl,.nd.grp.drop{background:color-mix(in srgb,var(--c) 18%,transparent)}.nd.grp.drop{border-color:var(--c)}
 .nd.grp .gh{pointer-events:auto;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;border-radius:14px 14px 0 0;background:color-mix(in srgb,var(--c) 22%,#fff);color:#223;font-weight:700}
-.nd.grp .gh span{font-weight:400;color:var(--mut);font-size:11px}
+.nd.grp .gh span{font-weight:400;color:var(--mut);font-size:11px}.nd.grp .gh b{display:none}
 .mq{position:absolute;border:1px solid var(--blue);background:rgba(37,99,235,.1);pointer-events:none;z-index:6}
 #sl{position:absolute;inset:0;pointer-events:none;display:none}
 .pcard{position:absolute;pointer-events:auto;cursor:pointer;background:#fff;border:2px solid #c5d0e2;border-radius:16px;padding:12px 14px;overflow:hidden;box-shadow:0 4px 14px rgba(20,30,50,.1);display:flex;flex-direction:column;gap:7px}
@@ -362,6 +366,7 @@ dialog td.d{width:130px;color:var(--mut)}
       </div>
       <div id="sl"></div>
       <div id="ruler"></div>
+      <div id="lanecol"></div>
     </section>
     <section id="time">
       <div class="tl" id="tl"></div>
@@ -896,9 +901,28 @@ function fitAll(){
   const fs=S.products.map(frameOf),x0=Math.min(...fs.map(f=>f.x)),y0=Math.min(...fs.map(f=>f.y)),x1=Math.max(...fs.map(f=>f.x+f.w)),y1=Math.max(...fs.map(f=>f.y+f.h));
   fitBounds({x:x0,y:y0,w:x1-x0,h:y1-y0},30,true);
 }
+// 확대·축소는 한 번에 뛰지 않고 몇 프레임에 걸쳐 목표 배율로 미끄러진다 (휠을 연달아 돌리면 목표가 이어서 바뀐다)
+let zAnim=null,zRaf=0,pTok=0;
+// 다음 그림 차례: 보통은 화면 갱신에 맞추고, 창이 가려져 갱신이 멈춰도 50ms 뒤에는 진행한다 (확대가 멈춘 채 남지 않게)
+const nextFrame=f=>{let done=false;const g=()=>{if(!done){done=true;f(performance.now())}};requestAnimationFrame(g);setTimeout(g,50)};
 function zoomAt(f,cx,cy){
+  pTok++;
   const r=board.getBoundingClientRect(),mx=cx==null?r.width/2:cx-r.left,my=cy==null?r.height/2:cy-r.top;
-  const z0=cam.z,z1=clamp(z0*f,MINZ,MAXZ);cam.x=mx-(mx-cam.x)*(z1/z0);cam.y=my-(my-cam.y)*(z1/z0);cam.z=z1;applyCam();syncCur();
+  zAnim={tz:clamp((zAnim?zAnim.tz:cam.z)*f,MINZ,MAXZ),mx,my};if(!zRaf){zRaf=1;nextFrame(zStep)}
+}
+function zStep(){
+  const a=zAnim;if(!a){zRaf=0;return}
+  const z0=cam.z,z1=Math.abs(a.tz-z0)<.002?a.tz:z0+(a.tz-z0)*.3;
+  cam.x=a.mx-(a.mx-cam.x)*(z1/z0);cam.y=a.my-(a.my-cam.y)*(z1/z0);cam.z=z1;applyCam();
+  if(z1===a.tz){zAnim=null;zRaf=0;syncCur();return}
+  nextFrame(zStep);
+}
+// 화면을 끌다 놓으면 놓은 속도로 조금 더 미끄러지다 멈춘다
+function glide(vx,vy){
+  const tok=++pTok;let t0=performance.now();
+  const step=t=>{if(tok!==pTok)return;const dt=Math.min(40,t-t0);t0=t;cam.x+=vx*dt;cam.y+=vy*dt;vx*=Math.pow(.992,dt);vy*=Math.pow(.992,dt);applyCam();
+    if(Math.hypot(vx,vy)>.02)nextFrame(step)};
+  if(Math.hypot(vx,vy)>.08)nextFrame(step);
 }
 function centerOn(id){const n=nodeById(id);if(!n||view!=='b')return;const r=board.getBoundingClientRect();if(cam.z<LOD)cam.z=.8;cam.x=r.width/2-(n.x+n.w/2)*cam.z;cam.y=r.height/2-(n.y+n.h/2)*cam.z;applyCam()}
 // 화면 한가운데에 있는 제품을 "지금 제품"으로 삼는다
@@ -1031,7 +1055,7 @@ function daysHtml(P,f){
 }
 // 위쪽 날짜 눈금: 연·월, 날짜, 요일, 공휴일 이름. 쉬는 날은 빨간 글자
 function renderRuler(){
-  const el=$('#ruler');if(!el)return;if(view!=='b'||!R){el.style.display='none';return}el.style.display='';
+  const el=$('#ruler');if(!el)return;if(view!=='b'||!R){el.style.display='none';const lc=$('#lanecol');if(lc)lc.innerHTML='';return}el.style.display='';
   const r=board.getBoundingClientRect(),px=DW*cam.z,K=R.K,sx=d=>cam.x+X(d)*cam.z;
   const d0=Math.max(BR.a,BR.a+Math.floor(-cam.x/px)-1),d1=Math.min(BR.b,BR.a+Math.ceil((r.width-cam.x)/px)+1);
   let m='',dd='';
@@ -1047,7 +1071,13 @@ function renderRuler(){
   el.innerHTML=`<div class="rmr">${m}</div><div class="rdr">${dd}</div>`;
   const f=frameOf(curP());el.style.top=Math.max(0,cam.y+(f.y+58)*cam.z)+'px';   // 제품 이름 바로 아래, 카드들 위
   // 묶음 이름은 화면 왼쪽 끝에 붙여 둔다 (옆으로 옮겨도 어느 묶음 줄인지 보이게)
-  const vx=-cam.x/cam.z;nodesEl.querySelectorAll('.nd.grp').forEach(ge=>{const g=nodeById(ge.dataset.id),h=ge.firstElementChild;if(g&&h)h.style.paddingLeft=Math.max(12,vx-g.x+8)+'px'});
+  const vx=-cam.x/cam.z;nodesEl.querySelectorAll('.nd.grp').forEach(ge=>{const g=nodeById(ge.dataset.id),h=ge.firstElementChild;if(g&&h)h.style.paddingLeft=Math.max(12,vx-g.x+8+118/cam.z)+'px'});
+  // 왼쪽 고정 칸: 묶음 줄마다 이름·기간. 위아래로 옮기면 따라가고, 옆으로 옮겨도 그 자리에 있다. 누르면 그 묶음을 고른다
+  const lc=$('#lanecol');if(lc){const top=parseFloat(el.style.top)+el.offsetHeight;lc.style.top=top+'px';
+    lc.innerHTML=LANES.map(L=>{const ms=S.nodes.filter(n=>n.type!=='group'&&n.p===S.cur&&(L.g?n.g===L.g.id:!grpOf(n))&&C[n.id]);
+      const sp=ms.length?`${md(Math.min(...ms.map(n=>C[n.id].es)))} ~ ${md(Math.max(...ms.map(n=>C[n.id].ef)))}`:'';
+      const y=cam.y+L.y0*cam.z-top,h=(L.y1-L.y0)*cam.z;
+      return `<div class="ln" data-lg="${L.g?L.g.id:''}" style="top:${y}px;height:${h}px;--c:${L.g?L.g.color:'#94a3b8'}"><b>${esc(L.g?L.g.name:'묶음 없음')}</b><span>${sp}</span></div>`}).join('')}
 }
 function renderBoard(){
   const P=curP(),r=R.per[P.id],s=prodStatus(r),f=boardFrame(P);
@@ -1118,9 +1148,10 @@ board.addEventListener('pointerdown',e=>{
   startPan(e);
 });
 function startPan(e,onClick){
-  const cx=cam.x,cy=cam.y;
-  track(e,(dx,dy)=>{cam.x=cx+dx;cam.y=cy+dy;applyCam()},moved=>{
-    if(moved){syncCur();return}
+  pTok++;zAnim=null;
+  const cx=cam.x,cy=cam.y,hist=[];
+  track(e,(dx,dy)=>{cam.x=cx+dx;cam.y=cy+dy;applyCam();const t=performance.now();hist.push({t,dx,dy});while(hist.length&&t-hist[0].t>90)hist.shift()},moved=>{
+    if(moved){const a=hist[0],b=hist[hist.length-1];if(a&&b&&b.t-a.t>10&&performance.now()-b.t<60)glide((b.dx-a.dx)/(b.t-a.t),(b.dy-a.dy)/(b.t-a.t));syncCur();return}
     if(onClick)onClick();else if(selN.length||selL||selP)clearSel();
   });
 }
@@ -1333,7 +1364,10 @@ board.addEventListener('dblclick',e=>{
   if(cam.z<LOD)return;
   const p=toWorld(e.clientX,e.clientY);placeNew('task',p.x,p.y);
 });
-board.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*.0012),e.clientX,e.clientY)},{passive:false});
+board.addEventListener('wheel',e=>{e.preventDefault();
+  const sx=e.shiftKey?(e.deltaX||e.deltaY):Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:0;
+  if(sx){pTok++;cam.x-=sx*(e.deltaMode===1?20:1);applyCam();return}
+  zoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?.04:.0015)),e.clientX,e.clientY)},{passive:false});
 // 붙어 있던 뒤 작업: 연결상 가장 이른 날에 시작하던 뒤 작업과, 그 뒤에 또 그렇게 붙어 있던 작업들. 앞 작업을 고치기 전에 구해 둔다.
 // 일부러 띄워 둔 작업(가장 이른 날보다 늦게 시작하던 것)과 그 뒤는 넣지 않는다.
 // out.need: 고치기 전 모든 작업의 "연결상 가장 이른 날". 같이 밀기는 이 날이 늦어진 작업만 민다 (원래부터 앞 작업보다 일찍 놓아 둔 작업은 그대로)
@@ -2354,6 +2388,7 @@ function openFinal(){
   $('#dfinal').showModal();
 }
 $('#finalbtn').onclick=openFinal;
+$('#lanecol').addEventListener('pointerdown',e=>{const l=e.target.closest('[data-lg]');if(l&&l.dataset.lg){e.stopPropagation();selectNodes([l.dataset.lg])}});
 
 // ---------- 저장 기록 ----------
 // 고칠 때마다 저장소에 한 번씩 저장된다. 그 기록을 10분 단위로 묶어 보여 주고, 고른 때의 일정으로 되돌린다.
