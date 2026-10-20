@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>일정 시험 화면 (vis-timeline)</title>
+<!-- 시험 화면: 회사 PC 서버(127.0.0.1:8790/vis)에서 연다. 일정은 서버에서 읽기만 하고 저장하지 않는다.
+     날짜 계산은 본 화면(index.html)의 "날짜 도우미"·"일정 계산" 구간을 그대로 읽어 쓴다 (아침 메시지와 같은 방식) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css">
+<style>
+body{margin:0;font:13px/1.4 "Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#1f2a3a;background:#f6f7f9;display:flex;flex-direction:column;height:100vh}
+header{display:flex;gap:10px;align-items:center;padding:10px 16px;background:#fff;border-bottom:1px solid #e3e8ef;flex-wrap:wrap}
+header b{font-size:16px}
+header .warn{background:#fff1d6;color:#8a4b00;border-radius:8px;padding:3px 10px;font-size:12px}
+header button{border:1px solid #cfd6e0;background:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font:inherit}
+header button.on{background:#1d4fd0;color:#fff;border-color:#1d4fd0}
+#tl{flex:1;min-height:0;background:#fff}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c2430;color:#fff;border-radius:10px;padding:9px 16px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.on{opacity:1}
+.vis-item{border-radius:8px;border-width:2px;font-size:12px;color:#1f2a3a}
+.vis-item.done{opacity:.55;text-decoration:line-through}
+.vis-item.late{box-shadow:0 0 0 2px #e24b4a}
+.vis-item.vis-selected{box-shadow:0 0 0 3px rgba(37,99,235,.55)}
+.vis-item .vis-item-content{padding:3px 6px}.vis-item .vis-item-overflow{overflow:visible}.vis-item.vis-range .vis-item-content{text-shadow:0 0 3px #fff,0 0 3px #fff}
+.vis-item.vis-background.off{background:rgba(239,68,68,.07)}
+.vis-labelset .vis-label .vis-inner{font-weight:700;padding:6px 10px}
+.vis-time-axis .vis-text{color:#475569}
+.vis-time-axis .vis-text.vis-major{font-weight:700;color:#1f2a3a}
+.vis-current-time{background:#e24b4a;width:2px}
+</style>
+</head>
+<body>
+<header><b>일정 시험 화면</b><span class="warn">vis-timeline 시험 — 끌어 봐도 저장하지 않습니다</span><span id="tabs"></span>
+  <span style="margin-left:auto;color:#64748b">휠: 앞뒤 이동 · Ctrl+휠: 확대/축소 · 막대 끌기: 날짜 옮기기 · 막대 끝 끌기: 기간</span></header>
+<div id="tl"></div>
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
+<script type="module">
+import Arrow from 'https://cdn.jsdelivr.net/npm/timeline-arrows@4.8.0/arrow.js';
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),3000)};
+// 1) 일정 읽기 (서버 → 저장소)
+const g=await (await fetch('/gh/repos/hongky11/product-schedule/contents/data/timeline.json')).json();
+window.S=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(g.content),c=>c.charCodeAt(0))));
+const kst=new Date(Date.now()+9*3600e3);window.TODAY=Math.floor(Date.UTC(kst.getUTCFullYear(),kst.getUTCMonth(),kst.getUTCDate())/864e5);
+window.NOTION={};window.C={};window.CLo={};window.CHi={};
+// 2) 본 화면의 계산 코드를 그대로 가져와 쓴다
+const html=await (await fetch('/')).text(),cut=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b));
+(0,eval)(cut('// ==날짜 도우미 시작==','// ==날짜 도우미 끝==')+cut('// ==일정 계산 시작==','// ==일정 계산 끝==')+';window.__core={num,str,dow,md,calc};');
+const {num,str,dow,md,calc}=window.__core;
+const R=calc(),K=R.K,WD=['일','월','화','수','목','금','토'];
+const D=n=>new Date(n*864e5-9*3600e3);   // 날짜 번호 → 한국 시각 0시
+const back=d=>Math.floor((d.getTime()+9*3600e3)/864e5);
+let cur=S.cur||S.products[0].id,tl=null,arrows=null;
+function tabs(){document.getElementById('tabs').innerHTML=S.products.map(P=>`<button data-p="${P.id}" class="${P.id===cur?'on':''}">${P.name.replace(/\s*\(.*$/,'')}</button>`).join(' ')}
+document.getElementById('tabs').onclick=e=>{const b=e.target.closest('[data-p]');if(b){cur=b.dataset.p;tabs();draw()}};
+function draw(){
+  const P=S.products.find(p=>p.id===cur),gs=S.nodes.filter(n=>n.p===cur&&n.type==='group').sort((a,b)=>(a.ord??99)-(b.ord??99));
+  const ts=S.nodes.filter(n=>n.p===cur&&n.type!=='group'&&C[n.id]);
+  const groups=gs.map((g2,i)=>({id:g2.id,content:g2.name,order:i,style:`border-left:4px solid ${g2.color}`}));
+  if(ts.some(t=>!gs.some(g2=>g2.id===t.g)))groups.push({id:'_',content:'묶음 없음',order:99});
+  const col=Object.fromEntries(gs.map(g2=>[g2.id,g2.color]));
+  // 줄 배치는 본 화면과 같은 규칙: 앞 작업과 같은 줄에 잇고, 자리가 없으면 가장 가까운 빈 줄
+  const PRE={};S.links.forEach(l=>{(PRE[l.to]=PRE[l.to]||[]).push(l.from)});const row={};
+  [...groups.map(x=>x.id)].forEach(gid=>{const rows=[];ts.filter(t=>(gs.some(g2=>g2.id===t.g)?t.g:'_')===gid).sort((p,q)=>C[p.id].es-C[q.id].es).forEach(t=>{
+    const es=C[t.id].es,fits=i=>rows[i]<es,ps=(PRE[t.id]||[]).filter(id=>row[id]!=null&&(gs.some(g2=>g2.id===t.g)?t.g:'_')===gid).sort((p,q)=>C[q].ef-C[p].ef);
+    let r=-1;for(const id of ps)if(fits(row[id])){r=row[id];break}
+    if(r<0){const want=ps.length?row[ps[0]]:0;let bd=1e9;rows.forEach((e,i)=>{if(!fits(i))return;const d=Math.abs(i-want)+(i<want?.5:0);if(d<bd){bd=d;r=i}})}
+    if(r<0){r=rows.length;rows.push(-1e9)}rows[r]=C[t.id].ef;row[t.id]=r})});
+  const items=ts.map(t=>{const x=C[t.id],c=col[t.g]||'#64748b';return{id:t.id,group:gs.some(g2=>g2.id===t.g)?t.g:'_',subgroup:'r'+String(row[t.id]).padStart(2,'0'),content:t.name.trim(),start:D(x.es),end:D(x.ef+1),
+    className:(t.done?'done ':'')+(x.late||x.over?'late':''),style:`background:color-mix(in srgb,${c} 18%,#fff);border-color:${c}`,
+    title:`${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · ${t.d}${t.unit==='c'?'일':'영업일'}`}});
+  // 쉬는 날(주말·공휴일) 배경
+  const a=Math.min(...ts.map(t=>C[t.id].es))-14,b=Math.max(...ts.map(t=>C[t.id].ef))+30;
+  for(let d=a;d<=b;d++)if(!K.isW(d))items.push({id:'off'+d,start:D(d),end:D(d+1),type:'background',className:'off'});
+  if(P.deadline)items.push({id:'dl',start:D(num(P.deadline)+1),end:D(num(P.deadline)+1),type:'background',content:'목표 '+md(num(P.deadline))});
+  const opt={stack:false,stackSubgroups:true,orientation:'top',zoomMin:7*864e5,zoomMax:400*864e5,start:D(TODAY-14),end:D(TODAY+60),
+    editable:{updateTime:true,updateGroup:true,add:false,remove:false},snap:d=>{const n=back(d);return D(n)},
+    groupOrder:'order',margin:{item:{horizontal:4,vertical:8}},showCurrentTime:true,zoomKey:'ctrlKey',horizontalScroll:true,verticalScroll:true,
+    format:{minorLabels:(d,scale)=>{const x=new Date(d);return scale==='day'?`${x.getDate()}`:scale==='weekday'?`${x.getDate()} ${WD[x.getDay()]}`:scale==='week'?`${x.getMonth()+1}/${x.getDate()}`:scale==='month'?`${x.getMonth()+1}월`:''},
+            majorLabels:(d,scale)=>{const x=new Date(d);return scale==='day'||scale==='weekday'||scale==='week'?`${x.getFullYear()}년 ${x.getMonth()+1}월`:`${x.getFullYear()}년`}},
+    tooltip:{followMouse:true},
+    onMove:(it,cb)=>{const s2=back(it.start),e2=back(it.end)-1;toast(`${md(s2)}(${WD[dow(s2)]}) ~ ${md(e2)}(${WD[dow(e2)]}) — 시험 화면이라 저장하지 않습니다`);cb(it)}};
+  if(tl){tl.destroy();tl=null}
+  tl=new vis.Timeline(document.getElementById('tl'),new vis.DataSet(items),new vis.DataSet(groups),opt);
+  const ids=new Set(ts.map(t=>t.id));
+  arrows=new Arrow(tl,S.links.filter(l=>ids.has(l.from)&&ids.has(l.to)).map((l,i)=>({id:i,id_item_1:l.from,id_item_2:l.to})),{color:'#64748b',strokeWidth:1.5});
+  window.__tl=tl;
+}
+tabs();draw();
+</script>
+</body>
+</html>
