@@ -155,7 +155,7 @@ section{position:absolute;inset:0}
 #ruler .rd.td{background:rgba(37,99,235,.15);font-weight:700}
 .nd .dl{position:absolute;left:0;right:0;overflow:hidden;text-overflow:ellipsis;top:-17px;font-size:11px;color:#334;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff}
 .nd .dl b{color:var(--red)}
-.nd .re,.nd .rl{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:3}.nd .re{right:-6px}.nd .rl{left:-6px}
+.nd .re,.nd .rl{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:3;display:none}.nd.sel .re,.nd.sel .rl{display:block}.nd .re{right:-6px}.nd .rl{left:-6px}
 .nd .re:hover,.nd .rl:hover{background:rgba(37,99,235,.25);border-radius:6px}
 .nd .bd .snap{cursor:pointer;text-decoration:underline}
 .dtip{position:absolute;z-index:9;background:#1d2433;color:#fff;font-size:12px;padding:3px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;display:none}
@@ -290,6 +290,9 @@ dialog::backdrop{background:rgba(0,0,0,.3)}
 .nd .lm{font-size:11px;color:#475569;white-space:nowrap;margin-top:1px;text-shadow:0 0 3px #fff}#pn .todo .tdf{flex-basis:100%;padding-left:72px;display:flex;flex-direction:column;gap:2px;font-size:12px}
 #pn .todo .tdf a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .todo .tdf a.c{color:var(--grn)}
 #dshare{width:min(1240px,96vw)}#dshare img{width:100%;border:1px solid var(--line);border-radius:8px}
+#dhist .hr{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:7px 10px}#dhist .hr span{flex:1}#dhist .hr.mk{border-color:#f3cf8f;background:#fff8ea}
+#dhist .hr.sub{margin-left:18px;padding:4px 10px}#dhist .hr.sub[hidden]{display:none}
+#dhist .hd{font-size:12px;color:var(--mut);margin:0 0 0 4px}#dhist .hdiff{font-size:12px;color:#334155;margin:2px 0 0 10px;white-space:pre-wrap}
 #dfinal .tk{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
 #dfinal .tk .rw{display:flex;gap:8px;align-items:center;font-size:13px}#dfinal .tk .rw span{flex:1}#dfinal .tk .rw button{padding:2px 9px;font-size:12px}
 #dfinal .tk .mut{font-size:12px;color:var(--mut)}
@@ -303,6 +306,7 @@ dialog textarea{width:100%;min-height:110px}
 dialog table{width:100%;border-collapse:collapse}
 dialog td{padding:3px 4px;border-bottom:1px solid #f0f2f6}
 dialog td.d{width:130px;color:var(--mut)}
+#toast.act{pointer-events:auto}#toast button{margin-left:12px;background:#fff;color:#1c2430;border:0;border-radius:6px;padding:3px 10px;font-weight:700;cursor:pointer}
 #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:#1c2430;color:#fff;border-radius:10px;padding:9px 16px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
 #toast.on{opacity:1}
 @media (max-width:760px){
@@ -332,6 +336,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <button class="ai" id="ai-rev" hidden>AI 점검</button>
   <span id="ghs" class="ghs"></span>
   <button id="undo" title="Ctrl+Z">되돌리기</button>
+  <button id="histbtn" title="저장된 때를 골라 그때 일정으로 되돌립니다. 지금 상태에 이름을 붙여 저장해 둘 수도 있습니다">저장 기록</button>
   <button id="askai" title="이 제품의 프로젝트관리 대화(Claude)를 엽니다. 상황을 말하면 일정을 짜고 고칩니다">프로젝트관리 대화</button>
   <button id="sharebtn" title="지금 보는 제품의 일정을 다른 사람에게 보낼 한 장 그림으로 만듭니다">공유 이미지</button>
   <button id="finalbtn" title="이 제품에서 확정한 서류를 작업별로 모아 봅니다">최종 서류</button>
@@ -393,6 +398,10 @@ dialog td.d{width:130px;color:var(--mut)}
 <dialog id="dshare">
   <div class="h"><span id="dshare-t">공유 이미지</span><button id="dshare-x">닫기</button></div>
   <div class="b" id="dshare-b"></div>
+</dialog>
+<dialog id="dhist">
+  <div class="h"><span>저장 기록</span><button id="dhist-x">닫기</button></div>
+  <div class="b" id="dhist-b"></div>
 </dialog>
 <dialog id="dfinal">
   <div class="h"><span id="dfinal-t">최종 서류</span><button id="dfinal-x">닫기</button></div>
@@ -564,7 +573,7 @@ let S=norm(load()||sample()),selN=[],selL=null,selP=null,view='b',tool='hand',C=
 let prevJson=JSON.stringify(S);const undoStack=[];
 function save(){
   const s=JSON.stringify(S);
-  if(s!==prevJson){undoStack.push(prevJson);if(undoStack.length>100)undoStack.shift();prevJson=s;ghQueue()}
+  if(s!==prevJson){undoStack.push(prevJson);if(undoStack.length>100)undoStack.shift();prevJson=s;lastSaveAt=Date.now();ghQueue()}
   try{localStorage.setItem('ptl-v3',s)}catch(e){}
 }
 function undo(){
@@ -575,7 +584,10 @@ function undo(){
   selN=selN.filter(id=>nodeById(id));if(selL&&!S.links.some(l=>l.id===selL))selL=null;if(selP&&!pById(selP))selP=null;
   render();
 }
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),3400)}
+var lastSaveAt=0;   // 방금 고친 직후에 뜨는 알림에는 되돌리기 단추를 붙인다
+function toast(m){const t=$('#toast'),u=Date.now()-lastSaveAt<1500&&undoStack.length;t.textContent=m;
+  if(u){const b=document.createElement('button');b.textContent='되돌리기';b.onclick=()=>{undo();t.classList.remove('on');toast('되돌렸습니다.')};t.appendChild(b);lastSaveAt=0}
+  t.classList.toggle('act',!!u);t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),u?6000:3400)}
 const nodeById=id=>S.nodes.find(n=>n.id===id);
 const pById=id=>S.products.find(p=>p.id===id);
 const curP=()=>pById(S.cur)||S.products[0];
@@ -1123,9 +1135,10 @@ function startMarquee(e){
     selN=[...new Set([...base,...ids])];paintSel();
   },moved=>{el.remove();if(!moved&&!add){clearSel();return}selL=null;selP=null;pmode='edit';if(selN[0]){const n=nodeById(selN[0]);if(n)S.cur=n.p}render()});
 }
-function selectNodes(ids){selN=ids;selL=null;selP=null;pmode='edit';if(ids.length){const n=nodeById(ids[0]);if(n)S.cur=n.p}render()}
-function selectLink(id){selN=[];selL=id;selP=null;pmode='edit';render()}
-function selectProduct(id){selN=[];selL=null;selP=id;S.cur=id;pmode='edit';render()}
+function blurPanel(){const a=document.activeElement;if(a&&$('#pnb').contains(a))a.blur()}
+function selectNodes(ids){if(ids.join()!==selN.join())blurPanel();selN=ids;selL=null;selP=null;pmode='edit';if(ids.length){const n=nodeById(ids[0]);if(n)S.cur=n.p}render()}
+function selectLink(id){blurPanel();selN=[];selL=id;selP=null;pmode='edit';render()}
+function selectProduct(id){blurPanel();selN=[];selL=null;selP=id;S.cur=id;pmode='edit';render()}
 function clearSel(){selN=[];selL=null;selP=null;pmode='edit';render()}
 // 카드 끌기: 위아래로 끌면 줄이 바뀌고, 옆으로 끌면 날짜 칸에 맞춰 움직인다. 놓으면 날짜를 어떻게 바꿀지 고른다.
 function dtip(){let el=$('#world .dtip');if(!el){el=document.createElement('div');el.className='dtip';world.appendChild(el)}return el}
@@ -1140,7 +1153,7 @@ function startDrag(e,id,toggle){
   const single=one&&!S.links.some(l=>l.from===id||l.to===id),K=R.K,att=one?attachedOf(one.id):null;
   let dd=0,rawdd=0,hoverL=null;const tip=dtip();
   track(e,(dx,dy)=>{
-    const ddy=snap(dy/cam.z);rawdd=one?Math.round(dx/cam.z/DW):0;dd=one&&!one.done&&C[one.id]?rawdd:0;
+    const ddy=snap(dy/cam.z);rawdd=one&&Math.abs(dx)>=14?Math.round(dx/cam.z/DW):0;dd=one&&!one.done&&C[one.id]?rawdd:0;
     st.forEach((p,m)=>{m.y=p.y+ddy;if(m===one)m.x=p.x+dd*DW;const el=nodeEl(m.id);if(el){el.style.left=m.x+'px';el.style.top=m.y+'px'}});
     renderLinks();
     const L=laneAt(me.y+me.h/2);if(L!==dropL){nodesEl.querySelectorAll('.grp.drop').forEach(el=>el.classList.remove('drop'));dropL=L;if(L&&L.g&&L.g.id!==me.g){const el=nodeEl(L.g.id);el&&el.classList.add('drop')}}
@@ -1176,7 +1189,7 @@ function startDrag(e,id,toggle){
 function startResizeTask(e,id){
   const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;const att=attachedOf(id);
   const el=nodeEl(id),tip=dtip();let ef=x.ef;
-  track(e,(dx)=>{ef=Math.max(x.es,x.ef+Math.round(dx/cam.z/DW));const w=Math.max(DW*(ef-x.es+1)-4,DW-4);el.style.width=w+'px';
+  track(e,(dx)=>{ef=Math.max(x.es,x.ef+(Math.abs(dx)>=10?Math.round(dx/cam.z/DW):0));const w=Math.max(DW*(ef-x.es+1)-4,DW-4);el.style.width=w+'px';
     tip.style.display='block';tip.style.left=n.x+'px';tip.style.top=(n.y-42)+'px';tip.textContent=`${md(x.es)} ~ ${md(ef)}(${WD[dow(ef)]}) · 영업 ${K.cntW(x.es,ef)+(K.isW(x.es)?1:0)}일 · 달력 ${ef-x.es+1}일`},
   moved=>{tip.style.display='none';if(!moved||ef===x.ef){render();return}
     const P=pById(n.p),end0=prodEnd(P),d0=n.d;
@@ -1190,7 +1203,7 @@ function startResizeTask(e,id){
 function startResizeStart(e,id){
   const n=nodeById(id),x=C[n.id],K=R.K;if(!x||n.done)return;const att=attachedOf(id);
   const el=nodeEl(id),tip=dtip();let s2=x.es;
-  track(e,(dx)=>{s2=Math.min(x.ef,x.es+Math.round(dx/cam.z/DW));el.style.left=(X(s2)+5)+'px';el.style.width=Math.max(DW*(x.ef-s2+1)-10,DW-10)+'px';
+  track(e,(dx)=>{s2=Math.min(x.ef,x.es+(Math.abs(dx)>=10?Math.round(dx/cam.z/DW):0));el.style.left=(X(s2)+5)+'px';el.style.width=Math.max(DW*(x.ef-s2+1)-10,DW-10)+'px';
     tip.style.display='block';tip.style.left=(X(s2)+5)+'px';tip.style.top=(n.y-42)+'px';const a=K.nextW(s2);tip.textContent=`${md(a)}(${WD[dow(a)]}) ~ ${md(x.ef)} · 영업 ${K.cntW(a,x.ef)+1}일`},
   moved=>{tip.style.display='none';if(!moved||s2===x.es){render();return}
     const P=pById(n.p),end0=prodEnd(P),a=K.nextW(s2),d0=n.d;
@@ -1367,7 +1380,7 @@ function snapToPred(n){
 nodesEl.addEventListener('click',e=>{const s=e.target.closest('[data-snap]');if(s){e.stopPropagation();snapToPred(nodeById(s.dataset.snap))}});
 nodesEl.addEventListener('change',e=>{
   const ck=e.target.closest('.ck');if(!ck)return;
-  setDone(nodeById(ck.closest('.nd').dataset.id),ck.checked);
+  const n=nodeById(ck.closest('.nd').dataset.id);setDone(n,ck.checked);if(!$('#toast').classList.contains('on'))toast(ck.checked?`"${n.name}" 끝남으로 바꿨습니다.`:`"${n.name}" 끝남을 풀었습니다.`);
 });
 board.addEventListener('click',e=>{const h=e.target.closest('[data-hint]');if(h&&h.dataset.hint==='sample'){S=norm(sample());save();clearSel();focusProduct('p1')}});
 
@@ -1767,7 +1780,8 @@ function renderPanel(){
   const pn=$('#pn');
   if(pmode==='review'&&aiRes){pn.classList.add('on');$('#pnt').textContent='AI 점검 결과';$('#pnb').innerHTML=reviewHtml();return}
   if(pmode==='day'&&dayN!=null&&!selN.length&&!selL&&!selP){pn.classList.add('on');$('#pnt').textContent=`${md(dayN)} (${WD[dow(dayN)]})`;$('#pnb').innerHTML=dayHtml(dayN);return}
-  const keep=document.activeElement&&$('#pnb').contains(document.activeElement)&&document.activeElement.dataset?document.activeElement.dataset.f:null;
+  const tgt=selL||selP||selN.join(),same=renderPanel._tgt===tgt;renderPanel._tgt=tgt;
+  const keep=same&&document.activeElement&&$('#pnb').contains(document.activeElement)&&document.activeElement.dataset?document.activeElement.dataset.f:null;   // 같은 카드일 때만 커서를 이어 둔다
   let h='';
   if(selL){
     const l=S.links.find(l=>l.id===selL);if(!l){pn.classList.remove('on');return}
@@ -2341,6 +2355,54 @@ function openFinal(){
 }
 $('#finalbtn').onclick=openFinal;
 
+// ---------- 저장 기록 ----------
+// 고칠 때마다 저장소에 한 번씩 저장된다. 그 기록을 10분 단위로 묶어 보여 주고, 고른 때의 일정으로 되돌린다.
+// "지금 상태 저장해 두기"는 이름을 붙여 저장해 두는 것이다 (기록에서 노란 줄로 보인다).
+async function histList(c){
+  const out=[];for(let pg=1;pg<=3;pg++){let r;try{r=await fetch(`${GH_API}/repos/${c.repo}/commits?path=${GH_PATH}&per_page=100&page=${pg}&t=${Date.now()}`,{headers:ghHead(c),cache:'no-store'})}catch(e){throw new Error('인터넷 연결을 확인하세요')}
+    if(!r.ok)throw new Error(ghErr(r.status));const j=await r.json();out.push(...j.map(x=>({sha:x.sha,msg:x.commit.message,at:new Date(x.commit.committer.date)})));if(j.length<100)break}
+  return out;
+}
+async function histGet(c,sha){
+  const r=await fetch(`${GH_API}/repos/${c.repo}/contents/${GH_PATH}?ref=${sha}`,{headers:{...ghHead(c),Accept:'application/vnd.github.raw+json'},cache:'no-store'});
+  if(!r.ok)throw new Error(ghErr(r.status));const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j=null}
+  return j&&j.content&&j.sha?JSON.parse(b64d(j.content)):j;
+}
+// 그때와 지금이 어떻게 다른지: 작업 이름·시작일·기간·끝남·묶음
+function histDiff(old){
+  const F={name:'이름',notBefore:'시작',d:'기간',done:'끝남',started:'시작함',due:'마감'},o=new Map((old.nodes||[]).filter(n=>n.type!=='group').map(n=>[n.id,n])),L=[];
+  S.nodes.filter(n=>n.type!=='group').forEach(n=>{const a=o.get(n.id);if(!a){L.push(`지금만 있음: ${n.name.trim()}`);return}
+    Object.keys(F).forEach(f=>{const x=a[f]??'',y=n[f]??'';if(String(x)!==String(y))L.push(`${n.name.trim()} ${F[f]}: 그때 ${x||'없음'} → 지금 ${y||'없음'}`)});o.delete(n.id)});
+  o.forEach(a=>L.push(`그때만 있음: ${a.name.trim()}`));return L;
+}
+async function openHist(){
+  const c=ghCfg(),b=$('#dhist-b');$('#dhist').showModal();
+  if(!c){b.innerHTML='<div class="note">저장소에 연결된 화면에서만 저장 기록을 볼 수 있습니다.</div>';return}
+  b.innerHTML=`<div class="r"><input type="text" id="dhist-nm" placeholder="이름 (예: 촬영 일정 바꾸기 전)" style="flex:1"><button id="dhist-mk">지금 상태 저장해 두기</button></div><div class="note">불러오는 중…</div>`;
+  $('#dhist-mk').onclick=()=>{const nm=$('#dhist-nm').value.trim()||new Date().toTimeString().slice(0,5);
+    (S.marks=S.marks||[]).push({t:nowStr(),name:nm});ghMark=nm;save();toast(`"${nm}" 이름으로 저장해 둡니다.`);setTimeout(openHist,4500)};
+  let L;try{L=await histList(c)}catch(e){b.lastElementChild.textContent='기록을 불러오지 못했습니다: '+e.message;return}
+  // 10분 단위로 묶고 그 안의 마지막 저장을 보인다. 이름 붙인 저장은 따로 한 줄
+  const rows=[];L.forEach(x=>{const mk=/^중간 저장: /.test(x.msg),k=Math.floor(x.at/6e5);const last=rows[rows.length-1];
+    if(mk)rows.push({...x,mk:x.msg.replace(/^중간 저장: /,''),n:1});else if(last&&!last.mk&&!last.sub&&last.k===k){last.n++;(last.more=last.more||[]).push(x)}else rows.push({...x,k,n:1})});
+  // "(저장 n번)"을 누르면 그 10분 안의 저장을 하나씩 펼친다
+  const all=[];rows.forEach(x=>{all.push(x);(x.more||[]).forEach(y=>all.push({...y,sub:true,of:x}))});rows.length=0;rows.push(...all);
+  const fm=d=>`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  let day='';b.lastElementChild.outerHTML=`<div class="note">고칠 때마다 저장됩니다. 최근 ${L.length}번을 10분 단위로 묶었습니다. "바뀐 것"으로 그때와 지금을 비교하고 "이 때로 되돌리기"를 누르세요 (되돌린 것도 되돌리기로 취소할 수 있습니다).</div>`+
+    rows.map((x,i)=>{const d=`${x.at.getMonth()+1}월 ${x.at.getDate()}일`,hd=d!==day?(day=d,`<div class="hd">${d}</div>`):'';
+      const tm=x.sub?`${fm(x.at)}:${String(x.at.getSeconds()).padStart(2,'0')}`:fm(x.at);
+      return hd+`<div class="hr${x.mk?' mk':''}${x.sub?' sub':''}" data-i="${i}"${x.sub?' hidden':''}><span>${x.sub?'└ ':''}${tm}${x.mk?` · <b>${esc(x.mk)}</b>`:x.n>1?` <a href="#" data-hx="${i}" class="mut">(저장 ${x.n}번 펼치기)</a>`:''}</span><button data-hd="${i}">바뀐 것</button><button data-hr="${i}">이 때로 되돌리기</button></div><div class="hdiff" id="hdiff${i}"></div>`}).join('');
+  b.onclick=async e=>{const hx=e.target.closest('[data-hx]');if(hx){e.preventDefault();const of=rows[+hx.dataset.hx];b.querySelectorAll('.hr.sub').forEach(el=>{if(rows[+el.dataset.i].of===of)el.hidden=!el.hidden});return}
+    const bt=e.target.closest('[data-hd],[data-hr]');if(!bt)return;const x=rows[+(bt.dataset.hd??bt.dataset.hr)];
+    let old;try{old=await histGet(c,x.sha)}catch(er){toast('그때 기록을 불러오지 못했습니다: '+er.message);return}
+    if(bt.dataset.hd!=null){const D=histDiff(old),el=$('#hdiff'+bt.dataset.hd);el.textContent=D.length?D.slice(0,12).join('\n')+(D.length>12?`\n…외 ${D.length-12}건`:''):'지금과 같습니다.';return}
+    const D=histDiff(old);if(!D.length){toast('지금과 같습니다.');return}
+    if(!confirm(`${fm(x.at)} 때 일정으로 되돌립니다. 작업 ${D.length}곳이 바뀝니다.\n(되돌린 뒤에도 "되돌리기"로 지금 상태로 돌아올 수 있습니다)`))return;
+    const keepCur=S.cur;S=norm(JSON.parse(JSON.stringify(old)));if(pById(keepCur))S.cur=keepCur;ghMark=`${fm(x.at)} 때로 되돌림`;save();$('#dhist').close();selN=[];selL=null;selP=null;render();toast(`${fm(x.at)} 때 일정으로 되돌렸습니다.`)};
+}
+$('#histbtn').onclick=openHist;
+$('#dhist-x').onclick=()=>$('#dhist').close();
+
 // ---------- 공유 이미지 ----------
 // 다른 사람에게 "이 일의 일정이 이렇다"를 보내는 한 장. 관리 화면을 찍지 않고 줄여서 다시 그린다.
 // 묶음 하나 = 한 줄 (처음~끝 막대, 지난 기간은 회색). 주요 날짜(D.O·발주·입고·런칭·생산이 이름에 있는 작업, 없으면 묶음의 마지막 작업)는 점으로,
@@ -2529,11 +2591,12 @@ async function ghGet(c,path){
   return{sha:j.sha,data:JSON.parse(txt)};
 }
 async function ghPut(c){
-  const sent=JSON.stringify(S),body={message:'타임라인 저장',content:b64e(JSON.stringify(S,null,1))};if(ghSha)body.sha=ghSha;
+  const sent=JSON.stringify(S),body={message:ghMark?'중간 저장: '+ghMark:'타임라인 저장',content:b64e(JSON.stringify(S,null,1))};if(ghSha)body.sha=ghSha;
   let r;try{r=await fetch(`${GH_API}/repos/${c.repo}/contents/${GH_PATH}`,{method:'PUT',headers:{...ghHead(c),'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){const x=new Error('인터넷 연결을 확인하세요');x.st=0;throw x}
   if(!r.ok){const x=new Error(ghErr(r.status));x.st=r.status;throw x}
-  ghSha=(await r.json()).content.sha;ghSetBase(sent);
+  ghSha=(await r.json()).content.sha;ghSetBase(sent);ghMark='';
 }
+var ghMark='';   // 다음 저장에 붙일 중간 저장 이름
 var ghLoaded=false;   // 처음 저장소를 읽기 전에는 올리지 않는다
 // 합치기: 다른 기기나 Claude 대화가 그 사이에 저장했어도 양쪽에서 고친 것을 다 살린다.
 // ghBase = 마지막으로 저장소와 같았던 내용. 이것과 비교해 이 화면이 고친 칸과 저쪽이 고친 칸을 가려 합친다.
