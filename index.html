@@ -125,7 +125,9 @@ section{position:absolute;inset:0}
 .todo{display:flex;gap:6px;align-items:center;margin:3px 0}.todo span{flex:1}.todo.ok span{text-decoration:line-through;color:var(--mut)}.todo button{padding:0 7px}
 .nd .stc{position:absolute;left:8px;bottom:-9px;font-size:10px;font-weight:700;border-radius:9px;padding:1px 7px;background:#fff;border:1px solid var(--line);white-space:nowrap}
 /* 날짜판에서 카드가 좁아 이름이 안 들어가면 이름·기간·표시를 카드 오른쪽(연결 동그라미 바깥)에 쓴다 */
-.nd.nar{padding:0}
+.nd.nar{padding:0}.nd.nar .tx .tt{font-size:12px}.nd.nar .tx .sub,.nd.nar .tx .lm{font-size:10px}
+.nd.cmp{padding:5px 5px 4px 24px}.nd.cmp .ckw{left:5px;top:6px}.nd.cmp .ck{width:12px;height:12px}
+.nd.cmp .tt{font-size:11px;line-height:1.2;white-space:normal;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.nd.cmp .sub{font-size:10px;margin-top:1px}
 .nd.nar .ckw{left:50%;top:50%;margin:-8px 0 0 -8px}
 .nd.nar .tx{position:absolute;left:0;overflow:hidden;background:rgba(255,255,255,.88);border-radius:6px;padding:1px 4px}.nd.nar .tx .bd{flex-wrap:nowrap}.nd.nar .dl{display:none}
 .nd.nar .tx .bd{position:static;flex-wrap:wrap;margin-top:3px}
@@ -970,16 +972,9 @@ function dayRuns(es,ef,unit,K){
 const isSel=id=>selN.includes(id);
 // 접은 묶음의 카드는 날짜판에 그리지 않는다
 function colHidden(n){if(view!=='b'||n.type==='group')return false;const g=grpOf(n);return !!(g&&g.col)}
-function nodeHtml(n){
-  const sc=isSel(n.id)?' sel':'',pos=`left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px`;
-  if(n.type==='group'){
-    const mem=S.nodes.filter(m=>m.type!=='group'&&GM.get(m.id)===n&&C[m.id]);
-    let sp='';if(mem.length)sp=`${md(Math.min(...mem.map(m=>C[m.id].es)))}–${md(Math.max(...mem.map(m=>C[m.id].ef)))}`;
-    const pl=view==='b'?Math.max(12,-cam.x/cam.z-n.x+8):12;   // 날짜판: 묶음 이름을 화면 왼쪽 끝에 (renderRuler 가 옮길 때마다 맞춘다)
-    const sum=view==='b'&&n.col&&mem.length?(()=>{const a=Math.min(...mem.map(m=>C[m.id].es)),b=Math.max(...mem.map(m=>C[m.id].ef));return `<div class="gsum" style="left:${X(a)+5-n.x}px;top:38px;min-width:${Math.max(X(b+1)-X(a)-10,DW-10)}px">${md(a)} ~ ${md(b)} · 작업 ${mem.length}개 접힘</div>`})():'';
-    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}">${sum}<div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div></div>`;
-  }
-  const x=C[n.id]||{es:0,ef:0},dec=n.type==='decision';
+// 카드의 표시들: 진행 상태·늦음·마감·체크·서류·다른 제품 연결·자료, 위쪽 날짜 줄
+function cardBits(n){
+  const x=C[n.id]||{es:0,ef:0};
   const live=(n.todo||[]).filter(i=>!i.na&&!i.later),tdn=live.length,tdk=live.filter(i=>i.ok).length;
   const xl=S.links.filter(l=>(l.to===n.id&&nodeById(l.from)&&nodeById(l.from).p!==n.p)||(l.from===n.id&&nodeById(l.to)&&nodeById(l.to).p!==n.p));
   const dmiss=live.filter(i=>i.needDoc&&!(n.files||[]).some(f=>(f.item===i.id||f.item===i.t)&&f.st==='c')).length;
@@ -989,8 +984,20 @@ function nodeHtml(n){
   const fl='',bad2=bad+(nf?`<span title="올려 둔 자료 ${nf}개 중 ${nc}개 확정">자료 ${nc}/${nf}</span>`:'');
   const K=R&&R.K,dl=C[n.id]&&K?`<div class="dl">${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · 영업 <b style="color:inherit">${K.cntW(x.es,x.ef)+(K.isW(x.es)?1:0)}</b>일 · 달력 ${x.ef-x.es+1}일${x.late?' · <b>늦음</b>':''}</div>`:'';
   const fw=flowOf(n),stc=fw.k?`<span class="stc ${fw.k}" title="${esc(fw.tip)}">${fw.k==='active'?'진행 중':fw.k==='turn'?'시작할 차례':'다음 단계'}</span>`:'';
+  return{x,lmemo,bad2,dl,stc};
+}
+function nodeHtml(n){
+  const sc=isSel(n.id)?' sel':'',pos=`left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px`;
+  if(n.type==='group'){
+    const mem=S.nodes.filter(m=>m.type!=='group'&&GM.get(m.id)===n&&C[m.id]);
+    let sp='';if(mem.length)sp=`${md(Math.min(...mem.map(m=>C[m.id].es)))}–${md(Math.max(...mem.map(m=>C[m.id].ef)))}`;
+    const pl=view==='b'?Math.max(12,-cam.x/cam.z-n.x+8):12;   // 날짜판: 묶음 이름을 화면 왼쪽 끝에 (renderRuler 가 옮길 때마다 맞춘다)
+    const sum=view==='b'&&n.col&&mem.length?(()=>{const a=Math.min(...mem.map(m=>C[m.id].es)),b=Math.max(...mem.map(m=>C[m.id].ef));return `<div class="gsum" style="left:${X(a)+5-n.x}px;top:38px;min-width:${Math.max(X(b+1)-X(a)-10,DW-10)}px">${md(a)} ~ ${md(b)} · 작업 ${mem.length}개 접힘</div>`})():'';
+    return `<div class="nd grp${sc}" data-id="${n.id}" style="${pos};--c:${n.color}">${sum}<div class="gh" style="padding-left:${pl}px;justify-content:flex-start"><b>${esc(n.name)}</b><span>${sp}</span></div></div>`;
+  }
+  const {x,lmemo,bad2,dl,stc}=cardBits(n),dec=n.type==='decision',fl='';
   const nar=view==='b'&&NAR&&NAR.get(n.id);   // 좁은 카드: 글자를 카드 아래에 쓴다 (위치·폭은 placeByDate 가 정한다)
-  return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${nar?' nar':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}
+  return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${nar?' nar':''}${!nar&&view==='b'&&CMPS.has(n.id)?' cmp':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
     <div class="tx"${nar?` style="width:${nar.w}px;top:${nar.top}px"`:''}><div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
     <div class="sub"><span>${nar&&C[n.id]?md(x.es)+(x.ef!==x.es?'~'+md(x.ef):'')+' · ':''}${durTxt(n)}${lmemo&&!nar?` · <i class="lmi">${esc(lmemo)}</i>`:''}</span></div>${lmemo&&nar?`<div class="lm">${esc(lmemo)}</div>`:''}${nar&&(stc||bad2)?`<div class="bd">${stc}${bad2}</div>`:''}</div>
@@ -1023,7 +1030,7 @@ function boardRange(P){
   const ends=[s0+60,TODAY];if(r&&!r.empty&&!r.err){ends.push(r.pEnd,r.pHi||r.pEnd)}if(P.deadline)ends.push(num(P.deadline));
   return{a,b:Math.max(...ends)+21};
 }
-var NAR=null,TXC=null;   // NAR: 날짜판에서 이름이 안 들어가는 좁은 카드 → 오른쪽 글자 칸 너비
+var NAR=null,TXC=null,CMPS=new Set();   // CMPS: 작은 글자로 카드 안에 쓰는 카드   // NAR: 날짜판에서 이름이 안 들어가는 좁은 카드 → 오른쪽 글자 칸 너비
 function txtW(s,wt,px){if(!s)return 0;if(!TXC)TXC=document.createElement('canvas').getContext('2d');TXC.font=`${wt} ${px}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;return Math.ceil(TXC.measureText(s).width)}
 var LANES=[];   // 날짜판의 묶음 줄 {g,y0,y1}. g 가 null 이면 묶음 없는 카드 줄 (맨 아래)
 // 줄 배치는 늘 자동이다: 묶음은 순서(ord)대로 위에서 아래로 쌓고, 묶음 안에서는 시작이 빠른 카드부터 앞 카드와 겹치지 않는 가장 위 줄에 놓는다.
@@ -1036,11 +1043,16 @@ function placeByDate(P){
   ts.forEach(n=>{n.h=TH;const x=C[n.id];if(!x)return;n.x=X(x.es)+5;n.w=Math.max(DW*(x.ef-x.es+1)-10,DW-10)});   // 날짜가 이어진 카드끼리도 틈이 보이게 양옆 5px씩 비운다
   gs.forEach(g=>{g.x=X(BR.a)-12;g.w=X(BR.b+1)+24-g.x});
   // 이름이 카드 안에 안 들어가는 좁은 카드는 이름·날짜·표시를 카드 아래 글자 칸에 쓴다. 카드 옆을 비워 두어 이어지는 카드가 같은 줄에 붙을 수 있게 한다
-  NAR=new Map();const LB=new Map();
+  NAR=new Map();CMPS=new Set();const LB=new Map();
   ts.forEach(n=>{const x=C[n.id];if(!x)return;
     const lmt=n.note||'',nm=(n.type==='decision'?'◆ ':'')+n.name;
-    if(Math.max(txtW(nm,700,13),txtW(durTxt(n),400,11))+40>n.w){
-      const l2=`${md(x.es)}~${md(x.ef)} · ${durTxt(n)}`;LB.set(n.id,{w:Math.min(300,Math.max(txtW(nm,700,13),txtW(l2,400,11),txtW(lmt,400,11),170)+10),h:54+(lmt?15:0)})}
+    if(Math.max(txtW(nm,700,13),txtW(durTxt(n),400,11))+40<=n.w)return;   // 그대로 들어간다
+    const inner=n.w-30,word=Math.max(...nm.split(' ').map(w=>txtW(w,700,11)));
+    const lines=(()=>{let k=1,cur='';nm.split(' ').forEach(w=>{const t=cur?cur+' '+w:w;if(txtW(t,700,11)<=inner-10)cur=t;else{k++;cur=w}});return k})();   // 띄어쓰기 단위로 줄을 나눠 본다
+    if(inner>=46&&word<=inner-10&&lines<=2&&txtW(durTxt(n),400,10)<=inner){CMPS.add(n.id);return}   // 작은 글자 두 줄로 카드 안에
+    const b=cardBits(n),bt=[...(b.stc+b.bad2).matchAll(/<span[^>]*>([^<]*)<\/span>/g)].map(m=>m[1]);
+    const bw=bt.reduce((m,t)=>m+txtW(t,700,10)+20,0),l2=`${md(x.es)}~${md(x.ef)} · ${durTxt(n)}`;
+    LB.set(n.id,{w:Math.min(300,Math.max(txtW(nm,700,12),txtW(l2,400,10),txtW(lmt,400,10),bw)+12),h:16+14+(bt.length?20:0)+(lmt?14:0)+4})
   });
   // 화살표 흐름을 따라 줄을 정한다: 앞 작업과 같은 줄에 이어 놓고(끼워 넣은 카드도 그 줄에 들어간다),
   // 자리가 없으면 앞 작업 줄에서 가장 가까운 빈 줄(같은 거리면 아래)에 놓는다. 앞 작업이 없으면 맨 위 빈 줄.
