@@ -2571,21 +2571,23 @@ function shareSvg(P){
   return{svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${o}</svg>`,W,H};
 }
 // 공유 페이지: 비밀번호를 정하면 회사 PC 서버가 일정(체크리스트·메모·서류·링크 뺀 것)을 잠가 공개 주소에 올린다
-function sharePageHtml(){return `<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px"><h4 style="margin:0">공유 페이지 (비밀번호로 여는 보기 전용 주소)</h4><div id="sp-st" class="note">확인 중…</div></div>`}
+function sharePageHtml(){return `<div id="sp-box" style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px"><h4 style="margin:0">공유 페이지 (비밀번호로 여는 보기 전용 주소)</h4><div id="sp-st" class="note">확인 중…</div></div>`}
 async function sharePageInit(){
-  const el=$('#sp-st');if(!el)return;
+  const box=$('#sp-box');if(!box)return;const el=$('#sp-st')||box;   // 창을 닫았으면 그만
   if(FS==null){el.innerHTML='회사 PC 서버로 연 화면(127.0.0.1:8790)에서 정할 수 있습니다.';return}
   let st;try{st=await (await fetch(FS+'/api/share/status',{cache:'no-store'})).json()}catch(e){el.textContent='회사 PC 서버에 닿지 않습니다.';return}
-  el.parentElement.innerHTML=`<h4 style="margin:0">공유 페이지 (비밀번호로 여는 보기 전용 주소)</h4>
-    <div class="note">${st.on?`발행 중 · 마지막으로 올린 때 ${esc(st.at||'-')} · 일정이 바뀌면 30분 안에 다시 올라갑니다.`:'아직 발행하지 않았습니다.'} 보는 사람은 체크리스트·메모·서류·링크 없이 일정만 봅니다.</div>
+  if(!$('#sp-box')||!$('#dshare').open)return;
+  box.innerHTML=`<h4 style="margin:0">공유 페이지 (비밀번호로 여는 보기 전용 주소)</h4>
+    <div class="note" id="sp-now-st">${st.running?'<b>올리는 중입니다… (10초쯤 걸립니다. 창을 닫아도 계속 올립니다)</b>':st.err?`<b style="color:var(--red)">올리지 못했습니다: ${esc(st.err)}</b> "지금 다시 올리기"를 눌러 주세요.`:st.on?`발행 중 · 마지막으로 올린 때 ${esc(st.at||'-')} · 일정이 바뀌면 30분 안에 다시 올라갑니다.`:'아직 발행하지 않았습니다.'} 보는 사람은 체크리스트·메모·서류·링크 없이 일정만 봅니다.</div>
     <div class="r"><input type="password" id="sp-pw" autocomplete="off" placeholder="${st.on?'새 비밀번호 (바꿀 때만)':'공유 비밀번호 (4자 이상)'}"><button id="sp-set">${st.on?'비밀번호 바꾸고 다시 발행':'비밀번호 정하고 발행'}</button></div>
     ${st.on?`<div class="r"><input type="text" readonly value="${esc(st.url)}" style="flex:1"><button id="sp-cp">주소 복사</button><button id="sp-now">지금 다시 올리기</button><button id="sp-off" class="del">공유 내리기</button></div>`:''}
     <div class="note">비밀번호는 이 PC 서버에만 열쇠로 바뀌어 남고, 화면·저장소에는 남지 않습니다. 보낼 때 주소와 비밀번호를 따로 알려 주세요.</div>`;
   const post=async(ep,body)=>{const r=await fetch(FS+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('서버 응답 '+r.status));return j};
-  $('#sp-set').onclick=async()=>{const pw=$('#sp-pw').value;if(pw.length<4){toast('비밀번호는 4자 이상으로 정해 주세요.');return}const b=$('#sp-set');b.disabled=true;b.textContent='올리는 중…';
-    try{await post('/api/share/setup',{password:pw});$('#sp-pw').value='';toast('공유 페이지를 발행했습니다. 1~2분 뒤 주소에서 열립니다.');sharePageInit()}catch(e){toast('발행하지 못했습니다: '+e.message);b.disabled=false}};
+  if(st.running){$('#sp-set').disabled=true;if($('#sp-now'))$('#sp-now').disabled=true;clearTimeout(sharePageInit._t);sharePageInit._t=setTimeout(async()=>{await sharePageInit();const s2=$('#sp-now-st');if(s2&&!/올리는 중/.test(s2.textContent))toast(/올리지 못했/.test(s2.textContent)?'공유 페이지를 올리지 못했습니다.':'공유 페이지를 올렸습니다. 1~2분 뒤 주소에 반영됩니다.')},2000)}
+  $('#sp-set').onclick=async()=>{const pw=$('#sp-pw').value;if(pw.length<4){toast('비밀번호는 4자 이상으로 정해 주세요.');return}$('#sp-set').disabled=true;
+    try{await post('/api/share/setup',{password:pw});$('#sp-pw').value='';sharePageInit()}catch(e){toast('발행하지 못했습니다: '+e.message);$('#sp-set').disabled=false}};
   if(st.on){$('#sp-cp').onclick=async()=>{try{await navigator.clipboard.writeText(st.url);toast('주소를 복사했습니다.')}catch(e){toast('복사가 안 됩니다. 주소 칸을 직접 선택해 복사해 주세요.')}};
-    $('#sp-now').onclick=async()=>{try{const j=await post('/api/share/publish');toast(j.same?'바뀐 일정이 없습니다.':'다시 올렸습니다.');sharePageInit()}catch(e){toast(e.message)}};
+    $('#sp-now').onclick=async()=>{try{await post('/api/share/publish');sharePageInit()}catch(e){toast(e.message)}};
     $('#sp-off').onclick=async()=>{if(!confirm('공유 페이지를 내립니다. 주소를 열어도 일정이 보이지 않게 됩니다.'))return;try{await post('/api/share/off');toast('공유 페이지를 내렸습니다.');sharePageInit()}catch(e){toast(e.message)}}}
 }
 async function sharePng(sh){
