@@ -285,7 +285,7 @@ dialog::backdrop{background:rgba(0,0,0,.3)}
 #pn .sub2{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:#fff;display:flex;flex-direction:column;gap:5px}
 #pn .sub2.ok{background:#f3faf5;border-color:#bfe3cb}#pn .sub2.na{background:#f4f6fa;opacity:.75}#pn .sub2.later{background:#fff8ec;border-color:#f3cf8f}
 #pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 b{flex:1;font-size:13px;word-break:break-all}#pn .sub2.na .r1 b{text-decoration:line-through;color:var(--mut)}
-#pn .sub2 .tded{display:flex;gap:4px;flex:1;min-width:0}#pn .sub2 .tded input{flex:1;min-width:0;font-size:13px;padding:3px 6px;border:1px solid #2563eb;border-radius:6px}#pn .sub2 .tded button{padding:2px 8px;font-size:12px}
+#pn .sub2 .tded{display:flex;gap:4px;align-items:center;min-width:0}#pn .sub2 .tded input{flex:1;min-width:0;font-size:13px;padding:3px 6px;border:1px solid #2563eb;border-radius:6px}#pn .sub2 .tded button{flex:none;white-space:nowrap;padding:1px 7px;font-size:11px;line-height:1.5}
 #pn .sub2 .tdedit{padding:1px 7px;font-size:11px;color:var(--mut)}#pn .sub2 .tdm{display:flex;gap:6px;align-items:center;font-size:12px;color:#334155}#pn .sub2 .tdm span{flex:1;background:#f6f8fb;border-radius:6px;padding:3px 6px}#pn .sub2.na .r1 input[data-tdt]{text-decoration:line-through;color:var(--mut)}
 #pn .sub2 select{font-size:12px;padding:2px 4px;max-width:118px}#pn .sub2 input[data-tdmemo]{font-size:12px;padding:3px 6px}
 #pn .sub2 .docs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px}
@@ -312,6 +312,9 @@ dialog textarea{width:100%;min-height:110px}
 dialog table{width:100%;border-collapse:collapse}
 dialog td{padding:3px 4px;border-bottom:1px solid #f0f2f6}
 dialog td.d{width:130px;color:var(--mut)}
+#lockbtn{font-weight:700}#lockbtn.on{background:#fff1d6;border-color:#e0a03a;color:#8a4b00}
+#board.locked .nd .re,#board.locked .nd .rl,#board.locked .nd .pt{display:none!important}#board.locked .nd{cursor:pointer}#board.locked .ck{pointer-events:none}
+#board.locked::after{content:"잠금 중 — 끌면 화면만 움직입니다";position:absolute;right:12px;bottom:10px;background:#fff1d6;color:#8a4b00;border:1px solid #e0a03a;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;z-index:6;pointer-events:none}
 #toast.act{pointer-events:auto}#toast button{margin-left:12px;background:#fff;color:#1c2430;border:0;border-radius:6px;padding:3px 10px;font-weight:700;cursor:pointer}
 #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:#1c2430;color:#fff;border-radius:10px;padding:9px 16px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
 #toast.on{opacity:1}
@@ -341,6 +344,7 @@ dialog td.d{width:130px;color:var(--mut)}
   <button class="ai" id="ai-plan" hidden>AI로 단계 짜기</button>
   <button class="ai" id="ai-rev" hidden>AI 점검</button>
   <span id="ghs" class="ghs"></span>
+  <button id="lockbtn" title="잠그면 날짜판에서 끌어도 화면만 움직이고 카드 날짜·기간·연결은 바뀌지 않습니다">잠금 꺼짐</button>
   <button id="undo" title="Ctrl+Z">되돌리기</button>
   <button id="histbtn" title="저장된 때를 골라 그때 일정으로 되돌립니다. 지금 상태에 이름을 붙여 저장해 둘 수도 있습니다">저장 기록</button>
   <button id="askai" title="이 제품의 프로젝트관리 대화(Claude)를 엽니다. 상황을 말하면 일정을 짜고 고칩니다">프로젝트관리 대화</button>
@@ -1138,6 +1142,9 @@ board.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse'&&e.button!==0)return;
   const t=e.target;
   if(t.closest('.hint,.ck,[data-snap]'))return;
+  if(LOCK){const nd=t.closest('.nd.task,.nd.dec');   // 잠금: 카드를 눌러도 끌면 화면만 움직인다
+    if(nd){const id=nd.dataset.id;if(e.shiftKey||e.ctrlKey||e.metaKey){startDrag(e,id,true);return}startPan(e,()=>selectNodes([id]));return}
+    if(t.closest('.pt,.re,.rl')){startPan(e);return}}
   const pc=t.closest('.pcard');if(pc){startPan(e,()=>focusProduct(pc.dataset.pid));return}
   const pt=t.closest('.pt');if(pt){startLink(e,pt.closest('.nd').dataset.id);return}
   const pfh=t.closest('.pfh');if(pfh){selectProduct(pfh.closest('.pf').dataset.pid);e.preventDefault();return}
@@ -1168,6 +1175,11 @@ function startMarquee(e){
     selN=[...new Set([...base,...ids])];paintSel();
   },moved=>{el.remove();if(!moved&&!add){clearSel();return}selL=null;selP=null;pmode='edit';if(selN[0]){const n=nodeById(selN[0]);if(n)S.cur=n.p}render()});
 }
+// 잠금: 켜면 날짜판에서 카드 끌기·양쪽 끝 끌기·화살표 잇기·더블클릭으로 만들기·끝남 체크·키보드로 지우기가 막힌다.
+// 카드를 누르면 오른쪽 칸은 열린다 (오른쪽 칸에서 고치는 것은 막지 않는다)
+var LOCK=(()=>{try{return localStorage.getItem('ptl-lock')==='1'}catch(e){return false}})();
+function paintLock(){const b=$('#lockbtn');if(b){b.textContent=LOCK?'잠금 켜짐':'잠금 꺼짐';b.classList.toggle('on',LOCK)}board.classList.toggle('locked',LOCK)}
+const lockMsg=()=>toast('잠금 중입니다. 위쪽 "잠금 켜짐"을 누르면 풀립니다.');
 function blurPanel(){const a=document.activeElement;if(a&&$('#pnb').contains(a))a.blur()}
 function selectNodes(ids){if(ids.join()!==selN.join())blurPanel();selN=ids;selL=null;selP=null;pmode='edit';if(ids.length){const n=nodeById(ids[0]);if(n)S.cur=n.p}render()}
 function selectLink(id){blurPanel();selN=[];selL=id;selP=null;pmode='edit';render()}
@@ -1349,7 +1361,7 @@ function placeNew(type,wx,wy){
   setTimeout(()=>{const i=$('#pnb [data-f=name]');if(i){i.focus();i.select()}},60);
 }
 $('#tools').addEventListener('pointerdown',e=>{
-  const b=e.target.closest('[data-add]');if(!b)return;const type=b.dataset.add;let ghost=null;
+  const b=e.target.closest('[data-add]');if(!b)return;if(LOCK){lockMsg();return}const type=b.dataset.add;let ghost=null;
   if(view!=='b')return;
   track(e,(dx,dy,ev)=>{
     if(!ghost){ghost=document.createElement('div');ghost.className='ghost';ghost.textContent=b.textContent;document.body.appendChild(ghost)}
@@ -1363,6 +1375,7 @@ $('#tools').addEventListener('pointerdown',e=>{
 });
 board.addEventListener('dblclick',e=>{
   if(e.target.closest('.nd.task,.nd.dec,.gh,.hint,.lh,.pfh,.pcard'))return;
+  if(LOCK){lockMsg();return}
   if(cam.z<LOD)return;
   const p=toWorld(e.clientX,e.clientY);placeNew('task',p.x,p.y);
 });
@@ -1932,11 +1945,11 @@ function tdApply(o,it,k,raw){
 function subCardHtml(n,i){
   const st=tdState(i),fs=itemFiles(n,i),fin=fs.some(f=>f.st==='c');
   const others=S.nodes.filter(t=>t.p===n.p&&t.type!=='group'&&t.id!==n.id&&!t.done);
-  const lt=i.later&&nodeById(i.later);
+  const lt=i.later&&nodeById(i.later),tOn=tdEdit.has(tdKey(n,i,'t'))||!i.t;
   return `<div class="sub2 ${st}" data-iid="${i.id}">
-    <div class="r1">${tdField(n,i,'t')}
+    <div class="r1">${tOn?`<b class="mut">${esc(i.t)||'새 할 일'}</b>`:tdField(n,i,'t')}
       <select data-tds2 title="상태"><option value="" ${st===''?'selected':''}>미완</option><option value="ok" ${st==='ok'?'selected':''}>완료</option><option value="na" ${st==='na'?'selected':''}>진행에 상관없음</option><option value="later" ${st==='later'?'selected':''}>나중에 다른 작업에서</option></select>
-      <button data-tdx2 title="지우기">×</button></div>
+      <button data-tdx2 title="지우기">×</button></div>${tOn?tdField(n,i,'t'):''}
     ${st==='later'?`<div class="from">→ 이어서 할 작업: <select data-tdlater><option value="">고르세요…</option>${others.map(t=>`<option value="${t.id}" ${i.later===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>${lt?'':' <b>(아직 안 고름)</b>'}</div>`:''}
     ${i.from?`<div class="from">← "${esc(i.from.name)}"에서 넘어온 할 일</div>`:''}
     ${tdField(n,i,'m')}
@@ -2104,6 +2117,7 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='a'&&view==='b'){e.preventDefault();selectNodes(S.nodes.filter(n=>n.p===S.cur).map(n=>n.id));return}
   if(e.key==='Escape'){clearSel();return}
   if(!selN.length&&!selL&&!selP)return;
+  if(LOCK&&view==='b'&&(e.key==='Delete'||e.key==='Backspace'||/^Arrow/.test(e.key))){lockMsg();return}
   if(e.key==='Delete'||e.key==='Backspace'){
     if(selL){S.links=S.links.filter(l=>l.id!==selL);save();clearSel()}
     else if(selP)deleteProduct(selP);
@@ -2415,6 +2429,8 @@ function openFinal(){
   $('#dfinal').showModal();
 }
 $('#finalbtn').onclick=openFinal;
+$('#lockbtn').onclick=()=>{LOCK=!LOCK;try{localStorage.setItem('ptl-lock',LOCK?'1':'0')}catch(e){}paintLock();toast(LOCK?'잠갔습니다. 끌어도 화면만 움직이고 일정은 바뀌지 않습니다.':'잠금을 풀었습니다. 카드를 끌면 날짜가 바뀝니다.')};
+paintLock();
 $('#lanecol').addEventListener('pointerdown',e=>{const l=e.target.closest('[data-lg]');if(l&&l.dataset.lg){e.stopPropagation();selectNodes([l.dataset.lg])}});
 
 // ---------- 저장 기록 ----------
