@@ -181,7 +181,10 @@ section{position:absolute;inset:0}
 /* 가정·확인 구분(점선)은 뺐다 — 기간은 숫자 하나만 받는다 */
 .nd.dec{background:#fff6e0;border:2px solid var(--amb);padding:7px 10px 6px 30px;box-shadow:0 2px 6px rgba(20,30,50,.08);border-radius:26px 12px 26px 12px}
 
-.nd .tt{font-weight:700;line-height:1.25;white-space:nowrap;text-shadow:0 0 3px #fff}
+.nd .tt{font-weight:700;line-height:1.25;white-space:nowrap;text-shadow:0 0 3px #fff;overflow:hidden;text-overflow:ellipsis}
+.nd .tx{min-width:0}.nd .sub span{min-width:0;overflow:hidden;text-overflow:ellipsis}.nd .sub .lmi{font-style:normal;color:#334155}
+#cardpop{position:fixed;z-index:70;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(20,30,50,.18);padding:10px 12px;max-width:340px;font-size:13px;display:none}
+#cardpop b{display:block;font-size:14px;margin-bottom:4px;word-break:keep-all}#cardpop div{color:#475569;margin-top:2px;word-break:keep-all}
 .nd .sub{display:flex;justify-content:space-between;gap:6px;color:var(--mut);font-size:11px;margin-top:3px;white-space:nowrap}
 .nd .ckw{position:absolute;left:7px;top:8px;display:block;line-height:0}
 .nd .ck{width:16px;height:16px;margin:0;cursor:pointer}
@@ -985,7 +988,7 @@ function nodeHtml(n){
   return `<div class="nd ${dec?'dec':'task'}${n.conf==='c'?' cf':''}${n.done?' dn':''}${x.crit?' crit':''}${nar?' nar':''}${sc}" data-id="${n.id}" style="${pos};--c:${colorOf(n)}">${fl}${nar?'':stc}
     <label class="ckw"><input type="checkbox" class="ck" ${n.done?'checked':''} title="끝났으면 체크"></label>
     <div class="tx"${nar?` style="width:${nar.w}px;top:${nar.top}px"`:''}><div class="tt">${dec?'◆ ':''}${esc(n.name)}</div>
-    <div class="sub"><span>${nar&&C[n.id]?md(x.es)+(x.ef!==x.es?'~'+md(x.ef):'')+' · ':''}${durTxt(n)}</span></div>${lmemo?`<div class="lm" title="${esc(lmemo)}">${esc(lmemo)}</div>`:''}${nar&&(stc||bad2)?`<div class="bd">${stc}${bad2}</div>`:''}</div>
+    <div class="sub"><span>${nar&&C[n.id]?md(x.es)+(x.ef!==x.es?'~'+md(x.ef):'')+' · ':''}${durTxt(n)}${lmemo&&!nar?` · <i class="lmi">${esc(lmemo)}</i>`:''}</span></div>${lmemo&&nar?`<div class="lm">${esc(lmemo)}</div>`:''}${nar&&(stc||bad2)?`<div class="bd">${stc}${bad2}</div>`:''}</div>
     ${!nar&&bad2?`<div class="bd">${bad2}</div>`:''}${dl}${n.done?'':'<i class="rl" title="끌어서 시작일 바꾸기 (끝나는 날은 그대로)"></i><i class="re" title="끌어서 끝나는 날 바꾸기"></i>'}<i class="pt" title="끌어서 다음 작업 카드에 놓으면 연결">→</i></div>`;
 }
 function curve(x1,y1,x2,y2){const c=Math.max(50,Math.abs(x2-x1)/2);return `M${x1} ${y1} C${x1+c} ${y1},${x2-c} ${y2},${x2} ${y2}`}
@@ -1042,7 +1045,6 @@ function placeByDate(P){
   const DC=new Map(),dcOf=(id,seen=new Set())=>{if(DC.has(id))return DC.get(id);if(seen.has(id))return 0;seen.add(id);let k=0;(SUC.get(id)||[]).forEach(s=>{k+=1+dcOf(s,seen)});DC.set(id,k);return k};
   const es=n=>C[n.id]?C[n.id].es:0,ef=id=>C[id]?C[id].ef:0;
   const GAP=26,HEAD=56;
-  ts.forEach(n=>{n.h=TH+(n.note&&!LB.has(n.id)?14:0)});
   const pack=(arr,y0)=>{const rows=[],rowOf=new Map();
     arr.sort((a,b)=>es(a)-es(b)||dcOf(b.id)-dcOf(a.id)||a.y-b.y||(a.id<b.id?-1:1)).forEach(n=>{
       const fits=i=>rows[i].end+4<=n.x;
@@ -1160,7 +1162,7 @@ board.addEventListener('pointerdown',e=>{
   const t=e.target;
   if(t.closest('.hint,.ck,[data-snap]'))return;
   if(LOCK){const nd=t.closest('.nd.task,.nd.dec');   // 잠금: 카드를 눌러도 끌면 화면만 움직인다
-    if(nd){const id=nd.dataset.id;if(e.shiftKey||e.ctrlKey||e.metaKey){startDrag(e,id,true);return}startPan(e,()=>selectNodes([id]));return}
+    if(nd){const id=nd.dataset.id;if(e.shiftKey||e.ctrlKey||e.metaKey){startDrag(e,id,true);return}startPan(e,()=>{selectNodes([id]);cardPop(id)});return}
     if(t.closest('.pt,.re,.rl')){startPan(e);return}}
   const pc=t.closest('.pcard');if(pc){startPan(e,()=>focusProduct(pc.dataset.pid));return}
   const pt=t.closest('.pt');if(pt){startLink(e,pt.closest('.nd').dataset.id);return}
@@ -1197,6 +1199,18 @@ function startMarquee(e){
 var LOCK=SHARE||(()=>{try{return localStorage.getItem('ptl-lock')==='1'}catch(e){return false}})();
 function paintLock(){const b=$('#lockbtn');if(b){b.textContent=LOCK?'잠금 켜짐':'잠금 꺼짐';b.classList.toggle('on',LOCK)}board.classList.toggle('locked',LOCK)}
 const lockMsg=()=>toast('잠금 중입니다. 위쪽 "잠금 켜짐"을 누르면 풀립니다.');
+function cardPop(id){
+  let p=$('#cardpop');if(!p){p=document.createElement('div');p.id='cardpop';document.body.appendChild(p);
+    document.addEventListener('pointerdown',e=>{if(!e.target.closest('#cardpop'))p.style.display='none'},true);document.addEventListener('keydown',e=>{if(e.key==='Escape')p.style.display='none'})}
+  const n=nodeById(id),el=nodeEl(id),x=C[id];if(!n||!el||!x){p.style.display='none';return}
+  const cut=[...el.querySelectorAll('.tt,.sub span,.lm')].some(t=>t.scrollWidth>t.clientWidth+1)||!!el.closest('.nar')||el.classList.contains('nar');
+  if(!cut&&!SHARE){p.style.display='none';return}
+  const fw=flowOf(n),K=R.K;
+  p.innerHTML=`<b>${n.type==='decision'?'◆ ':''}${esc(n.name.trim())}</b><div>${md(x.es)}(${WD[dow(x.es)]}) ~ ${md(x.ef)}(${WD[dow(x.ef)]}) · ${durTxt(n)}</div>`+
+    (n.note?`<div>메모: ${esc(n.note)}</div>`:'')+`<div>${n.done?'끝남':n.started?'진행 중':fw.k==='turn'?'시작할 차례':'대기'}${x.late?' · 늦음':''}${x.over?' · 마감 넘김':''}${n.due?' · 마감 '+md(num(n.due)):''}</div>`;
+  const r=el.getBoundingClientRect();p.style.display='block';const w=p.offsetWidth,h=p.offsetHeight;
+  p.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px';p.style.top=(r.bottom+8+h<innerHeight?r.bottom+8:Math.max(8,r.top-h-8))+'px';
+}
 function blurPanel(){const a=document.activeElement;if(a&&$('#pnb').contains(a))a.blur()}
 function selectNodes(ids){if(ids.join()!==selN.join())blurPanel();selN=ids;selL=null;selP=null;pmode='edit';if(ids.length){const n=nodeById(ids[0]);if(n)S.cur=n.p}render()}
 function selectLink(id){blurPanel();selN=[];selL=id;selP=null;pmode='edit';render()}
@@ -1235,7 +1249,7 @@ function startDrag(e,id,toggle){
     if(moved){const ch=[];cards.forEach(m=>{const L=laneAt(m.y+m.h/2);if(!L)return;const g=L.g?L.g.id:'',g0=grpOf(m);if(g!==(g0?g0.id:'')){m.g=g;ch.push(m)}});
       if(ch.length){const L=laneAt(me.y+me.h/2),gn=L&&L.g?`"${L.g.name}" 묶음으로`:'묶음 없는 줄로';gmsg=(ch.length===1?`"${ch[0].name}"을(를) `:`카드 ${ch.length}개를 `)+gn+' 옮겼습니다. '}}
     if(moved)save();
-    selectNodes(selN.length?selN:[id]);
+    selectNodes(selN.length?selN:[id]);if(!moved)cardPop(id);
     if(gmsg&&!(one&&dd))toast(gmsg.trim());
     if(moved&&one&&one.done&&rawdd)toast('끝난 작업은 실제 끝난 날이 기록돼 있어 옆으로 옮기지 않았습니다. 날짜를 고치려면 작업 칸 "실제 날짜"에서 바꾸거나 "대기"로 돌리세요.');
     if(moved&&one&&dd){
