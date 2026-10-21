@@ -1427,6 +1427,11 @@ board.addEventListener('dblclick',e=>{
   if(cam.z<LOD)return;
   const p=toWorld(e.clientX,e.clientY);placeNew('task',p.x,p.y);
 });
+// 확대·축소 중 잘못 눌림 막기: Ctrl+휠(터치패드 두 손가락 확대 포함) 중과 끝난 뒤 0.5초 동안은 누르기를 받지 않고,
+// 이 화면 어디서든 Ctrl+휠로 브라우저 화면 전체가 커지지 않게 한다 (날짜판 위에서는 날짜판만 확대·축소)
+let zoomWheelAt=0;
+document.addEventListener('wheel',e=>{if(e.ctrlKey){zoomWheelAt=Date.now();e.preventDefault()}},{passive:false,capture:true});
+['pointerdown','click'].forEach(t=>document.addEventListener(t,e=>{if(Date.now()-zoomWheelAt<500){e.preventDefault();e.stopPropagation()}},true));
 board.addEventListener('wheel',e=>{e.preventDefault();
   const sx=e.shiftKey?(e.deltaX||e.deltaY):Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:0;
   if(sx){pTok++;cam.x-=sx*(e.deltaMode===1?20:1);applyCam();return}
