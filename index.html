@@ -284,7 +284,7 @@ dialog::backdrop{background:rgba(0,0,0,.3)}
 #pn .todo{flex-wrap:wrap}
 #pn .sub2{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:#fff;display:flex;flex-direction:column;gap:5px}
 #pn .sub2.ok{background:#f3faf5;border-color:#bfe3cb}#pn .sub2.na{background:#f4f6fa;opacity:.75}#pn .sub2.later{background:#fff8ec;border-color:#f3cf8f}
-#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 b{flex:1;font-size:13px}#pn .sub2.na .r1 b{text-decoration:line-through;color:var(--mut)}
+#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 input[data-tdt]{flex:1;min-width:0;font-size:13px;font-weight:700;border:1px solid transparent;background:transparent;padding:2px 4px;border-radius:6px}#pn .sub2 .r1 input[data-tdt]:hover,#pn .sub2 .r1 input[data-tdt]:focus{border-color:var(--line);background:#fff}#pn .sub2.na .r1 input[data-tdt]{text-decoration:line-through;color:var(--mut)}
 #pn .sub2 select{font-size:12px;padding:2px 4px;max-width:118px}#pn .sub2 input[data-tdmemo]{font-size:12px;padding:3px 6px}
 #pn .sub2 .docs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px}
 #pn .sub2 .docs a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .sub2 .docs a.c{color:var(--grn);font-weight:700}
@@ -1914,7 +1914,7 @@ function subCardHtml(n,i){
   const others=S.nodes.filter(t=>t.p===n.p&&t.type!=='group'&&t.id!==n.id&&!t.done);
   const lt=i.later&&nodeById(i.later);
   return `<div class="sub2 ${st}" data-iid="${i.id}">
-    <div class="r1"><b>${esc(i.t)}</b>
+    <div class="r1"><input data-tdt value="${esc(i.t)}" title="눌러서 고치고 Enter">
       <select data-tds2 title="상태"><option value="" ${st===''?'selected':''}>미완</option><option value="ok" ${st==='ok'?'selected':''}>완료</option><option value="na" ${st==='na'?'selected':''}>진행에 상관없음</option><option value="later" ${st==='later'?'selected':''}>나중에 다른 작업에서</option></select>
       <button data-tdx2 title="지우기">×</button></div>
     ${st==='later'?`<div class="from">→ 이어서 할 작업: <select data-tdlater><option value="">고르세요…</option>${others.map(t=>`<option value="${t.id}" ${i.later===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>${lt?'':' <b>(아직 안 고름)</b>'}</div>`:''}
@@ -1955,6 +1955,7 @@ function reviewHtml(){
 $('#pnb').addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.fold){if(d.open)pnOpen.add(d.dataset.fold);else pnOpen.delete(d.dataset.fold)}},true);
 function addTodo(n){const i=$('#pnb [data-tdnew]');const t=i&&i.value.trim();if(!t)return;n.todo.push({id:'i'+Math.random().toString(36).slice(2,8),t,ok:false,memo:''});save();render();const j=$('#pnb [data-tdnew]');if(j)j.focus()}
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'qmemo' in e.target.dataset&&!e.isComposing){e.preventDefault();$('#pnb [data-qmemo-go]').click()}});
+$('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'tdt' in e.target.dataset&&!e.isComposing){e.preventDefault();e.target.blur()}});
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'tdnew' in e.target.dataset&&!e.isComposing){e.preventDefault();const n=selN.length===1?nodeById(selN[0]):null;if(n)addTodo(n)}});
 $('#pnb').addEventListener('change',e=>{
   if(!('notion' in e.target.dataset))return;const n=selN.length===1?nodeById(selN[0]):null;if(!n)return;
@@ -1990,6 +1991,10 @@ $('#pnb').addEventListener('change',e=>{
       if(v==='ok')addLog(o,'완료: '+it.t);if(v==='na')addLog(o,'진행에 상관없음: '+it.t);save();render();return}
     if('tdlater' in d){deferItem(o,it,e.target.value);save();render();if(e.target.value)toast(`"${nodeById(e.target.value).name}" 작업에 하위 할 일로 넣었습니다.`);return}
     if('tdneed' in d){it.needDoc=e.target.checked;save();render();return}
+    if('tdt' in d){const v=e.target.value.trim(),old=it.t;if(!v||v===old){e.target.value=old;return}   // 하위 할 일 글자 고치기
+      it.t=v;(o.files||[]).forEach(f=>{if(f.item===old)f.item=it.id});   // 예전 서류는 글자로 묶여 있어 번호로 바꿔 둔다
+      const lt=it.later&&nodeById(it.later);if(lt)(lt.todo||[]).forEach(x=>{if(x.from&&x.from.id===o.id&&x.from.iid===it.id)x.t=v});
+      addLog(o,`하위 할 일 이름: ${old} → ${v}`);save();render();toast('하위 할 일 이름을 고쳤습니다.');return}
     if('tdmemo' in d){it.memo=e.target.value.trim();if(it.memo)addLog(o,`메모 (${it.t}): ${it.memo}`);save();render();return}
   }
   else if('tpl' in e.target.dataset){const v=e.target.value;e.target.value='';if(v==='')return;
