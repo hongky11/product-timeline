@@ -1042,6 +1042,7 @@ function placeByDate(P){
   const DC=new Map(),dcOf=(id,seen=new Set())=>{if(DC.has(id))return DC.get(id);if(seen.has(id))return 0;seen.add(id);let k=0;(SUC.get(id)||[]).forEach(s=>{k+=1+dcOf(s,seen)});DC.set(id,k);return k};
   const es=n=>C[n.id]?C[n.id].es:0,ef=id=>C[id]?C[id].ef:0;
   const GAP=26,HEAD=56;
+  ts.forEach(n=>{n.h=TH+(n.note&&!LB.has(n.id)?14:0)});
   const pack=(arr,y0)=>{const rows=[],rowOf=new Map();
     arr.sort((a,b)=>es(a)-es(b)||dcOf(b.id)-dcOf(a.id)||a.y-b.y||(a.id<b.id?-1:1)).forEach(n=>{
       const fits=i=>rows[i].end+4<=n.x;
@@ -1052,7 +1053,7 @@ function placeByDate(P){
       rowOf.set(n.id,r);rows[r].end=n.x+n.w;rows[r].ns.push(n)});
     // 줄마다 좁은 카드 글자 칸: 앞 글자와 겹치면 한 층 아래로
     rows.forEach(o=>{const lv=[];o.ns.filter(n=>LB.has(n.id)).sort((a,b)=>a.x-b.x).forEach(n=>{const L=LB.get(n.id);let k=lv.findIndex(v=>v.end+10<=n.x);if(k<0){k=lv.length;lv.push({end:0,h:0,ns:[]})}lv[k].end=n.x+L.w;lv[k].h=Math.max(lv[k].h,L.h);lv[k].ns.push(n)});
-      let t=TH+12;lv.forEach(v=>{v.ns.forEach(n=>NAR.set(n.id,{w:LB.get(n.id).w,top:t}));t+=v.h+4});o.h=lv.length?t:TH});
+      const ch=Math.max(...o.ns.map(n=>n.h));let t=ch+12;lv.forEach(v=>{v.ns.forEach(n=>NAR.set(n.id,{w:LB.get(n.id).w,top:t}));t+=v.h+4});o.h=lv.length?t:ch});
     let y=y0;rows.forEach(o=>{o.ns.forEach(n=>{n.y=y});y+=o.h+GAP});
     return rows.length?y-GAP-y0:TH};
   let y=(P.y||40)+124;LANES=[];
