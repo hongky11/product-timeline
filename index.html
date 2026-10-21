@@ -284,10 +284,10 @@ dialog::backdrop{background:rgba(0,0,0,.3)}
 #pn .todo{flex-wrap:wrap}
 #pn .sub2{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:#fff;display:flex;flex-direction:column;gap:5px}
 #pn .sub2.ok{background:#f3faf5;border-color:#bfe3cb}#pn .sub2.na{background:#f4f6fa;opacity:.75}#pn .sub2.later{background:#fff8ec;border-color:#f3cf8f}
-#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 b{flex:1;font-size:13px;word-break:break-all}#pn .sub2.na .r1 b{text-decoration:line-through;color:var(--mut)}
+#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 b{flex:1;font-size:13px;word-break:keep-all}#pn .sub2.na .r1 b{text-decoration:line-through;color:var(--mut)}
 #pn .sub2 .tded{display:flex;gap:4px;align-items:center;min-width:0}#pn .sub2 .tded input{flex:1;min-width:0;font-size:13px;padding:3px 6px;border:1px solid #2563eb;border-radius:6px}#pn .sub2 .tded button{flex:none;white-space:nowrap;padding:1px 7px;font-size:11px;line-height:1.5}
 #pn .sub2 .tdedit{padding:1px 7px;font-size:11px;color:var(--mut)}#pn .sub2 .tdm{display:flex;gap:6px;align-items:center;font-size:12px;color:#334155}#pn .sub2 .tdm span{flex:1;background:#f6f8fb;border-radius:6px;padding:3px 6px}#pn .sub2.na .r1 input[data-tdt]{text-decoration:line-through;color:var(--mut)}
-#pn .sub2 select{font-size:12px;padding:2px 4px;max-width:118px}#pn .sub2 input[data-tdmemo]{font-size:12px;padding:3px 6px}
+#pn .sub2 select{font-size:11px;padding:1px 2px;max-width:92px;height:22px}#pn .sub2 [data-tdx2]{flex:none;padding:0 6px;font-size:11px;line-height:1.5}#pn .sub2 input[data-tdmemo]{font-size:12px;padding:3px 6px}
 #pn .sub2 .docs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px}
 #pn .sub2 .docs a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .sub2 .docs a.c{color:var(--grn);font-weight:700}
 #pn .sub2 .docs button{padding:1px 7px;font-size:11px}#pn .sub2 .need{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:4px}
@@ -315,6 +315,7 @@ dialog td.d{width:130px;color:var(--mut)}
 #lockbtn{font-weight:700}#lockbtn.on{background:#fff1d6;border-color:#e0a03a;color:#8a4b00}
 #board.locked .nd .re,#board.locked .nd .rl,#board.locked .nd .pt{display:none!important}#board.locked .nd{cursor:pointer}#board.locked .ck{pointer-events:none}
 #board.locked::after{content:"잠금 중 — 끌면 화면만 움직입니다";position:absolute;right:12px;bottom:10px;background:#fff1d6;color:#8a4b00;border:1px solid #e0a03a;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;z-index:6;pointer-events:none}
+#pn .lnrow{display:flex;gap:6px;align-items:center;margin:4px 0}#pn .lnrow b{flex:none;width:34px;font-size:12px}#pn .lnrow input{flex:1;min-width:0;font-size:12px;padding:3px 6px}#pn .lnrow a{flex:1;font-size:13px}#pn .lnrow button{flex:none;white-space:nowrap;padding:1px 8px;font-size:11px}
 #toast.act{pointer-events:auto}#toast button{margin-left:12px;background:#fff;color:#1c2430;border:0;border-radius:6px;padding:3px 10px;font-weight:700;cursor:pointer}
 #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:#1c2430;color:#fff;border-radius:10px;padding:9px 16px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
 #toast.on{opacity:1}
@@ -563,7 +564,7 @@ function norm(o){
     n.w=n.w||(n.type==='group'?300:TW);n.h=n.h||(n.type==='group'?200:TH);n.done=n.done||'';n.memo=n.memo||'';n.who=n.who||'';
     if(n.type!=='group'){n.files=n.files||[];n.arch=n.arch||[];n.log=n.log||[];n.unit=n.unit==='c'?'c':'w'}
     if(n.type!=='group'){n.conf=n.conf||'g';n.d=Math.max(1,+n.d||1);n.dmin=n.dmin>0?+n.dmin:null;n.dmax=n.dmax>0?+n.dmax:null;
-      n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.todo.forEach((i,k)=>{if(!i.id)i.id='i'+n.id.slice(-6)+'_'+k;i.memo=i.memo||''});n.notion=n.notion||''}});
+      n.started=n.started||'';n.notBefore=n.notBefore||'';n.due=n.due||'';n.todo=Array.isArray(n.todo)?n.todo:[];n.todo.forEach((i,k)=>{if(!i.id)i.id='i'+n.id.slice(-6)+'_'+k;i.memo=i.memo||''});n.notion=n.notion||'';n.slack=n.slack||''}});
   o.products.forEach(P=>{const gs=o.nodes.filter(g=>g.type==='group'&&g.p===P.id);
     if(gs.some(g=>!(g.ord>=0)))gs.sort((a,b)=>(a.ord>=0?a.ord:1e9)-(b.ord>=0?b.ord:1e9)||a.y-b.y).forEach((g,i)=>{g.ord=i});
     o.nodes.forEach(n=>{if(n.p!==P.id||n.type==='group'||n.g!==undefined)return;const cx=n.x+n.w/2,cy=n.y+n.h/2;let best=null;
@@ -1893,9 +1894,9 @@ function renderPanel(){
         <label class="f"><span>세는 방식</span><select data-f="unit"><option value="w" ${n.unit!=='c'?'selected':''}>영업일 (주말·공휴일 건너뜀)</option><option value="c" ${n.unit==='c'?'selected':''}>달력일 (배송·건조처럼 쉬는 날도 흐름)</option></select></label>
         <div class="info" id="pninfo">${infoHtml(n)}</div>`)+
       fold('cond','마감일',n.due?md(num(n.due))+(x.over?' · 넘길 예정':''):'없음',
-        `<label class="f"><span>이 작업 마감일</span><input type="date" data-f="due" value="${n.due}"></label>`)+
-      fold('notion','노션 발주 건',ns,
-        `<label class="f"><span>노션 발주 페이지 주소</span><input data-notion value="${esc(n.notion?'https://www.notion.so/'+n.notion.replace(/-/g,''):'')}" placeholder="노션 '링크 복사' 주소 붙여넣기"></label>${n.notion?notionHtml(n):''}`)+
+        `<label class="f"><span>이 작업 마감일</span><input type="date" data-f="due" value="${n.due}"></label>${n.due?'<div><button data-a="nodue">마감일 지우기 (없음)</button></div>':''}`)+
+      fold('links','링크',[n.notion?'노션':'',n.slack?'슬랙':''].filter(Boolean).join(' · ')+(nt&&nt.inDate?' · 입고 예정 '+md(num(nt.inDate)):'')||'없음',
+        linkRow(n,'notion','노션','https://www.notion.so/'+(n.notion||'').replace(/-/g,''),"노션 '링크 복사' 주소 붙여넣기")+linkRow(n,'slack','슬랙',n.slack||'',"슬랙 메시지·스레드 '링크 복사' 주소 붙여넣기"))+
       fold('order','앞뒤 작업',os,orderHtml(n)+`<div class="row2"><button data-a="incal">달력에서 보기</button><button data-a="intime">막대표에서 보기</button></div>`)+
       fold('files','자료',nf?nf+'개':'없음',filesHtml(n))+
       fold('memo',dec?'정할 내용·기록':'메모·기록',(n.memo?'메모 있음':'메모 없음')+' · 기록 '+nl+'개',
@@ -1947,13 +1948,11 @@ function subCardHtml(n,i){
   const others=S.nodes.filter(t=>t.p===n.p&&t.type!=='group'&&t.id!==n.id&&!t.done);
   const lt=i.later&&nodeById(i.later),tOn=tdEdit.has(tdKey(n,i,'t'))||!i.t;
   return `<div class="sub2 ${st}" data-iid="${i.id}">
-    <div class="r1">${tOn?`<b class="mut">${esc(i.t)||'새 할 일'}</b>`:tdField(n,i,'t')}
-      <select data-tds2 title="상태"><option value="" ${st===''?'selected':''}>미완</option><option value="ok" ${st==='ok'?'selected':''}>완료</option><option value="na" ${st==='na'?'selected':''}>진행에 상관없음</option><option value="later" ${st==='later'?'selected':''}>나중에 다른 작업에서</option></select>
-      <button data-tdx2 title="지우기">×</button></div>${tOn?tdField(n,i,'t'):''}
+    <div class="r1">${tOn?`<b class="mut">${esc(i.t)||'새 할 일'}</b>`:tdField(n,i,'t')}<button data-tdx2 title="지우기">×</button></div>${tOn?tdField(n,i,'t'):''}
     ${st==='later'?`<div class="from">→ 이어서 할 작업: <select data-tdlater><option value="">고르세요…</option>${others.map(t=>`<option value="${t.id}" ${i.later===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>${lt?'':' <b>(아직 안 고름)</b>'}</div>`:''}
     ${i.from?`<div class="from">← "${esc(i.from.name)}"에서 넘어온 할 일</div>`:''}
     ${tdField(n,i,'m')}
-    <div class="docs"><label class="need"><input type="checkbox" data-tdneed ${i.needDoc?'checked':''}>서류 필요</label>
+    <div class="docs"><select data-tds2 title="상태"><option value="" ${st===''?'selected':''}>미완</option><option value="ok" ${st==='ok'?'selected':''}>완료</option><option value="na" ${st==='na'?'selected':''}>진행에 상관없음</option><option value="later" ${st==='later'?'selected':''}>나중에 다른 작업에서</option></select><label class="need"><input type="checkbox" data-tdneed ${i.needDoc?'checked':''}>서류 필요</label>
       ${fs.map(f=>`<a data-fopen="${f.id}" class="${f.st==='c'?'c':''}" title="${f.st==='c'?'최종 서류':'누르면 열림'}">${esc(f.name)}${f.st==='c'?' (최종)':''}</a>${f.st==='c'?'':`<button data-tdfin="${f.id}" title="이 파일을 최종 서류로 고릅니다">최종으로</button>`}`).join(' ')}
       <button data-tdf2 title="서류 올리기 (여러 개 가능)">＋ 서류</button></div>
     ${i.needDoc&&!fin&&st!=='na'&&st!=='later'?`<div class="warn2">${fs.length?'최종 서류를 아직 안 골랐습니다':'필요한 서류를 아직 안 올렸습니다'}</div>`:''}
@@ -1967,6 +1966,22 @@ function deferItem(n,i,tid){
   const t=tid&&nodeById(tid);
   if(t){t.todo.push({id:'i'+Math.random().toString(36).slice(2,8),t:i.t,ok:false,na:false,needDoc:!!i.needDoc,memo:i.memo||'',from:{id:n.id,name:n.name,iid:i.id}});
     addLog(n,`할 일 "${i.t}" → "${t.name}"에서 이어서 하기로 넘김`);addLog(t,`"${n.name}"에서 할 일 "${i.t}" 넘어옴`)}
+}
+// 링크 한 줄: 저장돼 있으면 "열기 · 수정 · 지우기", 비었거나 고치는 중이면 주소 칸 + 저장
+var lnEdit=new Set();
+function linkRow(n,k,label,url,ph){
+  const has=k==='notion'?!!n.notion:!!n.slack,on=!has||lnEdit.has(n.id+':'+k);
+  return `<div class="lnrow" data-ln="${k}"><b>${label}</b>${on?`<input data-lnin placeholder="${esc(ph)}" value="${has?esc(url):''}"><button data-lnsave>저장</button>${has?'<button data-lncancel>취소</button>':''}`
+    :`<a href="${esc(url)}" target="_blank" rel="noopener">${label} 열기</a><button data-lnedit>수정</button><button data-lndel>지우기</button>`}</div>`;
+}
+// 노션 주소는 끝에 32자리 페이지 번호가 붙는다 (예: .../제품명-3fa7aa4b...). 하이픈 넣은 번호, 옆으로 열린 페이지(?p=)도 받는다
+function notionId(v){const path=v.split(/[?#]/)[0],u=path.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i),all=path.match(/[0-9a-f]{32}/gi),pk=v.match(/[?&]p=([0-9a-f]{32})/i);
+  const m=pk?pk[1]:u?u[0].replace(/-/g,''):all?all[all.length-1]:null;return m?m.toLowerCase().replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,'$1-$2-$3-$4-$5'):null}
+function linkSave(n,k,v){
+  v=v.trim();
+  if(k==='notion'){const id=v?notionId(v):'';if(v&&!id){toast('노션 페이지 주소가 아닙니다. 노션에서 페이지 오른쪽 위 ··· → 링크 복사로 받은 주소를 넣어 주세요.');return false}n.notion=id;addLog(n,id?'노션 링크 저장':'노션 링크 지움')}
+  else{if(v&&!/^https:\/\/[^\s]*slack\.com\//i.test(v)){toast('슬랙 주소가 아닙니다. 슬랙에서 메시지 ··· → 링크 복사로 받은 주소를 넣어 주세요.');return false}n.slack=v;addLog(n,v?'슬랙 링크 저장':'슬랙 링크 지움')}
+  lnEdit.delete(n.id+':'+k);save();render();toast(v?'링크를 저장했습니다.':'링크를 지웠습니다.');return true;
 }
 function notionHtml(n){
   if(!n.notion)return'';
@@ -1993,16 +2008,12 @@ $('#pnb').addEventListener('keydown',e=>{const t=e.target;if(!('tdt' in t.datase
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const c=t.parentElement.querySelector('[data-tdcancel]');if(c)c.click()}});
 $('#pnb').addEventListener('input',e=>{const t=e.target;if(!('tdt' in t.dataset||'tdmemo' in t.dataset))return;const w=t.closest('[data-iid]'),n=selN.length===1?nodeById(selN[0]):null;if(w&&n)tdDraft[n.id+':'+w.dataset.iid+':'+('tdt' in t.dataset?'t':'m')]=t.value});
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'tdnew' in e.target.dataset&&!e.isComposing){e.preventDefault();const n=selN.length===1?nodeById(selN[0]):null;if(n)addTodo(n)}});
-$('#pnb').addEventListener('change',e=>{
-  if(!('notion' in e.target.dataset))return;const n=selN.length===1?nodeById(selN[0]):null;if(!n)return;
-  // 노션 주소는 끝에 32자리 페이지 번호가 붙는다 (예: .../제품명-3fa7aa4b...). 하이픈 넣은 번호도 받는다
-  const v=e.target.value.trim(),path=v.split(/[?#]/)[0],u=path.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i),all=path.match(/[0-9a-f]{32}/gi);
-  const pk=v.match(/[?&]p=([0-9a-f]{32})/i);   // 옆으로 열린 페이지 주소는 ?p= 뒤가 그 페이지 번호다
-  const m=pk?[pk[1]]:u?[u[0].replace(/-/g,'')]:all?[all[all.length-1]]:null;
-  if(v&&!m){toast('노션 페이지 주소가 아닙니다. 노션에서 페이지 오른쪽 위 ··· → 링크 복사로 받은 주소를 넣어 주세요.');return}
-  n.notion=m?m[0].toLowerCase().replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,'$1-$2-$3-$4-$5'):'';
-  if(n.notion)addLog(n,'노션 발주 건 연결');save();render();
-});
+$('#pnb').addEventListener('click',e=>{const r=e.target.closest('[data-ln]'),n=selN.length===1?nodeById(selN[0]):null;if(!r||!n||n.type==='group')return;const k=r.dataset.ln;
+  if(e.target.closest('[data-lnedit]')){lnEdit.add(n.id+':'+k);renderPanel();const i=$(`#pnb [data-ln="${k}"] [data-lnin]`);if(i){i.focus();i.select()}}
+  else if(e.target.closest('[data-lncancel]')){lnEdit.delete(n.id+':'+k);renderPanel()}
+  else if(e.target.closest('[data-lnsave]'))linkSave(n,k,r.querySelector('[data-lnin]').value);
+  else if(e.target.closest('[data-lndel]')){if(confirm('이 링크를 지울까요?'))linkSave(n,k,'')}});
+$('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'lnin' in e.target.dataset&&!e.isComposing){e.preventDefault();e.target.parentElement.querySelector('[data-lnsave]').click()}});
 let pnAtt=null;   // 작업 칸에서 날짜·기간 칸을 누른 때의 붙어 있던 뒤 작업
 $('#pnb').addEventListener('focusin',e=>{const f=e.target.dataset&&e.target.dataset.f,o=curTarget();if(o&&o.type&&['d','notBefore','started','done'].includes(f))pnAtt={id:o.id,att:attachedOf(o.id)}});
 $('#pnb').addEventListener('input',e=>{
@@ -2067,6 +2078,7 @@ $('#pnb').addEventListener('click',e=>{
   if(b.dataset.conf&&n){n.conf=b.dataset.conf;save();render();return}
   const a=b.dataset.a;if(!a)return;
   if(a==='snap'&&n){snapToPred(n);return}
+  if(a==='nodue'&&n){n.due='';addLog(n,'마감일 지움');save();render();toast('마감일을 지웠습니다.');return}
   if(a==='xlink'&&n){const t=$('#pnb [data-xlt]').value,dir=$('#pnb [data-xld]').value;if(!t){toast('이을 작업을 먼저 고르세요.');return}
     const from=dir==='pre'?t:n.id,to=dir==='pre'?n.id:t,o=nodeById(t),P2=pById(o.p),end0=prodEnd(pById(nodeById(to).p));
     if(!addLink(from,to))return;addLog(n,`다른 제품 작업과 이음: ${P2.name} / ${o.name} (${dir==='pre'?'앞':'뒤'})`);
