@@ -284,7 +284,9 @@ dialog::backdrop{background:rgba(0,0,0,.3)}
 #pn .todo{flex-wrap:wrap}
 #pn .sub2{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:#fff;display:flex;flex-direction:column;gap:5px}
 #pn .sub2.ok{background:#f3faf5;border-color:#bfe3cb}#pn .sub2.na{background:#f4f6fa;opacity:.75}#pn .sub2.later{background:#fff8ec;border-color:#f3cf8f}
-#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 input[data-tdt]{flex:1;min-width:0;font-size:13px;font-weight:700;border:1px solid transparent;background:transparent;padding:2px 4px;border-radius:6px}#pn .sub2 .r1 input[data-tdt]:hover,#pn .sub2 .r1 input[data-tdt]:focus{border-color:var(--line);background:#fff}#pn .sub2.na .r1 input[data-tdt]{text-decoration:line-through;color:var(--mut)}
+#pn .sub2 .r1{display:flex;gap:6px;align-items:center}#pn .sub2 .r1 b{flex:1;font-size:13px;word-break:break-all}#pn .sub2.na .r1 b{text-decoration:line-through;color:var(--mut)}
+#pn .sub2 .tded{display:flex;gap:4px;flex:1;min-width:0}#pn .sub2 .tded input{flex:1;min-width:0;font-size:13px;padding:3px 6px;border:1px solid #2563eb;border-radius:6px}#pn .sub2 .tded button{padding:2px 8px;font-size:12px}
+#pn .sub2 .tdedit{padding:1px 7px;font-size:11px;color:var(--mut)}#pn .sub2 .tdm{display:flex;gap:6px;align-items:center;font-size:12px;color:#334155}#pn .sub2 .tdm span{flex:1;background:#f6f8fb;border-radius:6px;padding:3px 6px}#pn .sub2.na .r1 input[data-tdt]{text-decoration:line-through;color:var(--mut)}
 #pn .sub2 select{font-size:12px;padding:2px 4px;max-width:118px}#pn .sub2 input[data-tdmemo]{font-size:12px;padding:3px 6px}
 #pn .sub2 .docs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px}
 #pn .sub2 .docs a{cursor:pointer;color:var(--blue);text-decoration:underline}#pn .sub2 .docs a.c{color:var(--grn);font-weight:700}
@@ -1909,17 +1911,35 @@ function todoSummary(n){
   const miss=td.filter(i=>i.needDoc&&tdState(i)!=='na'&&tdState(i)!=='later'&&!itemFiles(n,i).some(f=>f.st==='c')).length;
   return `완료 ${c.ok} · 남음 ${c['']}${c.na?' · 상관없음 '+c.na:''}${c.later?' · 넘김 '+c.later:''}${miss?` · <b style="color:#b42318">최종 서류 빠짐 ${miss}</b>`:''}`;
 }
+var tdEdit=new Set(),tdDraft={};   // 고치는 중인 칸: "작업:할일:t(이름)|m(메모)" → 쓰던 글자
+const tdKey=(n,i,k)=>n.id+':'+i.id+':'+k;
+function tdField(n,i,k){
+  const key=tdKey(n,i,k),v=k==='t'?i.t:(i.memo||''),on=tdEdit.has(key)||(k==='t'&&!v);
+  if(on)return `<span class="tded"><input data-td${k==='t'?'t':'memo'} value="${esc(tdDraft[key]??v)}" placeholder="${k==='t'?'할 일 이름':'진행 메모 (예: 10/20 업체 회신 대기)'}"><button data-tdsave="${k}">저장</button>${v?`<button data-tdcancel="${k}">취소</button>`:''}</span>`;
+  if(k==='t')return `<b>${esc(v)}</b><button class="tdedit" data-tdedit="t" title="이름 고치기">수정</button>`;
+  return v?`<div class="tdm"><span>${esc(v)}</span><button class="tdedit" data-tdedit="m">수정</button></div>`:`<div class="tdm"><button class="tdedit" data-tdedit="m">+ 진행 메모</button></div>`;
+}
+function tdApply(o,it,k,raw){
+  const v=raw.trim(),old=k==='t'?it.t:(it.memo||'');tdEdit.delete(tdKey(o,it,k));delete tdDraft[tdKey(o,it,k)];
+  if(k==='t'&&!v){toast('이름이 비어 있어 그대로 둡니다.');renderPanel();return}
+  if(v===old){renderPanel();return}
+  if(k==='t'){it.t=v;(o.files||[]).forEach(f=>{if(f.item===old)f.item=it.id});   // 예전 서류는 글자로 묶여 있어 번호로 바꿔 둔다
+    const lt=it.later&&nodeById(it.later);if(lt)(lt.todo||[]).forEach(x=>{if(x.from&&x.from.id===o.id&&x.from.iid===it.id)x.t=v});
+    addLog(o,`하위 할 일 이름: ${old} → ${v}`)}
+  else{it.memo=v;if(v)addLog(o,`메모 (${it.t}): ${v}`)}
+  save();render();toast(k==='t'?'하위 할 일 이름을 저장했습니다.':'진행 메모를 저장했습니다.');
+}
 function subCardHtml(n,i){
   const st=tdState(i),fs=itemFiles(n,i),fin=fs.some(f=>f.st==='c');
   const others=S.nodes.filter(t=>t.p===n.p&&t.type!=='group'&&t.id!==n.id&&!t.done);
   const lt=i.later&&nodeById(i.later);
   return `<div class="sub2 ${st}" data-iid="${i.id}">
-    <div class="r1"><input data-tdt value="${esc(i.t)}" title="눌러서 고치고 Enter">
+    <div class="r1">${tdField(n,i,'t')}
       <select data-tds2 title="상태"><option value="" ${st===''?'selected':''}>미완</option><option value="ok" ${st==='ok'?'selected':''}>완료</option><option value="na" ${st==='na'?'selected':''}>진행에 상관없음</option><option value="later" ${st==='later'?'selected':''}>나중에 다른 작업에서</option></select>
       <button data-tdx2 title="지우기">×</button></div>
     ${st==='later'?`<div class="from">→ 이어서 할 작업: <select data-tdlater><option value="">고르세요…</option>${others.map(t=>`<option value="${t.id}" ${i.later===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>${lt?'':' <b>(아직 안 고름)</b>'}</div>`:''}
     ${i.from?`<div class="from">← "${esc(i.from.name)}"에서 넘어온 할 일</div>`:''}
-    <input data-tdmemo value="${esc(i.memo||'')}" placeholder="진행 메모 (예: 10/20 업체 회신 대기)">
+    ${tdField(n,i,'m')}
     <div class="docs"><label class="need"><input type="checkbox" data-tdneed ${i.needDoc?'checked':''}>서류 필요</label>
       ${fs.map(f=>`<a data-fopen="${f.id}" class="${f.st==='c'?'c':''}" title="${f.st==='c'?'최종 서류':'누르면 열림'}">${esc(f.name)}${f.st==='c'?' (최종)':''}</a>${f.st==='c'?'':`<button data-tdfin="${f.id}" title="이 파일을 최종 서류로 고릅니다">최종으로</button>`}`).join(' ')}
       <button data-tdf2 title="서류 올리기 (여러 개 가능)">＋ 서류</button></div>
@@ -1955,7 +1975,10 @@ function reviewHtml(){
 $('#pnb').addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.fold){if(d.open)pnOpen.add(d.dataset.fold);else pnOpen.delete(d.dataset.fold)}},true);
 function addTodo(n){const i=$('#pnb [data-tdnew]');const t=i&&i.value.trim();if(!t)return;n.todo.push({id:'i'+Math.random().toString(36).slice(2,8),t,ok:false,memo:''});save();render();const j=$('#pnb [data-tdnew]');if(j)j.focus()}
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'qmemo' in e.target.dataset&&!e.isComposing){e.preventDefault();$('#pnb [data-qmemo-go]').click()}});
-$('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'tdt' in e.target.dataset&&!e.isComposing){e.preventDefault();e.target.blur()}});
+$('#pnb').addEventListener('keydown',e=>{const t=e.target;if(!('tdt' in t.dataset||'tdmemo' in t.dataset)||e.isComposing)return;
+  if(e.key==='Enter'){e.preventDefault();t.parentElement.querySelector('[data-tdsave]').click()}
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const c=t.parentElement.querySelector('[data-tdcancel]');if(c)c.click()}});
+$('#pnb').addEventListener('input',e=>{const t=e.target;if(!('tdt' in t.dataset||'tdmemo' in t.dataset))return;const w=t.closest('[data-iid]'),n=selN.length===1?nodeById(selN[0]):null;if(w&&n)tdDraft[n.id+':'+w.dataset.iid+':'+('tdt' in t.dataset?'t':'m')]=t.value});
 $('#pnb').addEventListener('keydown',e=>{if(e.key==='Enter'&&'tdnew' in e.target.dataset&&!e.isComposing){e.preventDefault();const n=selN.length===1?nodeById(selN[0]):null;if(n)addTodo(n)}});
 $('#pnb').addEventListener('change',e=>{
   if(!('notion' in e.target.dataset))return;const n=selN.length===1?nodeById(selN[0]):null;if(!n)return;
@@ -1991,11 +2014,6 @@ $('#pnb').addEventListener('change',e=>{
       if(v==='ok')addLog(o,'완료: '+it.t);if(v==='na')addLog(o,'진행에 상관없음: '+it.t);save();render();return}
     if('tdlater' in d){deferItem(o,it,e.target.value);save();render();if(e.target.value)toast(`"${nodeById(e.target.value).name}" 작업에 하위 할 일로 넣었습니다.`);return}
     if('tdneed' in d){it.needDoc=e.target.checked;save();render();return}
-    if('tdt' in d){const v=e.target.value.trim(),old=it.t;if(!v||v===old){e.target.value=old;return}   // 하위 할 일 글자 고치기
-      it.t=v;(o.files||[]).forEach(f=>{if(f.item===old)f.item=it.id});   // 예전 서류는 글자로 묶여 있어 번호로 바꿔 둔다
-      const lt=it.later&&nodeById(it.later);if(lt)(lt.todo||[]).forEach(x=>{if(x.from&&x.from.id===o.id&&x.from.iid===it.id)x.t=v});
-      addLog(o,`하위 할 일 이름: ${old} → ${v}`);save();render();toast('하위 할 일 이름을 고쳤습니다.');return}
-    if('tdmemo' in d){it.memo=e.target.value.trim();if(it.memo)addLog(o,`메모 (${it.t}): ${it.memo}`);save();render();return}
   }
   else if('tpl' in e.target.dataset){const v=e.target.value;e.target.value='';if(v==='')return;
     if(v==='save'){if(!o.todo.length){toast('저장할 체크리스트 항목이 없습니다.');return}const nm=prompt('목록 이름 (예: 단상자 제작)',o.name);if(!nm)return;S.templates=S.templates||[];S.templates.push({name:nm.trim(),items:o.todo.map(i=>i.t)});save();render();toast(`"${nm.trim()}" 목록으로 저장했습니다. 다른 작업에서 "자주 쓰는 체크리스트 넣기"로 넣을 수 있습니다.`);return}
@@ -2025,6 +2043,10 @@ $('#pnb').addEventListener('click',e=>{
   if('tdx2' in b.dataset&&it){if(it.later)deferItem(n,it,'');n.todo=n.todo.filter(x=>x!==it);save();render();return}
   if('tdf2' in b.dataset&&it){const fin=$('#fin');fin.dataset.mode='item';fin.dataset.nid=n.id;fin.dataset.item=it.id;fin.multiple=true;fin.value='';fin.click();return}
   if(b.dataset.tdfin&&n){confirmFile(n,b.dataset.tdfin);return}
+  {const w=b.closest('[data-iid]'),it=w&&n&&(n.todo||[]).find(x=>x.id===w.dataset.iid);
+    if(it&&b.dataset.tdedit){const k=b.dataset.tdedit;tdEdit.add(tdKey(n,it,k));renderPanel();const f=$(`#pnb [data-iid="${it.id}"] [data-td${k==='t'?'t':'memo'}]`);if(f){f.focus();f.setSelectionRange(f.value.length,f.value.length)}return}
+    if(it&&b.dataset.tdsave){const k=b.dataset.tdsave;tdApply(n,it,k,w.querySelector(`[data-td${k==='t'?'t':'memo'}]`).value);return}
+    if(it&&b.dataset.tdcancel){const k=b.dataset.tdcancel;tdEdit.delete(tdKey(n,it,k));delete tdDraft[tdKey(n,it,k)];renderPanel();return}}
   if(b.dataset.tdf!=null&&n){const i=n.todo[+b.dataset.tdf];if(!i)return;const fin=$('#fin');fin.dataset.mode='item';fin.dataset.nid=n.id;fin.dataset.item=i.t;fin.multiple=true;fin.value='';fin.click();return}
   if(b.dataset.tds!=null&&n){const i=n.todo[+b.dataset.tds];if(!i)return;   // 미완 → 완료 → 불필요 → 미완
     if(!i.ok&&!i.na){i.ok=true;addLog(n,'체크 완료: '+i.t)}else if(i.ok&&!i.na){i.ok=false;i.na=true;addLog(n,'체크 불필요: '+i.t)}else{i.na=false;i.ok=false}
